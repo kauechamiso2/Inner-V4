@@ -1,0 +1,73 @@
+/* ============ Container principal do Chat — Figma node 533:4505 ============ */
+
+.chat-home {
+  flex: 1 0 0;
+  min-width: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--main-bg);
+  background-image: var(--main-bg-image);
+  overflow: hidden;
+  contain: layout paint;
+  transition: background-color 420ms ease;
+}
+
+/* ---------- Saudação ---------- */
+
+.chat-greeting {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  /* camada própria: o conjunto (incl. o glow borrado) é rasterizado uma vez
+     e só deslocado enquanto a sidebar anima a largura */
+  will-change: transform;
+  animation: greeting-in 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes greeting-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.greeting-orb {
+  position: relative;
+  width: 26px;
+  height: 26px;
+}
+
+/* cópia borrada atrás do orbe (glow do Figma: blur 6.275px) */
+.greeting-orb-glow {
+  position: absolute;
+  inset: 0;
+  filter: blur(6.275px);
+}
+
+.greeting-text {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  color: #1c1c1c;
+  white-space: nowrap;
+}
+
+/* ---------- Responsividade ---------- */
+
+@media (max-width: 640px) {
+  .chat-greeting {
+    gap: 16px;
+  }
+
+  .greeting-text {
+    font-size: 24px;
+  }
+}

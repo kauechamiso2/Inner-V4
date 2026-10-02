@@ -1,0 +1,417 @@
+/* ============ Painel de histórico (Chat) — Figma node 538:5362 (300 × 900) ============ */
+
+.history-panel {
+  width: 300px;
+  flex-shrink: 0;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--panel-surface);
+  border-right: 1px solid var(--panel-border);
+  /* largura fixa: isola layout/pintura para a animação da sidebar só deslocar o painel */
+  contain: layout paint;
+  transition:
+    width 480ms cubic-bezier(0.32, 0.72, 0, 1),
+    border-right-color 480ms cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 420ms ease;
+}
+
+/* some ao navegar para Library/Tarefas: colapsa a largura e desliza o conteúdo */
+.history-panel.is-hidden {
+  width: 0;
+  border-right-color: transparent;
+}
+
+.history-inner {
+  width: 299px; /* largura fixa: o conteúdo não espreme durante a animação */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 260ms ease 120ms,
+    transform 480ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.history-panel.is-hidden .history-inner {
+  opacity: 0;
+  transform: translateX(-48px);
+  transition:
+    opacity 200ms ease,
+    transform 480ms cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: none;
+}
+
+/* troca de pilar: o conteúdo novo entra deslizando de leve */
+.history-inner {
+  animation: panel-swap 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes panel-swap {
+  0% {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ---------- Header ---------- */
+
+.history-header {
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 16px;
+  overflow: hidden;
+}
+
+.history-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c1c1c;
+  white-space: nowrap;
+}
+
+/* ---------- Conteúdo ---------- */
+
+.history-content {
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 2px 10px 0;
+}
+
+/* Ações do topo */
+
+.history-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Botão "Nova …" — tingido pela cor do pilar ativo (--pillar vem do painel) */
+.history-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pillar) 12%, white);
+  color: var(--pillar);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 150ms ease;
+}
+
+.history-new:hover {
+  background: color-mix(in srgb, var(--pillar) 17%, white);
+}
+
+.history-new:active {
+  background: color-mix(in srgb, var(--pillar) 23%, white);
+}
+
+.history-new svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.history-new span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pillar);
+  white-space: nowrap;
+}
+
+.history-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.history-action:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.history-action:active {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.history-action img {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.history-action span {
+  font-size: 14px;
+  font-weight: 400;
+  color: #1c1c1c;
+  white-space: nowrap;
+}
+
+/* Label "Histórico" + busca */
+
+.history-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  flex-shrink: 0;
+  margin-top: 16px;
+  padding: 0 4px 0 10px;
+}
+
+.history-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #5d5d5d;
+  white-space: nowrap;
+}
+
+.history-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.history-search:hover {
+  background: rgba(0, 0, 0, 0.09);
+}
+
+.history-search img {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+/* Lista rolável */
+
+.history-scroll {
+  flex: 1 0 0;
+  min-height: 0;
+  margin-top: 8px;
+  padding-bottom: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.history-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-group-label {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding-left: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #9a9a9a;
+  white-space: nowrap;
+}
+
+.history-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Linha de conversa */
+
+.chat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0 10px;
+  border-radius: 7px;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.chat-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.chat-row:active {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.chat-row.is-agent {
+  justify-content: space-between;
+}
+
+.chat-row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chat-row-title {
+  font-size: 13px;
+  font-weight: 400;
+  color: #1c1c1c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-row-title.is-model {
+  color: #3d3d3d;
+}
+
+/* ---------- Linhas de geração (pilares) ---------- */
+
+.gen-thumb {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 5.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ececec; /* enquanto a foto carrega */
+  overflow: hidden;
+}
+
+.gen-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gen-play {
+  position: relative;
+  z-index: 1;
+}
+
+/* triângulo de play nas thumbs de vídeo */
+.gen-play {
+  width: 0;
+  height: 0;
+  margin-left: 1.5px;
+  border-style: solid;
+  border-width: 3.5px 0 3.5px 6px;
+  border-color: transparent transparent transparent rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.25));
+}
+
+.gen-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.gen-icon svg {
+  display: block;
+}
+
+/* Chip "Agent" */
+
+.chat-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 5px 6px;
+  border-radius: 90px;
+  background: #e6e8ee;
+  border: 1px solid #d9dde6;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  line-height: 1;
+  color: #737c8f;
+  white-space: nowrap;
+}
+
+/* ---------- Ícones de modelo ---------- */
+
+.model-icon {
+  position: relative;
+  width: 15.219px;
+  height: 15.219px;
+  flex-shrink: 0;
+}
+
+.model-halo {
+  position: absolute;
+  inset: -33.33%;
+}
+
+.model-halo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.model-avatar-cover {
+  position: absolute;
+  inset: 0;
+  border-radius: 23.864px;
+  background: #f2f4f7;
+  overflow: hidden;
+}
+
+.model-avatar-cover img {
+  position: absolute;
+  left: calc(50% - 0.19px);
+  top: 50%;
+  width: 17.151px;
+  height: 18.216px;
+  max-width: none;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* ---------- Responsividade ---------- */
+
+@media (max-width: 640px) {
+  .history-panel {
+    display: none;
+  }
+}

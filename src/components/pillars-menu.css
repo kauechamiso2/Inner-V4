@@ -1,0 +1,260 @@
+/* ============ Menu "Personalizar pilares" — Figma node 512:768 (300 × 433) ============ */
+
+.pillars-menu {
+  position: fixed;
+  z-index: 100;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 6px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  box-shadow:
+    0px 2px 8px 0px rgba(0, 0, 0, 0.05),
+    0px 16px 40px -4px rgba(0, 0, 0, 0.1);
+  transform-origin: top left;
+  animation: pm-in 240ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+.pillars-menu.is-closing {
+  animation: pm-out 160ms ease-in forwards;
+}
+
+@keyframes pm-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes pm-out {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+}
+
+/* Conteúdo entra num leve stagger junto da abertura */
+.pillars-menu > * {
+  animation: pm-row-in 280ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.pillars-menu > *:nth-child(1) { animation-delay: 20ms; }
+.pillars-menu > *:nth-child(2) { animation-delay: 40ms; }
+.pillars-menu > *:nth-child(3) { animation-delay: 55ms; }
+.pillars-menu > *:nth-child(4) { animation-delay: 70ms; }
+.pillars-menu > *:nth-child(5) { animation-delay: 85ms; }
+.pillars-menu > *:nth-child(6) { animation-delay: 100ms; }
+.pillars-menu > *:nth-child(7) { animation-delay: 110ms; }
+.pillars-menu > *:nth-child(8) { animation-delay: 120ms; }
+.pillars-menu > *:nth-child(9) { animation-delay: 130ms; }
+.pillars-menu > *:nth-child(10) { animation-delay: 140ms; }
+.pillars-menu > *:nth-child(n + 11) { animation-delay: 150ms; }
+
+.pillars-menu.is-closing > * {
+  animation: none;
+}
+
+@keyframes pm-row-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ---------- Header e textos auxiliares ---------- */
+
+.pm-header {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  flex-shrink: 0;
+  padding-left: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9a9a9a;
+  white-space: nowrap;
+}
+
+.pm-hint {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  flex-shrink: 0;
+  padding-left: 14px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #b4b4b4;
+  white-space: nowrap;
+}
+
+.pm-divider {
+  display: flex;
+  align-items: center;
+  height: 13px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.pm-divider span {
+  flex: 1 0 0;
+  height: 1px;
+  background: #efefef;
+}
+
+/* ---------- Linhas ---------- */
+
+.pm-line {
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+
+.pm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 12px 0 10px;
+  border-radius: 8px;
+  transition: background-color 130ms ease;
+}
+
+.pm-row.is-clickable {
+  cursor: pointer;
+}
+
+.pm-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* módulo ativo (view atual) dentro do menu */
+.pm-row.is-current {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.pm-row.is-current .pm-label {
+  font-weight: 500;
+}
+
+.pm-row.is-dragging {
+  position: relative;
+  z-index: 5;
+  background: #ffffff;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: scale(1.02);
+  cursor: grabbing;
+}
+
+.pm-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.pm-handle:active {
+  cursor: grabbing;
+}
+
+.pm-handle.is-empty {
+  cursor: default;
+  pointer-events: none;
+}
+
+.pm-handle svg {
+  display: block;
+}
+
+.pm-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+.pm-icon svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+}
+
+.pm-icon.is-16 svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pm-label {
+  flex: 1 0 0;
+  min-width: 1px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #1c1c1c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Pin ---------- */
+
+.pm-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: -5px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 130ms ease;
+}
+
+.pm-pin:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.pm-pin svg {
+  display: block;
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pm-pin:hover svg {
+  transform: rotate(-12deg) scale(1.1);
+}
+
+.pm-pin:active svg {
+  transform: rotate(-24deg) scale(0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillars-menu,
+  .pillars-menu > *,
+  .pm-pin svg {
+    animation: none !important;
+    transition: none !important;
+  }
+}

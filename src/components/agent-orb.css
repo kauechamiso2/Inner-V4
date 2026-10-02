@@ -1,0 +1,112 @@
+/* Orbe do Agent — camadas exatas do Figma numa base de 13px, escalada via transform */
+
+.agent-orb {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  /* confina o plus-lighter dos brilhos ao próprio orbe: o navegador consegue
+     rasterizar cada orbe isolado em vez de recompor a página inteira */
+  isolation: isolate;
+}
+
+.agent-orb-scale {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 13px;
+  height: 13px;
+  transform-origin: top left;
+}
+
+.orb-base {
+  position: absolute;
+  left: 0.11px;
+  top: 0.13px;
+  width: 12.776px;
+  height: 12.776px;
+}
+
+.orb-halo {
+  position: absolute;
+  inset: -10.53%;
+}
+
+.orb-halo img,
+.orb-ellipse img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.orb-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  max-width: none;
+}
+
+.orb-glint {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  mix-blend-mode: plus-lighter;
+}
+
+.orb-glint-1 {
+  left: 5.39px;
+  top: 0.11px;
+  width: 7.138px;
+  height: 5.114px;
+}
+
+.orb-glint-2 {
+  left: 0.17px;
+  top: 7.1px;
+  width: 10.888px;
+  height: 6.798px;
+}
+
+.orb-rotate-1 {
+  flex: none;
+  transform: rotate(27.36deg);
+  display: block;
+}
+
+.orb-rotate-2 {
+  flex: none;
+  transform: rotate(-163.84deg);
+  display: block;
+}
+
+.orb-ellipse {
+  position: relative;
+  display: block;
+}
+
+.orb-ellipse-1 {
+  width: 6.908px;
+  height: 2.183px;
+}
+
+.orb-ellipse-1 img {
+  position: absolute;
+  inset: -52.87% -16.71%;
+  width: auto;
+  height: auto;
+}
+
+.orb-ellipse-2 {
+  width: 10.136px;
+  height: 4.14px;
+}
+
+.orb-ellipse-2 img {
+  position: absolute;
+  inset: -36.81% -15.04%;
+  width: auto;
+  height: auto;
+}

@@ -1,0 +1,812 @@
+/* ============ Sidebar — Figma 533:4412 (expandida, 175px) / 538:4929 (rail, 72px) ============ */
+
+.sidebar {
+  --sb-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --sb-dur: 480ms;
+
+  position: relative;
+  z-index: 10;
+  width: 175px;
+  flex-shrink: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--sb-surface);
+  border-right: 1px solid var(--sb-border);
+  transition:
+    width var(--sb-dur) var(--sb-ease),
+    background-color var(--sb-dur) var(--sb-ease);
+}
+
+.sidebar.is-collapsed {
+  width: 56px;
+  background: var(--sb-surface-rail);
+}
+
+/* ---------- Header (56px) — guarda só o logo; o toggle é absoluto ---------- */
+
+.sidebar-header {
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  transition: height var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-header {
+  height: 62px;
+}
+
+.sidebar-logo {
+  width: 57.5px;
+  height: 13.313px;
+  display: block;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 180ms ease 120ms,
+    transform 320ms var(--sb-ease) 120ms;
+}
+
+.is-collapsed .sidebar-logo {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition:
+    opacity 140ms ease,
+    transform 300ms var(--sb-ease);
+  pointer-events: none;
+}
+
+/* ---------- Toggle: expandida no topo direito · rail centrado — sempre no mesmo
+   centro vertical (y28), então ao fechar ele só desliza na horizontal ---------- */
+
+.sidebar-toggle {
+  position: absolute;
+  top: 15.5px;
+  left: 141px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    top var(--sb-dur) var(--sb-ease),
+    left var(--sb-dur) var(--sb-ease),
+    width var(--sb-dur) var(--sb-ease),
+    height var(--sb-dur) var(--sb-ease),
+    border-radius var(--sb-dur) var(--sb-ease),
+    background-color 150ms ease;
+}
+
+.is-collapsed .sidebar-toggle {
+  top: 10px; /* centro vertical idêntico ao expandido: 10 + 36/2 = 15.5 + 25/2 = 28 */
+  left: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.is-collapsed .sidebar-toggle:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.sidebar-toggle svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  transition:
+    width var(--sb-dur) var(--sb-ease),
+    height var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- Tooltip pílula (compartilhado) ---------- */
+
+.pill-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  z-index: 50;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #1c1c1c;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%) translateX(-4px) scale(0.96);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    visibility 0s linear 140ms;
+}
+
+.sidebar-toggle:hover .toggle-tooltip,
+.sidebar-toggle:focus-visible .toggle-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0) scale(1);
+  transition:
+    opacity 140ms ease 350ms,
+    transform 140ms ease 350ms,
+    visibility 0s linear 350ms;
+}
+
+/* Tooltips dos itens: só existem no rail */
+.item-tooltip {
+  display: none;
+}
+
+.is-collapsed .item-tooltip {
+  display: block;
+}
+
+.is-collapsed .sidebar-item:hover .item-tooltip,
+.is-collapsed .sidebar-item:focus-visible .item-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0) scale(1);
+  transition:
+    opacity 140ms ease 250ms,
+    transform 140ms ease 250ms,
+    visibility 0s linear 250ms;
+}
+
+/* ---------- Conteúdo ---------- */
+
+.sidebar-content {
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0 10px 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: padding var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-content {
+  /* 56 − 1 de borda = 55 de conteúdo; 10 + 36 + 9 alinha itens 1:1 com o toggle */
+  padding: 0 9px 0 10px;
+  overflow: visible; /* deixa os tooltips escaparem no rail */
+}
+
+.sidebar-spacer-top {
+  height: 18px;
+  flex-shrink: 0;
+  transition: height var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-spacer-top {
+  height: 8px;
+}
+
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  flex-shrink: 0;
+  transition: gap var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-group {
+  gap: 4px;
+}
+
+.is-collapsed .sidebar-group.is-utilities {
+  gap: 0;
+}
+
+.sidebar-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    border-radius var(--sb-dur) var(--sb-ease),
+    padding var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-item {
+  padding: 0 9px;
+  border-radius: 10px;
+}
+
+/* "Mais" é um <button>: zera o estilo nativo e herda o visual de item */
+.sidebar-more {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-more.is-open {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.is-collapsed .sidebar-more.is-open {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.sidebar-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-item:active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.sidebar-item.is-active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.is-collapsed .sidebar-item:hover,
+.is-collapsed .sidebar-item.is-active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.is-collapsed .sidebar-item:active {
+  background: rgba(0, 0, 0, 0.09);
+}
+
+.sidebar-item-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.sidebar-item-icon svg {
+  display: block;
+}
+
+/* Tarefas: raio de 16px nos dois estados */
+.sidebar-item-icon.is-16 {
+  width: 16px;
+  height: 16px;
+}
+
+/* Labels: deslizam e somem em cascata ao recolher, voltam em cascata ao abrir */
+.sidebar-item-label {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  color: #1c1c1c;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 120px;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    max-width var(--sb-dur) var(--sb-ease),
+    opacity 200ms ease calc(160ms + var(--i, 0) * 26ms),
+    transform 280ms var(--sb-ease) calc(160ms + var(--i, 0) * 26ms);
+}
+
+.is-collapsed .sidebar-item-label {
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition:
+    max-width var(--sb-dur) var(--sb-ease),
+    opacity 160ms ease calc(var(--i, 0) * 20ms),
+    transform 240ms var(--sb-ease) calc(var(--i, 0) * 20ms);
+}
+
+.sidebar-item-label.is-medium {
+  font-weight: 500;
+}
+
+.sidebar-item-label.is-muted {
+  color: #5d5d5d;
+}
+
+.sidebar-item.is-active .sidebar-item-label {
+  font-weight: 500;
+}
+
+/* ---------- Divisor ---------- */
+
+.sidebar-divider {
+  display: flex;
+  align-items: center;
+  height: 17px;
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0 10px;
+  transition:
+    height var(--sb-dur) var(--sb-ease),
+    padding var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-divider {
+  height: 15px;
+  padding: 0 6px;
+}
+
+.sidebar-divider span {
+  width: 100%;
+  max-width: 134px;
+  height: 1px;
+  margin: 0 auto;
+  background: var(--sb-border);
+  transition: max-width var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-divider span {
+  max-width: 24px;
+}
+
+/* ---------- Espaçador flexível ---------- */
+
+.sidebar-flex {
+  flex: 1 0 0;
+  min-height: 18px;
+  width: 1px;
+  transition: min-height var(--sb-dur) var(--sb-ease);
+}
+
+.is-collapsed .sidebar-flex {
+  min-height: 0;
+}
+
+/* ---------- Usuário (expandida: linha 56px com borda · rail: só avatar) ---------- */
+
+.sidebar-user {
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 14px 0;
+  border-top: 1px solid var(--sb-border);
+  overflow: visible;
+  cursor: pointer;
+  transition:
+    height var(--sb-dur) var(--sb-ease),
+    padding var(--sb-dur) var(--sb-ease),
+    border-color var(--sb-dur) var(--sb-ease),
+    background-color 150ms ease;
+}
+
+.sidebar-user:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.is-collapsed .sidebar-user {
+  height: 52px;
+  padding: 8px 0 16px 14px; /* avatar 28px centrado no rail de 56 */
+  border-top-color: transparent;
+}
+
+.is-collapsed .sidebar-user:hover {
+  background: transparent;
+}
+
+.sidebar-user-info {
+  flex: 1 0 0;
+  min-width: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-avatar {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.sidebar-avatar-photo {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #6e62e5;
+  overflow: hidden;
+}
+
+.sidebar-avatar-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 999px;
+}
+
+/* Badge Ultra sobreposto ao avatar (Figma: left -2.05px, top 20.53px) */
+.sidebar-ultra {
+  position: absolute;
+  left: -2.05px;
+  top: 20.53px;
+  width: 32.102px;
+  height: 12.941px;
+  max-width: none;
+  display: block;
+}
+
+.sidebar-user-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  height: 28px;
+}
+
+.sidebar-user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1c1c1c;
+  white-space: nowrap;
+  display: block;
+  max-width: 120px;
+  opacity: 1;
+  transform: translateX(0);
+  overflow: hidden;
+  transition:
+    max-width var(--sb-dur) var(--sb-ease),
+    opacity 200ms ease 220ms,
+    transform 280ms var(--sb-ease) 220ms;
+}
+
+.is-collapsed .sidebar-user-name {
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition:
+    max-width var(--sb-dur) var(--sb-ease),
+    opacity 160ms ease,
+    transform 240ms var(--sb-ease);
+}
+
+.sidebar-user-caret {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  margin-top: 8px;
+  opacity: 1;
+  transition: opacity 180ms ease 220ms;
+}
+
+.is-collapsed .sidebar-user-caret {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.sidebar-user-caret svg {
+  display: block;
+}
+
+/* ============ Animações dos ícones ============ */
+
+.anim {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Cada animação dispara em dois contextos:
+   1. hover no item  2. scroll da página (classe .icons-animate na sidebar) */
+
+/* Chat: a bolha pulsa como um balão de conversa */
+.sidebar-item:hover .anim-chat,
+.icons-animate .anim-chat {
+  animation: chat-pop 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes chat-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.86); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Library: o livro inclinado desencosta do livro em pé e encosta de novo */
+.sidebar-item:hover .anim-book-leaning,
+.icons-animate .anim-book-leaning {
+  transform-origin: right bottom;
+  animation: book-lean 800ms ease-in-out;
+}
+
+.sidebar-item:hover .anim-book-upright,
+.icons-animate .anim-book-upright {
+  transform-origin: left bottom;
+  animation: book-steady 800ms ease-in-out;
+}
+
+@keyframes book-lean {
+  0% { transform: rotate(0deg) translateX(0); }
+  45% { transform: rotate(9deg) translateX(1.2px); }
+  100% { transform: rotate(0deg) translateX(0); }
+}
+
+@keyframes book-steady {
+  0% { transform: rotate(0deg); }
+  45% { transform: rotate(-3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Tarefas: o raio dá um "choque" rápido */
+.sidebar-item:hover .anim-lightning,
+.icons-animate .anim-lightning {
+  animation: lightning-jolt 600ms ease-out;
+}
+
+@keyframes lightning-jolt {
+  0% { transform: scale(1) rotate(0deg); opacity: 1; }
+  20% { transform: scale(1.18) rotate(-7deg); opacity: 0.55; }
+  35% { transform: scale(1.12) rotate(5deg); opacity: 1; }
+  55% { transform: scale(1.06) rotate(-3deg); opacity: 0.8; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Imagens: o "sol" sobe e volta a se pôr sobre as montanhas */
+.sidebar-item:hover .anim-sun,
+.icons-animate .anim-sun {
+  animation: sun-rise 800ms ease-in-out;
+}
+
+@keyframes sun-rise {
+  0% { transform: translate(0, 0) scale(1); }
+  45% { transform: translate(0.6px, -2.2px) scale(1.15); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* Mais: os três pontos quicam em sequência */
+.sidebar-item:hover .anim-dot,
+.icons-animate .anim-dot {
+  animation: dot-hop 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar-item:hover .anim-dot-2,
+.icons-animate .anim-dot-2 {
+  animation-delay: 90ms;
+}
+
+.sidebar-item:hover .anim-dot-3,
+.icons-animate .anim-dot-3 {
+  animation-delay: 180ms;
+}
+
+@keyframes dot-hop {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-2.4px); }
+  65% { transform: translateY(0.6px); }
+  100% { transform: translateY(0); }
+}
+
+/* Projetos: a pasta se inclina como se abrisse para espiar */
+.sidebar-item:hover .anim-folder,
+.icons-animate .anim-folder {
+  transform-origin: left bottom;
+  animation: folder-peek 700ms ease-in-out;
+}
+
+@keyframes folder-peek {
+  0% { transform: rotate(0deg); }
+  40% { transform: rotate(-7deg) translateY(-0.6px); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Educação: o capelo dá um "tchau" — levanta e inclina como em formatura */
+.sidebar-item:hover .anim-cap,
+.icons-animate .anim-cap {
+  animation: cap-tip 800ms ease-in-out;
+}
+
+@keyframes cap-tip {
+  0% { transform: translateY(0) rotate(0deg); }
+  40% { transform: translateY(-2px) rotate(-9deg); }
+  70% { transform: translateY(0.4px) rotate(2deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* Packs: os quadrados pulsam em sequência e o plus gira, como quem adiciona um pack */
+.sidebar-item:hover .anim-pack-sq,
+.icons-animate .anim-pack-sq {
+  animation: pack-pop 520ms ease-out;
+}
+
+.sidebar-item:hover .anim-pack-sq2,
+.icons-animate .anim-pack-sq2 {
+  animation-delay: 70ms;
+}
+
+.sidebar-item:hover .anim-pack-sq3,
+.icons-animate .anim-pack-sq3 {
+  animation-delay: 140ms;
+}
+
+.sidebar-item:hover .anim-pack-plus,
+.icons-animate .anim-pack-plus {
+  animation: pack-plus-spin 650ms cubic-bezier(0.22, 1, 0.36, 1) 180ms;
+}
+
+@keyframes pack-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.8); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* o plus tem simetria de 90°, então terminar girado = terminar no lugar */
+@keyframes pack-plus-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  55% { transform: rotate(90deg) scale(1.2); }
+  100% { transform: rotate(90deg) scale(1); }
+}
+
+/* Indique e ganhe: o ticket balança e a bolinha verde pulsa */
+.sidebar-item:hover .anim-ticket,
+.icons-animate .anim-ticket {
+  animation: ticket-wiggle 800ms ease-in-out;
+}
+
+.sidebar-item:hover .anim-badge,
+.icons-animate .anim-badge {
+  animation: badge-pulse 800ms ease-in-out;
+}
+
+@keyframes ticket-wiggle {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  55% { transform: rotate(6deg); }
+  80% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes badge-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Ajuda: a interrogação se inclina, curiosa */
+.sidebar-item:hover .anim-question,
+.icons-animate .anim-question {
+  animation: question-tilt 750ms ease-in-out;
+}
+
+@keyframes question-tilt {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(12deg); }
+  60% { transform: rotate(-6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Vídeos: a câmera dá uma "gravada" — inclina em direção à lente */
+.sidebar-item:hover .anim-video,
+.icons-animate .anim-video {
+  transform-origin: center;
+  animation: video-nudge 700ms ease-in-out;
+}
+
+@keyframes video-nudge {
+  0% { transform: rotate(0deg) translateX(0); }
+  35% { transform: rotate(-6deg) translateX(-0.6px); }
+  70% { transform: rotate(3deg) translateX(0.4px); }
+  100% { transform: rotate(0deg) translateX(0); }
+}
+
+/* Áudio: as ondas sonoras pulsam para fora, em sequência */
+.sidebar-item:hover .anim-speaker-wave-1,
+.icons-animate .anim-speaker-wave-1 {
+  transform-origin: left center;
+  animation: wave-pulse 600ms ease-out;
+}
+
+.sidebar-item:hover .anim-speaker-wave-2,
+.icons-animate .anim-speaker-wave-2 {
+  transform-origin: left center;
+  animation: wave-pulse 600ms ease-out 120ms;
+}
+
+@keyframes wave-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  30% { opacity: 0.2; transform: scale(0.6); }
+  70% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Reuniões: as barras do gráfico crescem em sequência */
+.sidebar-item:hover .anim-chart-bar,
+.icons-animate .anim-chart-bar {
+  transform-origin: center bottom;
+  animation: bar-grow 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar-item:hover .anim-chart-bar-2,
+.icons-animate .anim-chart-bar-2 {
+  animation-delay: 80ms;
+}
+
+.sidebar-item:hover .anim-chart-bar-3,
+.icons-animate .anim-chart-bar-3 {
+  animation-delay: 160ms;
+}
+
+@keyframes bar-grow {
+  0% { transform: scaleY(1); }
+  35% { transform: scaleY(0.3); }
+  75% { transform: scaleY(1.15); }
+  100% { transform: scaleY(1); }
+}
+
+/* Documentos: as linhas do texto "digitam" da esquerda pra direita */
+.sidebar-item:hover .anim-file-line,
+.icons-animate .anim-file-line {
+  transform-origin: left center;
+  animation: line-type 450ms ease-out;
+}
+
+.sidebar-item:hover .anim-file-line-2,
+.icons-animate .anim-file-line-2 {
+  animation-delay: 110ms;
+}
+
+@keyframes line-type {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+/* Sites: o globo gira de leve */
+.sidebar-item:hover .anim-globe,
+.icons-animate .anim-globe {
+  animation: globe-spin 750ms ease-in-out;
+}
+
+@keyframes globe-spin {
+  0% { transform: rotate(0deg); }
+  40% { transform: rotate(16deg); }
+  75% { transform: rotate(-6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Usuários que preferem menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebar *,
+  .sidebar *::before,
+  .sidebar *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}

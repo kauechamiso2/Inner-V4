@@ -1,0 +1,84 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ============ Temas de cor da plataforma ============ */
+
+:root {
+  /* Cor 1 — Atual */
+  --sb-surface: #f2f2f2;
+  --sb-surface-rail: #eaeaea;
+  --sb-border: #e6e6e6;
+  --panel-surface: #f8f8f8;
+  --panel-border: #e8e8e8;
+  --main-bg: #fcfcfc;
+  --main-bg-image: none;
+}
+
+:root[data-theme='frio'] {
+  /* Cor 2 — Frio sutil (Figma 526:811 / 527:836) */
+  --sb-surface: #f7f8fa;
+  --sb-surface-rail: #eef0f4;
+  --sb-border: #e9ebef;
+  --panel-surface: #f7f8fa;
+  --panel-border: #e9ebef;
+  --main-bg: #ffffff;
+  --main-bg-image: none;
+}
+
+:root[data-theme='neutro'] {
+  /* Cor 3 — Neutro (Figma 526:1681 / 527:1862): canvas cinza com gradiente */
+  --sb-surface: #f7f7f7;
+  --sb-surface-rail: #efefef;
+  --sb-border: #e8e8e8;
+  --panel-surface: #f7f7f7;
+  --panel-border: #e8e8e8;
+  --main-bg: #efefef;
+  --main-bg-image: linear-gradient(180deg, #fdfdfd 0%, #efefef 100%);
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #ffffff;
+  color: #1c1c1c;
+}
+
+.app {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1 0 0;
+  min-width: 0;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.main-placeholder {
+  height: 300dvh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 48dvh;
+}
+
+.main-placeholder p {
+  font-size: 13px;
+  color: #9a9a9a;
+  position: sticky;
+  top: 48dvh;
+}
