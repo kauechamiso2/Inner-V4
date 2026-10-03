@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './pillars-menu.css'
 import { DotsSixIcon, PushPinFillIcon, PushPinIcon } from './SidebarIcons'
+import { ChatTeardropIcon } from './SidebarIcons'
 import { MODULE_BY_ID, isNavModule } from './pillars'
 import type { ModuleDef, ModuleId, NavModuleId } from './pillars'
 import { useFlip } from './useFlip'
@@ -17,6 +18,10 @@ type Props = {
   onReorder: (order: ModuleId[]) => void
   onOpenPillar: (id: NavModuleId) => void
   onClose: () => void
+  /* diagramações B/C: Chat aparece no topo do menu, travado (sem pin/drag) */
+  showChat?: boolean
+  chatActive?: boolean
+  onOpenChat?: () => void
 }
 
 export default function PillarsMenu({
@@ -28,6 +33,9 @@ export default function PillarsMenu({
   onReorder,
   onOpenPillar,
   onClose,
+  showChat = false,
+  chatActive = false,
+  onOpenChat,
 }: Props) {
   const menuRef = useRef<HTMLDivElement>(null)
   const captureMenu = useFlip(menuRef)
@@ -145,6 +153,25 @@ export default function PillarsMenu({
       aria-label="Personalizar pilares"
     >
       <div className="pm-header">Personalizar pilares</div>
+
+      {showChat && (
+        <div className="pm-line">
+          <div
+            className={`pm-row is-static is-clickable${chatActive ? ' is-current' : ''}`}
+            onClick={() => {
+              if (suppressClickRef.current) return
+              onOpenChat?.()
+              requestClose()
+            }}
+          >
+            <span className="pm-handle is-empty" />
+            <span className="pm-icon">
+              <ChatTeardropIcon />
+            </span>
+            <span className="pm-label">Chat</span>
+          </div>
+        </div>
+      )}
 
       {pinned.map((id) => {
         const def = MODULE_BY_ID[id]

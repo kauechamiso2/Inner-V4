@@ -251,7 +251,10 @@ export default function Sidebar({ activeView, onNavigate, layout }: SidebarProps
       className={`sidebar${collapsed ? ' is-collapsed' : ''}${scrollAnimating ? ' icons-animate' : ''}`}
     >
       <header className="sidebar-header">
-        <img className="sidebar-logo" src={logo} alt="Inner AI" />
+        <span className="sidebar-brand">
+          <img className="sidebar-logo" src={logo} alt="Inner AI" />
+          <span className="sidebar-logo-tag">v4</span>
+        </span>
       </header>
 
       <button
@@ -352,6 +355,9 @@ export default function Sidebar({ activeView, onNavigate, layout }: SidebarProps
           onReorder={handleReorder}
           onOpenPillar={(id) => onNavigate(id)}
           onClose={() => setMenuAnchor(null)}
+          showChat={layout !== 'a'}
+          chatActive={activeView === 'chat'}
+          onOpenChat={() => onNavigate('chat')}
         />
       )}
     </aside>
