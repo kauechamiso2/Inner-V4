@@ -74,6 +74,11 @@
   --panel-border: #e9ebef;
   --main-bg: #ffffff;
   --main-bg-image: none;
+
+  --card-surface: #f4f6f9;
+  --card-desc: #8d939d;
+  --pill-active-bg: #eef0f4;
+  --fav-border: #e2e5eb;
 }
 
 :root[data-theme='neutro'] {
@@ -158,6 +163,10 @@
   --pop-surface: #2d2d2d;
   --pop-border: #3b3b3b;
   --pop-divider: #393939;
+
+  --card-surface: #2d2d2d;
+  --fav-surface: #242424;
+  --fav-border: #404040;
 }
 
 /* Dark da Cor 2 — Frio sutil (Figma 545:1064) */
@@ -182,6 +191,11 @@
   --chip-bg: #2b313c;
   --chip-border: #39404d;
   --chip-fg: #9aa6b8;
+
+  --card-surface: #272c35;
+  --card-desc: #99a1ad;
+  --fav-surface: #20242b;
+  --fav-border: #3b4250;
 }
 
 /* Remapeamento dos ícones (fills do Phosphor gravados nos SVGs inline) */
