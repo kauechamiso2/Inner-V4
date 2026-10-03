@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import './theme-switcher.css'
+import type { SidebarLayout } from './pillars'
 
 type ThemeId = 'original' | 'frio' | 'neutro'
+
+const LAYOUTS: { id: SidebarLayout; name: string; hint: string }[] = [
+  { id: 'a', name: 'Diagramação A', hint: 'Fixos no topo' },
+  { id: 'b', name: 'Diagramação B', hint: 'Tudo fixável' },
+  { id: 'c', name: 'Diagramação C', hint: 'Pilares após o Chat' },
+]
 
 const THEMES: { id: ThemeId; name: string; swatches: [string, string, string] }[] = [
   { id: 'original', name: 'Cor 1 · Atual', swatches: ['#f2f2f2', '#f8f8f8', '#fcfcfc'] },
@@ -11,12 +18,31 @@ const THEMES: { id: ThemeId; name: string; swatches: [string, string, string] }[
 
 const STORAGE_KEY = 'inner-v4-theme'
 
+function Check() {
+  return (
+    <svg className="theme-check" width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path
+        d="M11.7 3.9 5.6 10 2.3 6.7"
+        stroke="#1c1c1c"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 function applyTheme(id: ThemeId) {
   if (id === 'original') delete document.documentElement.dataset.theme
   else document.documentElement.dataset.theme = id
 }
 
-export default function ThemeSwitcher() {
+type Props = {
+  layout: SidebarLayout
+  onLayoutChange: (layout: SidebarLayout) => void
+}
+
+export default function ThemeSwitcher({ layout, onLayoutChange }: Props) {
   const [open, setOpen] = useState(false)
   const [theme, setTheme] = useState<ThemeId>('original')
   const rootRef = useRef<HTMLDivElement>(null)
@@ -81,17 +107,26 @@ export default function ThemeSwitcher() {
                 }}
               />
               <span className="theme-name">{t.name}</span>
-              {theme === t.id && (
-                <svg className="theme-check" width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M11.7 3.9 5.6 10 2.3 6.7"
-                    stroke="#1c1c1c"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
+              {theme === t.id && <Check />}
+            </button>
+          ))}
+
+          <div className="theme-pop-header is-section">Diagramação</div>
+          {LAYOUTS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={layout === l.id}
+              className={`theme-option${layout === l.id ? ' is-active' : ''}`}
+              onClick={() => onLayoutChange(l.id)}
+            >
+              <span className="layout-badge">{l.id.toUpperCase()}</span>
+              <span className="theme-name">
+                {l.name}
+                <span className="theme-hint">{l.hint}</span>
+              </span>
+              {layout === l.id && <Check />}
             </button>
           ))}
         </div>

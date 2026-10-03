@@ -6,6 +6,7 @@ import ultra from '../assets/ultra.svg'
 import avatar from '../assets/avatar.png'
 import {
   CaretRightIcon,
+  ChatTeardropIcon,
   DotsThreeIcon,
   FolderSimpleIcon,
   GraduationCapIcon,
@@ -14,8 +15,15 @@ import {
   SidebarSimpleIcon,
   TicketIcon,
 } from './SidebarIcons'
-import { DEFAULT_PINNED, FIXED_PILLARS, PILLAR_BY_ID, isGenPillar } from './pillars'
-import type { AppView, PillarId } from './pillars'
+import {
+  DEFAULT_PINNED,
+  DEFAULT_PINNED_B,
+  MODULE_BY_ID,
+  MODULE_DEFS,
+  PILLAR_DEFS,
+  isNavModule,
+} from './pillars'
+import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
 import { useFlip } from './useFlip'
 
@@ -79,14 +87,19 @@ function NavItem({
 type SidebarProps = {
   activeView: AppView
   onNavigate: (view: AppView) => void
+  layout: SidebarLayout
 }
 
-export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
+export default function Sidebar({ activeView, onNavigate, layout }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [scrollAnimating, setScrollAnimating] = useState(false)
   const cooldownRef = useRef(false)
 
-  const [pinned, setPinned] = useState<PillarId[]>(DEFAULT_PINNED)
+  /* A e C compartilham o pool de pilares; B inclui Library/Tarefas no jogo */
+  const [pinnedA, setPinnedA] = useState<PillarId[]>(DEFAULT_PINNED)
+  const [pinnedB, setPinnedB] = useState<ModuleId[]>(DEFAULT_PINNED_B)
+  const pinned: ModuleId[] = layout === 'b' ? pinnedB : pinnedA
+
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
   const maisRef = useRef<HTMLButtonElement>(null)
   const pilaresRef = useRef<HTMLElement>(null)
@@ -102,7 +115,6 @@ export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
         cooldownRef.current = false
       }, ANIMATION_MS)
     }
-    // capture: pega scroll da janela e de qualquer container rolável (ex: área de conteúdo)
     document.addEventListener('scroll', onScroll, { capture: true, passive: true })
     return () => document.removeEventListener('scroll', onScroll, { capture: true })
   }, [])
@@ -111,6 +123,11 @@ export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
   useEffect(() => {
     if (window.matchMedia('(max-width: 640px)').matches) setCollapsed(true)
   }, [])
+
+  // fecha o menu ao trocar de diagramação
+  useEffect(() => {
+    setMenuAnchor(null)
+  }, [layout])
 
   const toggleSidebar = () => {
     setMenuAnchor(null)
@@ -125,24 +142,109 @@ export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
     }
   }
 
-  const handleTogglePin = (id: PillarId) => {
+  const handleTogglePin = (id: ModuleId) => {
     capturePilares()
-    setPinned((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
+    if (layout === 'b') {
+      setPinnedB((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
+    } else {
+      const pid = id as PillarId
+      setPinnedA((prev) => (prev.includes(pid) ? prev.filter((p) => p !== pid) : [...prev, pid]))
+    }
   }
 
-  const handleReorder = (order: PillarId[]) => {
+  const handleReorder = (order: ModuleId[]) => {
     capturePilares()
-    setPinned(order)
+    if (layout === 'b') setPinnedB(order)
+    else setPinnedA(order as PillarId[])
   }
+
+  /* módulos disponíveis no menu "Mais" conforme a diagramação */
+  const menuModules = layout === 'b' ? MODULE_DEFS : MODULE_DEFS.filter((m) => m.id in PILLAR_BY)
+  const activeModule = (activeView !== 'chat' && activeView !== 'library' && activeView !== 'tarefas'
+    ? activeView
+    : layout === 'b' && (activeView === 'library' || activeView === 'tarefas')
+      ? activeView
+      : null) as ModuleId | null
+  const maisActive = activeModule !== null && !pinned.includes(activeModule)
+  const menuActiveId = activeModule && menuModules.some((m) => m.id === activeModule) ? activeModule : null
 
   let itemIndex = 0
-  const fixedIndexes = Object.fromEntries(FIXED_PILLARS.map((p) => [p.id, itemIndex++]))
-  const pinnedItems = pinned.map((id) => ({ id, index: itemIndex++ }))
-  const maisIndex = itemIndex++
+  const chatItem = (
+    <NavItem
+      index={itemIndex++}
+      onSelect={() => onNavigate('chat')}
+      item={{
+        label: 'Chat',
+        href: '#chat',
+        icon: <ChatTeardropIcon />,
+        active: activeView === 'chat',
+      }}
+    />
+  )
 
-  /* view atual é um pilar acessado pelo menu (não fixado) → "Mais" fica ativo */
-  const activePillar = (activeView in PILLAR_BY_ID ? activeView : null) as PillarId | null
-  const maisActive = activePillar !== null && !pinned.includes(activePillar)
+  const moduleNav = (id: ModuleId, index: number) => {
+    const def = MODULE_BY_ID[id]
+    return (
+      <NavItem
+        key={id}
+        flipId={id}
+        index={index}
+        onSelect={isNavModule(id) ? () => onNavigate(id) : undefined}
+        item={{
+          label: def.label,
+          href: `#${id}`,
+          icon: def.icon,
+          active: activeView === id,
+          narrowIcon: def.narrowIcon,
+        }}
+      />
+    )
+  }
+
+  const fixedNav = (id: 'library' | 'tarefas', index: number) => {
+    const def = MODULE_BY_ID[id]
+    return (
+      <NavItem
+        key={id}
+        index={index}
+        onSelect={() => onNavigate(id)}
+        item={{
+          label: def.label,
+          href: `#${id}`,
+          icon: def.icon,
+          active: activeView === id,
+          narrowIcon: def.narrowIcon,
+        }}
+      />
+    )
+  }
+
+  const maisButton = (index: number) => (
+    <button
+      ref={maisRef}
+      type="button"
+      className={`sidebar-item sidebar-more${menuAnchor ? ' is-open' : ''}${maisActive ? ' is-active' : ''}`}
+      style={{ '--i': index } as CSSProperties}
+      data-flip-id="mais"
+      aria-haspopup="menu"
+      aria-expanded={!!menuAnchor}
+      onClick={toggleMenu}
+    >
+      <span className="sidebar-item-icon">
+        <DotsThreeIcon />
+      </span>
+      <span className="sidebar-item-label is-muted">Mais</span>
+      <span className="pill-tooltip item-tooltip" role="tooltip" aria-hidden="true">
+        Mais
+      </span>
+    </button>
+  )
+
+  const divider = (
+    <div className="sidebar-divider" role="separator">
+      <span />
+    </div>
+  )
 
   return (
     <aside
@@ -168,69 +270,45 @@ export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
       <div className="sidebar-content">
         <div className="sidebar-spacer-top" />
 
-        <nav className="sidebar-group" aria-label="Pilares fixos">
-          {FIXED_PILLARS.map((p) => (
-            <NavItem
-              key={p.id}
-              index={fixedIndexes[p.id]}
-              onSelect={() => onNavigate(p.id)}
-              item={{
-                label: p.label,
-                href: `#${p.id}`,
-                icon: p.icon,
-                active: activeView === p.id,
-                narrowIcon: p.narrowIcon,
-              }}
-            />
-          ))}
-        </nav>
+        {layout === 'a' && (
+          <>
+            <nav className="sidebar-group" aria-label="Pilares fixos">
+              {chatItem}
+              {fixedNav('library', itemIndex++)}
+              {fixedNav('tarefas', itemIndex++)}
+            </nav>
+            {divider}
+            <nav className="sidebar-group" aria-label="Pilares personalizados" ref={pilaresRef}>
+              {pinned.map((id) => moduleNav(id, itemIndex++))}
+              {maisButton(itemIndex++)}
+            </nav>
+          </>
+        )}
 
-        <div className="sidebar-divider" role="separator">
-          <span />
-        </div>
+        {layout === 'b' && (
+          <nav className="sidebar-group" aria-label="Pilares" ref={pilaresRef}>
+            {chatItem}
+            {pinned.map((id) => moduleNav(id, itemIndex++))}
+            {maisButton(itemIndex++)}
+          </nav>
+        )}
 
-        <nav className="sidebar-group" aria-label="Pilares personalizados" ref={pilaresRef}>
-          {pinnedItems.map(({ id, index }) => {
-            const def = PILLAR_BY_ID[id]
-            return (
-              <NavItem
-                key={id}
-                flipId={id}
-                index={index}
-                onSelect={isGenPillar(id) ? () => onNavigate(id) : undefined}
-                item={{
-                  label: def.label,
-                  href: `#${id}`,
-                  icon: def.icon,
-                  active: activeView === id,
-                  narrowIcon: def.narrowIcon,
-                }}
-              />
-            )
-          })}
-          <button
-            ref={maisRef}
-            type="button"
-            className={`sidebar-item sidebar-more${menuAnchor ? ' is-open' : ''}${maisActive ? ' is-active' : ''}`}
-            style={{ '--i': maisIndex } as CSSProperties}
-            data-flip-id="mais"
-            aria-haspopup="menu"
-            aria-expanded={!!menuAnchor}
-            onClick={toggleMenu}
-          >
-            <span className="sidebar-item-icon">
-              <DotsThreeIcon />
-            </span>
-            <span className="sidebar-item-label is-muted">Mais</span>
-            <span className="pill-tooltip item-tooltip" role="tooltip" aria-hidden="true">
-              Mais
-            </span>
-          </button>
-        </nav>
+        {layout === 'c' && (
+          <>
+            <nav className="sidebar-group" aria-label="Pilares" ref={pilaresRef}>
+              {chatItem}
+              {pinned.map((id) => moduleNav(id, itemIndex++))}
+              {maisButton(itemIndex++)}
+            </nav>
+            {divider}
+            <nav className="sidebar-group" aria-label="Biblioteca e tarefas">
+              {fixedNav('library', itemIndex++)}
+              {fixedNav('tarefas', itemIndex++)}
+            </nav>
+          </>
+        )}
 
-        <div className="sidebar-divider" role="separator">
-          <span />
-        </div>
+        {divider}
 
         <nav className="sidebar-group" aria-label="Espaços">
           {ESPACOS.map((item) => (
@@ -267,8 +345,9 @@ export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
       {menuAnchor && (
         <PillarsMenu
           anchor={menuAnchor}
+          modules={menuModules}
           pinned={pinned}
-          activeId={activePillar}
+          activeId={menuActiveId}
           onTogglePin={handleTogglePin}
           onReorder={handleReorder}
           onOpenPillar={(id) => onNavigate(id)}
@@ -278,3 +357,6 @@ export default function Sidebar({ activeView, onNavigate }: SidebarProps) {
     </aside>
   )
 }
+
+/* ids dos pilares de geração (para filtrar o menu nas diagramações A e C) */
+const PILLAR_BY = Object.fromEntries(PILLAR_DEFS.map((p) => [p.id, true]))

@@ -104,3 +104,43 @@ export const PILLAR_BY_ID = Object.fromEntries(PILLAR_DEFS.map((p) => [p.id, p])
 >
 
 export const DEFAULT_PINNED: PillarId[] = ['imagens', 'videos']
+
+/* ============ Diagramações da sidebar ============ */
+
+export type SidebarLayout = 'a' | 'b' | 'c'
+
+/* Módulos: tudo que pode aparecer na área personalizável (na Diagramação B,
+   Library e Tarefas também entram no jogo de fixar/arrastar) */
+export type ModuleId = 'library' | 'tarefas' | PillarId
+
+/* Módulos com navegação prototipada (Sites fica de fora) */
+export type NavModuleId = Exclude<ModuleId, 'sites'>
+
+export const isNavModule = (id: ModuleId): id is NavModuleId => id !== 'sites'
+
+export type ModuleDef = {
+  id: ModuleId
+  label: string
+  icon: ReactNode
+  menuIcon: ReactNode
+  narrowIcon?: boolean
+}
+
+export const MODULE_DEFS: ModuleDef[] = [
+  { id: 'library', label: 'Library', icon: <BooksIcon />, menuIcon: <BooksIcon /> },
+  {
+    id: 'tarefas',
+    label: 'Tarefas',
+    icon: <LightningIcon />,
+    menuIcon: <LightningIcon />,
+    narrowIcon: true,
+  },
+  ...PILLAR_DEFS,
+]
+
+export const MODULE_BY_ID = Object.fromEntries(MODULE_DEFS.map((m) => [m.id, m])) as Record<
+  ModuleId,
+  ModuleDef
+>
+
+export const DEFAULT_PINNED_B: ModuleId[] = ['library', 'tarefas', ...DEFAULT_PINNED]

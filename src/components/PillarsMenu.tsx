@@ -1,24 +1,27 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './pillars-menu.css'
 import { DotsSixIcon, PushPinFillIcon, PushPinIcon } from './SidebarIcons'
-import { PILLAR_DEFS, PILLAR_BY_ID, isGenPillar } from './pillars'
-import type { GenPillarId, PillarId } from './pillars'
+import { MODULE_BY_ID, isNavModule } from './pillars'
+import type { ModuleDef, ModuleId, NavModuleId } from './pillars'
 import { useFlip } from './useFlip'
 
 const ROW_H = 38
 
 type Props = {
   anchor: DOMRect
-  pinned: PillarId[]
-  activeId: PillarId | null
-  onTogglePin: (id: PillarId) => void
-  onReorder: (order: PillarId[]) => void
-  onOpenPillar: (id: GenPillarId) => void
+  /* módulos exibidos neste menu (varia com a diagramação) */
+  modules: ModuleDef[]
+  pinned: ModuleId[]
+  activeId: ModuleId | null
+  onTogglePin: (id: ModuleId) => void
+  onReorder: (order: ModuleId[]) => void
+  onOpenPillar: (id: NavModuleId) => void
   onClose: () => void
 }
 
 export default function PillarsMenu({
   anchor,
+  modules,
   pinned,
   activeId,
   onTogglePin,
@@ -31,13 +34,13 @@ export default function PillarsMenu({
   const [pos, setPos] = useState({ top: anchor.top, left: anchor.right + 10 })
   const [closing, setClosing] = useState(false)
 
-  const [dragId, setDragId] = useState<PillarId | null>(null)
+  const [dragId, setDragId] = useState<ModuleId | null>(null)
   const [dragOffset, setDragOffset] = useState(0)
   const dragRef = useRef({ startY: 0, baseIndex: 0, currIndex: 0 })
   /* evita que o fim de um arrasto conte como clique de navegação */
   const suppressClickRef = useRef(false)
 
-  const unpinned = PILLAR_DEFS.filter((p) => !pinned.includes(p.id)).map((p) => p.id)
+  const unpinned = modules.filter((m) => !pinned.includes(m.id)).map((m) => m.id)
 
   // Clampa dentro da viewport depois de medir a altura real
   useLayoutEffect(() => {
@@ -75,14 +78,14 @@ export default function PillarsMenu({
     window.setTimeout(onClose, 170)
   }
 
-  const handlePin = (id: PillarId) => {
+  const handlePin = (id: ModuleId) => {
     captureMenu()
     onTogglePin(id)
   }
 
   // ----- Drag para reordenar os fixados -----
 
-  const onHandleDown = (e: React.PointerEvent, id: PillarId) => {
+  const onHandleDown = (e: React.PointerEvent, id: ModuleId) => {
     e.preventDefault()
     try {
       ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
@@ -95,7 +98,7 @@ export default function PillarsMenu({
     setDragOffset(0)
   }
 
-  const onHandleMove = (e: React.PointerEvent, id: PillarId) => {
+  const onHandleMove = (e: React.PointerEvent, id: ModuleId) => {
     if (dragId !== id) return
     const { startY, baseIndex, currIndex } = dragRef.current
     const offset = e.clientY - startY
@@ -111,7 +114,7 @@ export default function PillarsMenu({
     setDragOffset(offset)
   }
 
-  const onHandleUp = (id: PillarId) => {
+  const onHandleUp = (id: ModuleId) => {
     if (dragId !== id) return
     if (Math.abs(dragOffset) > 3) {
       suppressClickRef.current = true
@@ -121,10 +124,10 @@ export default function PillarsMenu({
     setDragOffset(0)
   }
 
-  const handleOpen = (id: PillarId) => {
+  const handleOpen = (id: ModuleId) => {
     if (suppressClickRef.current) return
     /* Sites ainda não tem fluxo prototipado: fica no menu, mas não navega */
-    if (!isGenPillar(id)) return
+    if (!isNavModule(id)) return
     onOpenPillar(id)
     requestClose()
   }
@@ -144,12 +147,12 @@ export default function PillarsMenu({
       <div className="pm-header">Personalizar pilares</div>
 
       {pinned.map((id) => {
-        const def = PILLAR_BY_ID[id]
+        const def = MODULE_BY_ID[id]
         const isDragging = dragId === id
         return (
           <div className="pm-line" key={id} data-flip-id={id} data-flip-skip={isDragging}>
             <div
-              className={`pm-row${isGenPillar(id) ? ' is-clickable' : ''}${isDragging ? ' is-dragging' : ''}${activeId === id ? ' is-current' : ''}`}
+              className={`pm-row${isNavModule(id) ? ' is-clickable' : ''}${isDragging ? ' is-dragging' : ''}${activeId === id ? ' is-current' : ''}`}
               style={isDragging ? { transform: `translateY(${dragVisual}px)` } : undefined}
               onClick={() => handleOpen(id)}
             >
@@ -186,11 +189,11 @@ export default function PillarsMenu({
       </div>
 
       {unpinned.map((id) => {
-        const def = PILLAR_BY_ID[id]
+        const def = MODULE_BY_ID[id]
         return (
           <div className="pm-line" key={id} data-flip-id={id}>
             <div
-              className={`pm-row${isGenPillar(id) ? ' is-clickable' : ''}${activeId === id ? ' is-current' : ''}`}
+              className={`pm-row${isNavModule(id) ? ' is-clickable' : ''}${activeId === id ? ' is-current' : ''}`}
               onClick={() => handleOpen(id)}
             >
               <span className="pm-handle is-empty" />
