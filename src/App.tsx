@@ -8,6 +8,7 @@ import { PILLAR_BY_ID } from './components/pillars'
 import type { AppView, PanelView, PillarId, SidebarLayout } from './components/pillars'
 
 const LAYOUT_KEY = 'inner-v4-layout'
+const COACH_KEY = 'inner-v4-coach-library'
 
 function readSavedLayout(): SidebarLayout {
   try {
@@ -36,6 +37,22 @@ export default function App() {
   /* última view com painel de histórico: mantém o conteúdo durante o colapso */
   const [panelView, setPanelView] = useState<PanelView>('chat')
   const [layout, setLayout] = useState<SidebarLayout>(readSavedLayout)
+  const [coachOpen, setCoachOpen] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem(COACH_KEY) !== 'dismissed'
+    } catch {
+      return true
+    }
+  })
+
+  const changeCoach = (open: boolean) => {
+    setCoachOpen(open)
+    try {
+      sessionStorage.setItem(COACH_KEY, open ? 'open' : 'dismissed')
+    } catch {
+      /* storage indisponível */
+    }
+  }
 
   const changeLayout = (next: SidebarLayout) => {
     setLayout(next)
@@ -53,10 +70,21 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar activeView={view} onNavigate={navigate} layout={layout} />
+      <Sidebar
+        activeView={view}
+        onNavigate={navigate}
+        layout={layout}
+        coachOpen={coachOpen}
+        onCoachDismiss={() => changeCoach(false)}
+      />
       <HistoryPanel view={panelView} hidden={isGridView(view)} />
       {view === 'chat' ? <ChatHome /> : <PageView key={view} title={titleFor(view)} />}
-      <ThemeSwitcher layout={layout} onLayoutChange={changeLayout} />
+      <ThemeSwitcher
+        layout={layout}
+        onLayoutChange={changeLayout}
+        coachOpen={coachOpen}
+        onCoachToggle={changeCoach}
+      />
     </div>
   )
 }

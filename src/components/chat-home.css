@@ -56,7 +56,7 @@
   font-size: 30px;
   font-weight: 500;
   letter-spacing: -0.3px;
-  color: #1c1c1c;
+  color: var(--text-strong);
   white-space: nowrap;
 }
 

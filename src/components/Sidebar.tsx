@@ -89,9 +89,11 @@ type SidebarProps = {
   activeView: AppView
   onNavigate: (view: AppView) => void
   layout: SidebarLayout
+  coachOpen: boolean
+  onCoachDismiss: () => void
 }
 
-export default function Sidebar({ activeView, onNavigate, layout }: SidebarProps) {
+export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onCoachDismiss }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [scrollAnimating, setScrollAnimating] = useState(false)
   const cooldownRef = useRef(false)
@@ -484,7 +486,11 @@ export default function Sidebar({ activeView, onNavigate, layout }: SidebarProps
         />
       )}
 
-      <LibraryCoachmark anchorKey={`${layout}|${collapsed}|${pinned.join(',')}`} />
+      <LibraryCoachmark
+        open={coachOpen}
+        onDismiss={onCoachDismiss}
+        anchorKey={`${layout}|${collapsed}|${pinned.join(',')}`}
+      />
     </aside>
   )
 }

@@ -74,7 +74,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1c1c1c;
+  color: var(--text-strong);
   white-space: nowrap;
 }
 
@@ -108,19 +108,19 @@
   padding: 0 10px;
   border: 0;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--pillar) 12%, white);
-  color: var(--pillar);
+  background: var(--newbtn-bg);
+  color: var(--newbtn-fg);
   cursor: pointer;
   font-family: inherit;
   transition: background-color 150ms ease;
 }
 
 .history-new:hover {
-  background: color-mix(in srgb, var(--pillar) 17%, white);
+  background: var(--newbtn-bg-hover);
 }
 
 .history-new:active {
-  background: color-mix(in srgb, var(--pillar) 23%, white);
+  background: var(--newbtn-bg-active);
 }
 
 .history-new svg {
@@ -131,7 +131,7 @@
 .history-new span {
   font-size: 14px;
   font-weight: 500;
-  color: var(--pillar);
+  color: var(--newbtn-fg);
   white-space: nowrap;
 }
 
@@ -147,11 +147,11 @@
 }
 
 .history-action:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--hover-04);
 }
 
 .history-action:active {
-  background: rgba(0, 0, 0, 0.07);
+  background: var(--hover-07);
 }
 
 .history-action img {
@@ -163,7 +163,7 @@
 .history-action span {
   font-size: 14px;
   font-weight: 400;
-  color: #1c1c1c;
+  color: var(--text-strong);
   white-space: nowrap;
 }
 
@@ -182,7 +182,7 @@
 .history-label {
   font-size: 13px;
   font-weight: 500;
-  color: #5d5d5d;
+  color: var(--text-soft);
   white-space: nowrap;
 }
 
@@ -195,13 +195,13 @@
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--hover-05);
   cursor: pointer;
   transition: background-color 150ms ease;
 }
 
 .history-search:hover {
-  background: rgba(0, 0, 0, 0.09);
+  background: var(--press-09);
 }
 
 .history-search img {
@@ -240,7 +240,7 @@
   padding-left: 10px;
   font-size: 11px;
   font-weight: 500;
-  color: #9a9a9a;
+  color: var(--text-faint);
   white-space: nowrap;
 }
 
@@ -265,11 +265,11 @@
 }
 
 .chat-row:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--hover-04);
 }
 
 .chat-row:active {
-  background: rgba(0, 0, 0, 0.07);
+  background: var(--hover-07);
 }
 
 .chat-row.is-agent {
@@ -286,14 +286,14 @@
 .chat-row-title {
   font-size: 13px;
   font-weight: 400;
-  color: #1c1c1c;
+  color: var(--text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .chat-row-title.is-model {
-  color: #3d3d3d;
+  color: var(--text-mid);
 }
 
 /* ---------- Linhas de geração (pilares) ---------- */
@@ -307,7 +307,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ececec; /* enquanto a foto carrega */
+  background: var(--thumb-ph); /* enquanto a foto carrega */
   overflow: hidden;
 }
 
@@ -357,13 +357,13 @@
   flex-shrink: 0;
   padding: 5px 6px;
   border-radius: 90px;
-  background: #e6e8ee;
-  border: 1px solid #d9dde6;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: -0.2px;
   line-height: 1;
-  color: #737c8f;
+  color: var(--chip-fg);
   white-space: nowrap;
 }
 

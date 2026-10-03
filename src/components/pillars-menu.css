@@ -7,8 +7,8 @@
   display: flex;
   flex-direction: column;
   padding: 8px 0 6px;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
+  background: var(--pop-surface);
+  border: 1px solid var(--pop-border);
   border-radius: 14px;
   box-shadow:
     0px 2px 8px 0px rgba(0, 0, 0, 0.05),
@@ -85,7 +85,7 @@
   padding-left: 14px;
   font-size: 12px;
   font-weight: 500;
-  color: #9a9a9a;
+  color: var(--text-faint);
   white-space: nowrap;
 }
 
@@ -97,7 +97,7 @@
   padding-left: 14px;
   font-size: 12px;
   font-weight: 400;
-  color: #b4b4b4;
+  color: var(--text-ghost);
   white-space: nowrap;
 }
 
@@ -112,7 +112,7 @@
 .pm-divider span {
   flex: 1 0 0;
   height: 1px;
-  background: #efefef;
+  background: var(--pop-divider);
 }
 
 /* ---------- Linhas ---------- */
@@ -137,12 +137,12 @@
 }
 
 .pm-row:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--hover-04);
 }
 
 /* módulo ativo (view atual) dentro do menu */
 .pm-row.is-current {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--hover-05);
 }
 
 .pm-row.is-current .pm-label {
@@ -152,7 +152,7 @@
 .pm-row.is-dragging {
   position: relative;
   z-index: 5;
-  background: #ffffff;
+  background: var(--pop-surface);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.08),
     0 8px 24px rgba(0, 0, 0, 0.12);
@@ -209,7 +209,7 @@
   min-width: 1px;
   font-size: 14px;
   font-weight: 400;
-  color: #1c1c1c;
+  color: var(--text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -234,7 +234,7 @@
 }
 
 .pm-pin:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--hover-06);
 }
 
 .pm-pin svg {

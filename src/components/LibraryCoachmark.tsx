@@ -4,26 +4,21 @@ import coachArrow from '../assets/coach-arrow.svg'
 import coachX from '../assets/coach-x.svg'
 
 type Props = {
+  open: boolean
+  onDismiss: () => void
   /* dependências de layout que movem o item Library (re-ancora o card) */
   anchorKey: string
 }
 
-const STORAGE_KEY = 'inner-v4-coach-library'
-
 /* Coachmark "Conheça a Library" — Figma node 543:892, ancorado ao item da sidebar */
-export default function LibraryCoachmark({ anchorKey }: Props) {
-  const [open, setOpen] = useState(() => {
-    try {
-      return sessionStorage.getItem(STORAGE_KEY) !== 'dismissed'
-    } catch {
-      return true
-    }
-  })
+export default function LibraryCoachmark({ open, onDismiss, anchorKey }: Props) {
   const [closing, setClosing] = useState(false)
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
 
   useEffect(() => {
     if (!open) return
+    setClosing(false)
+
     const update = () => {
       const el = document.querySelector('aside.sidebar a[href="#library"]')
       if (!el) {
@@ -34,12 +29,19 @@ export default function LibraryCoachmark({ anchorKey }: Props) {
       /* centro da seta (top 22 + 8) alinhado ao centro vertical do item */
       setPos({ top: r.top + r.height / 2 - 30, left: r.right + 6 })
     }
-    update()
-    /* reposiciona após a animação de colapso/troca de diagramação assentar */
-    const t = window.setTimeout(update, 540)
+
+    /* segue a âncora frame a frame enquanto a sidebar anima (abre/fecha,
+       troca de diagramação, reordenações) — o card desliza colado nela */
+    let raf = 0
+    const start = performance.now()
+    const follow = () => {
+      update()
+      if (performance.now() - start < 640) raf = requestAnimationFrame(follow)
+    }
+    follow()
     window.addEventListener('resize', update)
     return () => {
-      window.clearTimeout(t)
+      cancelAnimationFrame(raf)
       window.removeEventListener('resize', update)
     }
   }, [open, anchorKey])
@@ -48,14 +50,7 @@ export default function LibraryCoachmark({ anchorKey }: Props) {
 
   const dismiss = () => {
     setClosing(true)
-    window.setTimeout(() => {
-      setOpen(false)
-      try {
-        sessionStorage.setItem(STORAGE_KEY, 'dismissed')
-      } catch {
-        /* storage indisponível */
-      }
-    }, 170)
+    window.setTimeout(onDismiss, 170)
   }
 
   return (

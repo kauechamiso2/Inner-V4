@@ -15,6 +15,43 @@
   --panel-border: #e8e8e8;
   --main-bg: #fcfcfc;
   --main-bg-image: none;
+
+  /* Textos */
+  --text-strong: #1c1c1c;
+  --text-mid: #3d3d3d;
+  --text-soft: #5d5d5d;
+  --text-faint: #9a9a9a;
+  --text-ghost: #b4b4b4;
+
+  /* Overlays de hover/pressão */
+  --hover-04: rgba(0, 0, 0, 0.04);
+  --hover-05: rgba(0, 0, 0, 0.05);
+  --hover-06: rgba(0, 0, 0, 0.06);
+  --hover-07: rgba(0, 0, 0, 0.07);
+  --press-08: rgba(0, 0, 0, 0.08);
+  --press-09: rgba(0, 0, 0, 0.09);
+
+  /* Popovers (menu de pilares, controle de temas) */
+  --pop-surface: #ffffff;
+  --pop-border: #e8e8e8;
+  --pop-divider: #efefef;
+
+  /* Tooltips em pílula */
+  --tooltip-bg: #1c1c1c;
+  --tooltip-fg: #ffffff;
+
+  /* Botão "Nova …" do histórico (mistura com a cor do pilar) */
+  --newbtn-bg: color-mix(in srgb, var(--pillar) 12%, #ffffff);
+  --newbtn-bg-hover: color-mix(in srgb, var(--pillar) 17%, #ffffff);
+  --newbtn-bg-active: color-mix(in srgb, var(--pillar) 23%, #ffffff);
+  --newbtn-fg: var(--pillar);
+
+  /* Diversos */
+  --thumb-ph: #ececec;
+  --rl-divider-line: #dedede;
+  --chip-bg: #e6e8ee;
+  --chip-border: #d9dde6;
+  --chip-fg: #737c8f;
 }
 
 :root[data-theme='frio'] {
@@ -39,6 +76,120 @@
   --main-bg-image: linear-gradient(180deg, #fdfdfd 0%, #efefef 100%);
 }
 
+/* ============ Modo escuro ============ */
+
+/* Dark padrão — Cor 1 e Cor 3 (Figma 545:892 "Névoa") */
+:root[data-dark] {
+  --sb-surface: #161616;
+  --sb-surface-rail: #161616;
+  --sb-border: #2e2e2e;
+  --panel-surface: #1d1d1d;
+  --panel-border: #2e2e2e;
+  --main-bg: #232323;
+  --main-bg-image: none;
+  --rl-surface: #161616;
+  --rl-border: #2e2e2e;
+
+  --text-strong: #ececec;
+  --text-mid: #c9c9c9;
+  --text-soft: #a0a0a6;
+  --text-faint: #7b7b82;
+  --text-ghost: #6a6a70;
+
+  --hover-04: rgba(255, 255, 255, 0.06);
+  --hover-05: rgba(255, 255, 255, 0.08);
+  --hover-06: rgba(255, 255, 255, 0.09);
+  --hover-07: rgba(255, 255, 255, 0.11);
+  --press-08: rgba(255, 255, 255, 0.13);
+  --press-09: rgba(255, 255, 255, 0.15);
+
+  --pop-surface: #2c2c2c;
+  --pop-border: #3a3a3a;
+  --pop-divider: #383838;
+
+  --tooltip-bg: #ececec;
+  --tooltip-fg: #1c1c1c;
+
+  /* Figma: botão "Nova conversa" dark = #2d2a47 com texto #a9a1f2 */
+  --newbtn-bg: color-mix(in srgb, var(--pillar) 24%, #1a1a1e);
+  --newbtn-bg-hover: color-mix(in srgb, var(--pillar) 30%, #1a1a1e);
+  --newbtn-bg-active: color-mix(in srgb, var(--pillar) 36%, #1a1a1e);
+  --newbtn-fg: color-mix(in srgb, var(--pillar) 58%, #ffffff);
+
+  --thumb-ph: #3a3a3a;
+  --rl-divider-line: rgba(255, 255, 255, 0.14);
+  --chip-bg: #2e3138;
+  --chip-border: #3a3e47;
+  --chip-fg: #9aa3b2;
+}
+
+/* Dark da Cor 2 — Frio sutil (Figma 545:1064) */
+:root[data-dark][data-theme='frio'] {
+  --sb-surface: #1a1d22;
+  --sb-surface-rail: #1a1d22;
+  --sb-border: #2a2f38;
+  --panel-surface: #1a1d22;
+  --panel-border: #2a2f38;
+  --main-bg: #20242b;
+  --main-bg-image: none;
+  --rl-surface: #1a1d22;
+  --rl-border: #2a2f38;
+
+  --pop-surface: #272c35;
+  --pop-border: #353b46;
+  --pop-divider: #323843;
+
+  --newbtn-bg: color-mix(in srgb, var(--pillar) 24%, #1d2129);
+  --newbtn-bg-hover: color-mix(in srgb, var(--pillar) 30%, #1d2129);
+  --newbtn-bg-active: color-mix(in srgb, var(--pillar) 36%, #1d2129);
+
+  --thumb-ph: #353b46;
+  --chip-bg: #2b313c;
+  --chip-border: #39404d;
+  --chip-fg: #9aa6b8;
+}
+
+/* Remapeamento dos ícones (fills do Phosphor gravados nos SVGs inline) */
+:root[data-dark] svg path[fill='#3D3D3D'] {
+  fill: #c9c9c9;
+}
+
+:root[data-dark] svg path[fill='#1C1C1C'] {
+  fill: #ececec;
+}
+
+:root[data-dark] svg path[fill='#5D5D5D'] {
+  fill: #a0a0a6;
+}
+
+:root[data-dark] svg path[fill='#9A9A9A'] {
+  fill: #7b7b82;
+}
+
+:root[data-dark] svg path[fill='#C9C9C9'] {
+  fill: #5a5a60;
+}
+
+:root[data-dark] svg path[fill='#C4C4C4'] {
+  fill: #6f6f76;
+}
+
+:root[data-dark] svg path[stroke='#1c1c1c'] {
+  stroke: #ececec;
+}
+
+:root[data-dark] svg rect[stroke='#3D3D3D'],
+:root[data-dark] svg path[stroke='#3D3D3D'] {
+  stroke: #c9c9c9;
+}
+
+/* Logo (SVG escuro via <img>) e ícones de <img> do painel */
+:root[data-dark] .sidebar-logo,
+:root[data-dark] .history-action img,
+:root[data-dark] .history-search img {
+  filter: invert(0.82);
+}
+
 html,
 body,
 #root {
@@ -52,7 +203,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #ffffff;
-  color: #1c1c1c;
+  color: var(--text-strong);
 }
 
 .app {
@@ -78,7 +229,7 @@ body {
 
 .main-placeholder p {
   font-size: 13px;
-  color: #9a9a9a;
+  color: var(--text-faint);
   position: sticky;
   top: 48dvh;
 }
