@@ -107,7 +107,7 @@ export const DEFAULT_PINNED: PillarId[] = ['imagens', 'videos']
 
 /* ============ Diagramações da sidebar ============ */
 
-export type SidebarLayout = 'a' | 'b' | 'c'
+export type SidebarLayout = 'a' | 'b' | 'c' | 'd'
 
 /* Módulos: tudo que pode aparecer na área personalizável (na Diagramação B,
    Library e Tarefas também entram no jogo de fixar/arrastar) */

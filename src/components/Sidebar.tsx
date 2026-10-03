@@ -25,6 +25,7 @@ import {
 } from './pillars'
 import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
+import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
 
 const ANIMATION_MS = 900
@@ -246,10 +247,130 @@ export default function Sidebar({ activeView, onNavigate, layout }: SidebarProps
     </div>
   )
 
+  const isRailLabels = layout === 'd'
+
+  const rlItem = (opts: {
+    id: string
+    label: string
+    icon: ReactNode
+    active?: boolean
+    narrow?: boolean
+    onSelect?: () => void
+    flipId?: string
+  }) => (
+    <a
+      key={opts.id}
+      className={`rl-item${opts.active ? ' is-active' : ''}${opts.narrow ? ' is-16' : ''}`}
+      href={`#${opts.id}`}
+      data-flip-id={opts.flipId}
+      onClick={
+        opts.onSelect
+          ? (e) => {
+              e.preventDefault()
+              opts.onSelect?.()
+            }
+          : undefined
+      }
+    >
+      <span className="rl-target">{opts.icon}</span>
+      <span className="rl-label">{opts.label}</span>
+    </a>
+  )
+
   return (
     <aside
-      className={`sidebar${collapsed ? ' is-collapsed' : ''}${scrollAnimating ? ' icons-animate' : ''}`}
+      className={`sidebar${isRailLabels ? ' rail-labels' : ''}${collapsed && !isRailLabels ? ' is-collapsed' : ''}${scrollAnimating ? ' icons-animate' : ''}`}
     >
+      {isRailLabels ? (
+        <div className="rl-col">
+          <nav className="rl-group" aria-label="Pilares" ref={pilaresRef}>
+            {rlItem({
+              id: 'chat',
+              label: 'Chat',
+              icon: <ChatTeardropIcon />,
+              active: activeView === 'chat',
+              onSelect: () => onNavigate('chat'),
+            })}
+            {rlItem({
+              id: 'library',
+              label: 'Library',
+              icon: MODULE_BY_ID.library.icon,
+              active: activeView === 'library',
+              onSelect: () => onNavigate('library'),
+            })}
+            {rlItem({
+              id: 'tarefas',
+              label: 'Tarefas',
+              icon: MODULE_BY_ID.tarefas.icon,
+              active: activeView === 'tarefas',
+              narrow: true,
+              onSelect: () => onNavigate('tarefas'),
+            })}
+            {pinned.map((id) =>
+              rlItem({
+                id,
+                label: MODULE_BY_ID[id].label,
+                icon: MODULE_BY_ID[id].icon,
+                active: activeView === id,
+                narrow: MODULE_BY_ID[id].narrowIcon,
+                onSelect: isNavModule(id) ? () => onNavigate(id) : undefined,
+                flipId: id,
+              }),
+            )}
+            <button
+              ref={maisRef}
+              type="button"
+              className={`rl-item rl-more${menuAnchor ? ' is-active' : ''}${maisActive ? ' is-active' : ''}`}
+              data-flip-id="mais"
+              aria-haspopup="menu"
+              aria-expanded={!!menuAnchor}
+              onClick={toggleMenu}
+            >
+              <span className="rl-target">
+                <DotsThreeIcon />
+              </span>
+              <span className="rl-label">Mais</span>
+            </button>
+          </nav>
+
+          <div className="rl-divider">
+            <span />
+          </div>
+
+          <nav className="rl-group" aria-label="Espaços">
+            {ESPACOS.map((item) =>
+              rlItem({
+                id: item.href.slice(1),
+                label: item.label,
+                icon: item.icon,
+              }),
+            )}
+          </nav>
+
+          <div className="rl-flex" />
+
+          <button className="rl-util" type="button">
+            <TicketIcon />
+            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+              Indique e ganhe
+            </span>
+          </button>
+          <button className="rl-util" type="button">
+            <QuestionIcon />
+            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+              Ajuda
+            </span>
+          </button>
+
+          <div className="rl-avatar">
+            <span className="sidebar-avatar-photo">
+              <img src={avatar} alt="Avatar de Kauê" />
+            </span>
+            <img className="sidebar-ultra" src={ultra} alt="Plano Ultra" />
+          </div>
+        </div>
+      ) : (
+        <>
       <header className="sidebar-header">
         <span className="sidebar-brand">
           <img className="sidebar-logo" src={logo} alt="Inner AI" />
@@ -344,6 +465,8 @@ export default function Sidebar({ activeView, onNavigate, layout }: SidebarProps
           <CaretRightIcon />
         </span>
       </footer>
+        </>
+      )}
 
       {menuAnchor && (
         <PillarsMenu
@@ -360,6 +483,8 @@ export default function Sidebar({ activeView, onNavigate, layout }: SidebarProps
           onOpenChat={() => onNavigate('chat')}
         />
       )}
+
+      <LibraryCoachmark anchorKey={`${layout}|${collapsed}|${pinned.join(',')}`} />
     </aside>
   )
 }

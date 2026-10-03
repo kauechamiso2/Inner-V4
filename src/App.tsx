@@ -12,7 +12,7 @@ const LAYOUT_KEY = 'inner-v4-layout'
 function readSavedLayout(): SidebarLayout {
   try {
     const saved = localStorage.getItem(LAYOUT_KEY)
-    if (saved === 'a' || saved === 'b' || saved === 'c') return saved
+    if (saved === 'a' || saved === 'b' || saved === 'c' || saved === 'd') return saved
   } catch {
     /* storage indisponível */
   }

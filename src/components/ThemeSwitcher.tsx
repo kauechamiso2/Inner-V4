@@ -8,6 +8,7 @@ const LAYOUTS: { id: SidebarLayout; name: string; hint: string }[] = [
   { id: 'a', name: 'Diagramação A', hint: 'Fixos no topo' },
   { id: 'b', name: 'Diagramação B', hint: 'Tudo fixável' },
   { id: 'c', name: 'Diagramação C', hint: 'Pilares após o Chat' },
+  { id: 'd', name: 'Diagramação D', hint: 'Rail fixo com nomes' },
 ]
 
 const THEMES: { id: ThemeId; name: string; swatches: [string, string, string] }[] = [

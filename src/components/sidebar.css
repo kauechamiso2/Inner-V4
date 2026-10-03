@@ -540,7 +540,7 @@
    1. hover no item  2. scroll da página (classe .icons-animate na sidebar) */
 
 /* Chat: a bolha pulsa como um balão de conversa */
-.sidebar-item:hover .anim-chat,
+:is(.sidebar-item, .rl-item):hover .anim-chat,
 .icons-animate .anim-chat {
   animation: chat-pop 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -553,13 +553,13 @@
 }
 
 /* Library: o livro inclinado desencosta do livro em pé e encosta de novo */
-.sidebar-item:hover .anim-book-leaning,
+:is(.sidebar-item, .rl-item):hover .anim-book-leaning,
 .icons-animate .anim-book-leaning {
   transform-origin: right bottom;
   animation: book-lean 800ms ease-in-out;
 }
 
-.sidebar-item:hover .anim-book-upright,
+:is(.sidebar-item, .rl-item):hover .anim-book-upright,
 .icons-animate .anim-book-upright {
   transform-origin: left bottom;
   animation: book-steady 800ms ease-in-out;
@@ -578,7 +578,7 @@
 }
 
 /* Tarefas: o raio dá um "choque" rápido */
-.sidebar-item:hover .anim-lightning,
+:is(.sidebar-item, .rl-item):hover .anim-lightning,
 .icons-animate .anim-lightning {
   animation: lightning-jolt 600ms ease-out;
 }
@@ -592,7 +592,7 @@
 }
 
 /* Imagens: o "sol" sobe e volta a se pôr sobre as montanhas */
-.sidebar-item:hover .anim-sun,
+:is(.sidebar-item, .rl-item):hover .anim-sun,
 .icons-animate .anim-sun {
   animation: sun-rise 800ms ease-in-out;
 }
@@ -604,17 +604,17 @@
 }
 
 /* Mais: os três pontos quicam em sequência */
-.sidebar-item:hover .anim-dot,
+:is(.sidebar-item, .rl-item):hover .anim-dot,
 .icons-animate .anim-dot {
   animation: dot-hop 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.sidebar-item:hover .anim-dot-2,
+:is(.sidebar-item, .rl-item):hover .anim-dot-2,
 .icons-animate .anim-dot-2 {
   animation-delay: 90ms;
 }
 
-.sidebar-item:hover .anim-dot-3,
+:is(.sidebar-item, .rl-item):hover .anim-dot-3,
 .icons-animate .anim-dot-3 {
   animation-delay: 180ms;
 }
@@ -627,7 +627,7 @@
 }
 
 /* Projetos: a pasta se inclina como se abrisse para espiar */
-.sidebar-item:hover .anim-folder,
+:is(.sidebar-item, .rl-item):hover .anim-folder,
 .icons-animate .anim-folder {
   transform-origin: left bottom;
   animation: folder-peek 700ms ease-in-out;
@@ -640,7 +640,7 @@
 }
 
 /* Educação: o capelo dá um "tchau" — levanta e inclina como em formatura */
-.sidebar-item:hover .anim-cap,
+:is(.sidebar-item, .rl-item):hover .anim-cap,
 .icons-animate .anim-cap {
   animation: cap-tip 800ms ease-in-out;
 }
@@ -653,22 +653,22 @@
 }
 
 /* Packs: os quadrados pulsam em sequência e o plus gira, como quem adiciona um pack */
-.sidebar-item:hover .anim-pack-sq,
+:is(.sidebar-item, .rl-item):hover .anim-pack-sq,
 .icons-animate .anim-pack-sq {
   animation: pack-pop 520ms ease-out;
 }
 
-.sidebar-item:hover .anim-pack-sq2,
+:is(.sidebar-item, .rl-item):hover .anim-pack-sq2,
 .icons-animate .anim-pack-sq2 {
   animation-delay: 70ms;
 }
 
-.sidebar-item:hover .anim-pack-sq3,
+:is(.sidebar-item, .rl-item):hover .anim-pack-sq3,
 .icons-animate .anim-pack-sq3 {
   animation-delay: 140ms;
 }
 
-.sidebar-item:hover .anim-pack-plus,
+:is(.sidebar-item, .rl-item):hover .anim-pack-plus,
 .icons-animate .anim-pack-plus {
   animation: pack-plus-spin 650ms cubic-bezier(0.22, 1, 0.36, 1) 180ms;
 }
@@ -688,12 +688,12 @@
 }
 
 /* Indique e ganhe: o ticket balança e a bolinha verde pulsa */
-.sidebar-item:hover .anim-ticket,
+:is(.sidebar-item, .rl-item):hover .anim-ticket,
 .icons-animate .anim-ticket {
   animation: ticket-wiggle 800ms ease-in-out;
 }
 
-.sidebar-item:hover .anim-badge,
+:is(.sidebar-item, .rl-item):hover .anim-badge,
 .icons-animate .anim-badge {
   animation: badge-pulse 800ms ease-in-out;
 }
@@ -714,7 +714,7 @@
 }
 
 /* Ajuda: a interrogação se inclina, curiosa */
-.sidebar-item:hover .anim-question,
+:is(.sidebar-item, .rl-item):hover .anim-question,
 .icons-animate .anim-question {
   animation: question-tilt 750ms ease-in-out;
 }
@@ -727,7 +727,7 @@
 }
 
 /* Vídeos: a câmera dá uma "gravada" — inclina em direção à lente */
-.sidebar-item:hover .anim-video,
+:is(.sidebar-item, .rl-item):hover .anim-video,
 .icons-animate .anim-video {
   transform-origin: center;
   animation: video-nudge 700ms ease-in-out;
@@ -741,13 +741,13 @@
 }
 
 /* Áudio: as ondas sonoras pulsam para fora, em sequência */
-.sidebar-item:hover .anim-speaker-wave-1,
+:is(.sidebar-item, .rl-item):hover .anim-speaker-wave-1,
 .icons-animate .anim-speaker-wave-1 {
   transform-origin: left center;
   animation: wave-pulse 600ms ease-out;
 }
 
-.sidebar-item:hover .anim-speaker-wave-2,
+:is(.sidebar-item, .rl-item):hover .anim-speaker-wave-2,
 .icons-animate .anim-speaker-wave-2 {
   transform-origin: left center;
   animation: wave-pulse 600ms ease-out 120ms;
@@ -761,18 +761,18 @@
 }
 
 /* Reuniões: as barras do gráfico crescem em sequência */
-.sidebar-item:hover .anim-chart-bar,
+:is(.sidebar-item, .rl-item):hover .anim-chart-bar,
 .icons-animate .anim-chart-bar {
   transform-origin: center bottom;
   animation: bar-grow 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.sidebar-item:hover .anim-chart-bar-2,
+:is(.sidebar-item, .rl-item):hover .anim-chart-bar-2,
 .icons-animate .anim-chart-bar-2 {
   animation-delay: 80ms;
 }
 
-.sidebar-item:hover .anim-chart-bar-3,
+:is(.sidebar-item, .rl-item):hover .anim-chart-bar-3,
 .icons-animate .anim-chart-bar-3 {
   animation-delay: 160ms;
 }
@@ -785,13 +785,13 @@
 }
 
 /* Documentos: as linhas do texto "digitam" da esquerda pra direita */
-.sidebar-item:hover .anim-file-line,
+:is(.sidebar-item, .rl-item):hover .anim-file-line,
 .icons-animate .anim-file-line {
   transform-origin: left center;
   animation: line-type 450ms ease-out;
 }
 
-.sidebar-item:hover .anim-file-line-2,
+:is(.sidebar-item, .rl-item):hover .anim-file-line-2,
 .icons-animate .anim-file-line-2 {
   animation-delay: 110ms;
 }
@@ -802,7 +802,7 @@
 }
 
 /* Sites: o globo gira de leve */
-.sidebar-item:hover .anim-globe,
+:is(.sidebar-item, .rl-item):hover .anim-globe,
 .icons-animate .anim-globe {
   animation: globe-spin 750ms ease-in-out;
 }
@@ -824,4 +824,162 @@
     transition-duration: 0.01ms !important;
     transition-delay: 0ms !important;
   }
+}
+
+/* ============ Diagramação D — Rail com labels (Figma 521:836) ============ */
+
+:root {
+  --rl-surface: #efefef;
+  --rl-border: #e4e4e4;
+}
+
+:root[data-theme='frio'] {
+  --rl-surface: #eef0f4;
+  --rl-border: #e9ebef;
+}
+
+:root[data-theme='neutro'] {
+  --rl-surface: #efefef;
+  --rl-border: #e8e8e8;
+}
+
+.sidebar.rail-labels {
+  width: 76px;
+  background: var(--rl-surface);
+  border-right-color: var(--rl-border);
+}
+
+.rl-col {
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 26px 0 16px;
+  overflow: visible;
+}
+
+.rl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rl-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.rl-target {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  transition: background-color 150ms ease;
+}
+
+.rl-item:hover .rl-target {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.rl-item.is-active .rl-target {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.rl-target svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.rl-item.is-16 .rl-target svg {
+  width: 18px;
+  height: 18px;
+}
+
+.rl-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: #5d5d5d;
+  white-space: nowrap;
+}
+
+.rl-item.is-active .rl-label {
+  font-weight: 500;
+  color: #1c1c1c;
+}
+
+.rl-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 17px;
+  flex-shrink: 0;
+  margin: 7px 0;
+}
+
+.rl-divider span {
+  width: 24px;
+  height: 1px;
+  background: #dedede;
+}
+
+.rl-flex {
+  flex: 1 0 0;
+  min-height: 8px;
+  width: 1px;
+}
+
+.rl-util {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.rl-util:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.rl-util svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.rl-avatar {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.rl-avatar .sidebar-ultra {
+  left: -1px;
+  top: 22px;
 }
