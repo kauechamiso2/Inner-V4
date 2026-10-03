@@ -40,11 +40,13 @@
   --tooltip-bg: #1c1c1c;
   --tooltip-fg: #ffffff;
 
-  /* Botão "Nova …" do histórico (mistura com a cor do pilar) */
-  --newbtn-bg: color-mix(in srgb, var(--pillar) 12%, #ffffff);
-  --newbtn-bg-hover: color-mix(in srgb, var(--pillar) 17%, #ffffff);
-  --newbtn-bg-active: color-mix(in srgb, var(--pillar) 23%, #ffffff);
-  --newbtn-fg: var(--pillar);
+  /* Botão "Nova …" do histórico: bases e proporções do mix com a cor do pilar
+     (o color-mix em si vive no componente, onde --pillar está definida) */
+  --newbtn-base: #ffffff;
+  --newbtn-mix: 12%;
+  --newbtn-mix-hover: 17%;
+  --newbtn-mix-active: 23%;
+  --newbtn-fg-mix: 100%;
 
   /* Diversos */
   --thumb-ph: #ececec;
@@ -111,16 +113,34 @@
   --tooltip-fg: #1c1c1c;
 
   /* Figma: botão "Nova conversa" dark = #2d2a47 com texto #a9a1f2 */
-  --newbtn-bg: color-mix(in srgb, var(--pillar) 24%, #1a1a1e);
-  --newbtn-bg-hover: color-mix(in srgb, var(--pillar) 30%, #1a1a1e);
-  --newbtn-bg-active: color-mix(in srgb, var(--pillar) 36%, #1a1a1e);
-  --newbtn-fg: color-mix(in srgb, var(--pillar) 58%, #ffffff);
+  --newbtn-base: #1a1a1e;
+  --newbtn-mix: 24%;
+  --newbtn-mix-hover: 30%;
+  --newbtn-mix-active: 36%;
+  --newbtn-fg-mix: 58%;
 
   --thumb-ph: #3a3a3a;
   --rl-divider-line: rgba(255, 255, 255, 0.14);
   --chip-bg: #2e3138;
   --chip-border: #3a3e47;
   --chip-fg: #9aa3b2;
+}
+
+/* Dark da Cor 3 — Neutro (Figma 545:1261): canvas com gradiente invertido */
+:root[data-dark][data-theme='neutro'] {
+  --sb-surface: #171717;
+  --sb-surface-rail: #171717;
+  --sb-border: #2d2d2d;
+  --panel-surface: #1e1e1e;
+  --panel-border: #2d2d2d;
+  --main-bg: #191919;
+  --main-bg-image: linear-gradient(180deg, #242424 0%, #191919 100%);
+  --rl-surface: #171717;
+  --rl-border: #2d2d2d;
+
+  --pop-surface: #2d2d2d;
+  --pop-border: #3b3b3b;
+  --pop-divider: #393939;
 }
 
 /* Dark da Cor 2 — Frio sutil (Figma 545:1064) */
@@ -139,9 +159,7 @@
   --pop-border: #353b46;
   --pop-divider: #323843;
 
-  --newbtn-bg: color-mix(in srgb, var(--pillar) 24%, #1d2129);
-  --newbtn-bg-hover: color-mix(in srgb, var(--pillar) 30%, #1d2129);
-  --newbtn-bg-active: color-mix(in srgb, var(--pillar) 36%, #1d2129);
+  --newbtn-base: #1d2129;
 
   --thumb-ph: #353b46;
   --chip-bg: #2b313c;

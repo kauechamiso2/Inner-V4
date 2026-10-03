@@ -108,19 +108,19 @@
   padding: 0 10px;
   border: 0;
   border-radius: 8px;
-  background: var(--newbtn-bg);
-  color: var(--newbtn-fg);
+  background: color-mix(in srgb, var(--pillar) var(--newbtn-mix), var(--newbtn-base));
+  color: color-mix(in srgb, var(--pillar) var(--newbtn-fg-mix), #ffffff);
   cursor: pointer;
   font-family: inherit;
   transition: background-color 150ms ease;
 }
 
 .history-new:hover {
-  background: var(--newbtn-bg-hover);
+  background: color-mix(in srgb, var(--pillar) var(--newbtn-mix-hover), var(--newbtn-base));
 }
 
 .history-new:active {
-  background: var(--newbtn-bg-active);
+  background: color-mix(in srgb, var(--pillar) var(--newbtn-mix-active), var(--newbtn-base));
 }
 
 .history-new svg {
@@ -131,7 +131,7 @@
 .history-new span {
   font-size: 14px;
   font-weight: 500;
-  color: var(--newbtn-fg);
+  color: color-mix(in srgb, var(--pillar) var(--newbtn-fg-mix), #ffffff);
   white-space: nowrap;
 }
 
