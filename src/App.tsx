@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar'
 import HistoryPanel from './components/HistoryPanel'
 import ChatHome from './components/ChatHome'
 import PageView from './components/PageView'
+import ImagesPage from './components/ImagesPage'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import { PILLAR_BY_ID } from './components/pillars'
 import type { AppView, PanelView, PillarId, SidebarLayout } from './components/pillars'
@@ -78,7 +79,13 @@ export default function App() {
         onCoachDismiss={() => changeCoach(false)}
       />
       <HistoryPanel view={panelView} hidden={isGridView(view)} />
-      {view === 'chat' ? <ChatHome /> : <PageView key={view} title={titleFor(view)} />}
+      {view === 'chat' ? (
+        <ChatHome />
+      ) : view === 'imagens' ? (
+        <ImagesPage key="imagens" />
+      ) : (
+        <PageView key={view} title={titleFor(view)} />
+      )}
       <ThemeSwitcher
         layout={layout}
         onLayoutChange={changeLayout}

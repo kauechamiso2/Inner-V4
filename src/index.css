@@ -48,6 +48,15 @@
   --newbtn-mix-active: 23%;
   --newbtn-fg-mix: 100%;
 
+  /* Página de ferramentas (cards de pilar) */
+  --card-surface: #f6f6f4;
+  --card-desc: #8e8e8a;
+  --pill-active-bg: #f2f2f0;
+  --fav-surface: #ffffff;
+  --fav-border: #e3e3de;
+  --skeleton-base: rgba(0, 0, 0, 0.06);
+  --skeleton-sheen: rgba(255, 255, 255, 0.65);
+
   /* Diversos */
   --thumb-ph: #ececec;
   --rl-divider-line: #dedede;
@@ -124,6 +133,14 @@
   --chip-bg: #2e3138;
   --chip-border: #3a3e47;
   --chip-fg: #9aa3b2;
+
+  --card-surface: #2c2c2c;
+  --card-desc: #9a9aa0;
+  --pill-active-bg: rgba(255, 255, 255, 0.11);
+  --fav-surface: #232323;
+  --fav-border: #3f3f3f;
+  --skeleton-base: rgba(255, 255, 255, 0.07);
+  --skeleton-sheen: rgba(255, 255, 255, 0.13);
 }
 
 /* Dark da Cor 3 — Neutro (Figma 545:1261): canvas com gradiente invertido */
