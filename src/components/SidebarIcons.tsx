@@ -418,3 +418,26 @@ export function DevicesIcon() {
     </svg>
   )
 }
+
+/* Upload (fotos e arquivos) — traço da família */
+export function UploadSimpleIcon() {
+  return (
+    <svg className="nav-icon" width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <g stroke="#3D3D3D" strokeWidth="1.125" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 11.3V3.1" />
+        <path d="M5.6 6.4 9 3l3.4 3.4" />
+        <path d="M3.1 11.3v2.6c0 .95.77 1.7 1.7 1.7h8.4c.93 0 1.7-.75 1.7-1.7v-2.6" />
+      </g>
+    </svg>
+  )
+}
+
+/* Apresentação (slides) — traço da família */
+export function SlidesIcon() {
+  return (
+    <svg className="nav-icon" width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <rect x="2.1" y="3.6" width="13.8" height="10.8" rx="1.6" stroke="#3D3D3D" strokeWidth="1.125" />
+      <rect x="4.6" y="9.1" width="5.2" height="2.9" rx="0.8" fill="#3D3D3D" />
+    </svg>
+  )
+}

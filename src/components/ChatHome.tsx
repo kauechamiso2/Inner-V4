@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { Fragment, useMemo, useRef, useState } from 'react'
 import './chat-home.css'
 import AgentOrb from './AgentOrb'
 import { CaretDownIcon, PlusIcon, VoiceWaveIcon } from './SidebarIcons'
+import MentionMenu, { MENTION_LABELS } from './MentionMenu'
+import type { MentionItem } from './MentionMenu'
 import sliders from '../assets/sliders.svg'
 import microphone from '../assets/microphone.svg'
 import arrowUp from '../assets/arrow-up.svg'
@@ -13,10 +15,61 @@ const PLACEHOLDERS: Record<InputMode, string> = {
   chat: 'Pergunte qualquer coisa...',
 }
 
+/* regex do highlight: @ + rótulo conhecido (mais longo primeiro) ou @palavra */
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const MENTION_RE = new RegExp(
+  `@(?:${[...MENTION_LABELS].sort((a, b) => b.length - a.length).map(escapeRe).join('|')})|@[\\p{L}0-9_-]*`,
+  'gu',
+)
+
+type MentionState = { start: number; query: string }
+
+function findMention(value: string, caret: number): MentionState | null {
+  const before = value.slice(0, caret)
+  const m = before.match(/@([\p{L}0-9_-]*)$/u)
+  if (!m) return null
+  return { start: caret - m[0].length, query: m[1] }
+}
+
 export default function ChatHome() {
   const [value, setValue] = useState('')
   const [mode, setMode] = useState<InputMode>('agente')
+  const [mention, setMention] = useState<MentionState | null>(null)
+  const fieldRef = useRef<HTMLTextAreaElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
   const canSend = value.trim().length > 0
+
+  const syncMention = (val: string, caret: number) => setMention(findMention(val, caret))
+
+  const pickMention = (item: MentionItem) => {
+    if (!mention) return
+    const end = mention.start + 1 + mention.query.length
+    const next = `${value.slice(0, mention.start)}@${item.label} ${value.slice(end)}`
+    setValue(next)
+    setMention(null)
+    const caret = mention.start + item.label.length + 2
+    requestAnimationFrame(() => {
+      const el = fieldRef.current
+      if (el) {
+        el.focus()
+        el.setSelectionRange(caret, caret)
+      }
+    })
+  }
+
+  /* segmentos do backdrop: menções em índigo */
+  const segments = useMemo(() => {
+    const parts: { text: string; mention: boolean }[] = []
+    let last = 0
+    for (const m of value.matchAll(MENTION_RE)) {
+      const i = m.index ?? 0
+      if (i > last) parts.push({ text: value.slice(last, i), mention: false })
+      parts.push({ text: m[0], mention: true })
+      last = i + m[0].length
+    }
+    if (last < value.length) parts.push({ text: value.slice(last), mention: false })
+    return parts
+  }, [value])
 
   return (
     <main className="chat-home">
@@ -75,14 +128,41 @@ export default function ChatHome() {
           </div>
 
           <div className="chat-input-card">
-          <textarea
-            className="chat-input-field"
-            placeholder={PLACEHOLDERS[mode]}
-            rows={1}
-            spellCheck={false}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-          />
+          <div className="chat-input-editor">
+            <div className="chat-input-backdrop" ref={backdropRef} aria-hidden="true">
+              {segments.map((seg, i) => (
+                <Fragment key={i}>
+                  {seg.mention ? <span className="mention-token">{seg.text}</span> : seg.text}
+                </Fragment>
+              ))}
+              {'\n'}
+            </div>
+            <textarea
+              ref={fieldRef}
+              className="chat-input-field"
+              placeholder={PLACEHOLDERS[mode]}
+              rows={1}
+              spellCheck={false}
+              value={value}
+              onChange={(e) => {
+                setValue(e.target.value)
+                syncMention(e.target.value, e.target.selectionStart ?? 0)
+              }}
+              onKeyUp={(e) => syncMention(value, e.currentTarget.selectionStart ?? 0)}
+              onClick={(e) => syncMention(value, e.currentTarget.selectionStart ?? 0)}
+              onBlur={() => setMention(null)}
+              onScroll={(e) => {
+                if (backdropRef.current) backdropRef.current.scrollTop = e.currentTarget.scrollTop
+              }}
+            />
+            {mention && (
+              <MentionMenu
+                query={mention.query}
+                onSelect={pickMention}
+                onClose={() => setMention(null)}
+              />
+            )}
+          </div>
           <div className="chat-controls" key={mode}>
             <div className="chat-controls-left">
               {mode === 'chat' && (
