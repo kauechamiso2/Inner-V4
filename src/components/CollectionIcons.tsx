@@ -104,3 +104,28 @@ export const IconEllipsis = () => (
     <circle cx="18" cy="12" r="1.2" fill="currentColor" stroke="none" />
   </Glyph>
 )
+
+export const IconAirplane = () => (
+  <Glyph>
+    <path
+      d="M11 2.6c.3-.7 1.7-.7 2 0 .2.4.3 1 .2 1.6l-.5 2.2 6.9 4.1c.3.2.5.5.5.9v1.1c0 .4-.4.7-.8.6l-6.5-1.9-.3 3.5 2.1 1.6c.2.2.3.4.3.7v.8c0 .3-.3.6-.7.5l-2.9-.9a1.2 1.2 0 0 0-.7 0l-2.9.9c-.4.1-.7-.2-.7-.5v-.8c0-.3.1-.5.3-.7l2.1-1.6-.3-3.5L3.4 13c-.4.1-.8-.2-.8-.6v-1.1c0-.4.2-.7.5-.9l6.9-4.1-.5-2.2c-.1-.6 0-1.2.2-1.6Z"
+      fill="currentColor"
+      stroke="none"
+    />
+  </Glyph>
+)
+
+export const IconChartBar = () => (
+  <Glyph>
+    <rect x="3.8" y="11.5" width="3.5" height="7.7" rx="1.2" fill="currentColor" stroke="none" />
+    <rect x="10.2" y="6" width="3.5" height="13.2" rx="1.2" fill="currentColor" stroke="none" />
+    <rect x="16.6" y="8.8" width="3.5" height="10.4" rx="1.2" fill="currentColor" stroke="none" />
+  </Glyph>
+)
+
+export const IconTag = () => (
+  <Glyph>
+    <path d="M4 4.6h6.1c.5 0 1 .2 1.4.6l7 7a2 2 0 0 1 0 2.8l-5.1 5.1a2 2 0 0 1-2.8 0l-7-7a2 2 0 0 1-.6-1.4V5.6c0-.6.4-1 1-1Z" />
+    <circle cx="8" cy="8.6" r="1.4" />
+  </Glyph>
+)
