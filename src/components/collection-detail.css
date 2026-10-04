@@ -1,0 +1,453 @@
+/* ============ Detalhe de coleção (ex.: HR Stuff) ============ */
+
+:root {
+  --cd-section-bg: var(--lib-list-bg);
+  --cd-section-border: var(--lib-list-border);
+  --cd-doc-page: #ffffff;
+  --cd-doc-stroke: #e2e2e2;
+  --cd-doc-line: #c9c9c9;
+}
+
+:root[data-dark] {
+  --cd-doc-page: #f2f2f2;
+  --cd-doc-stroke: #d2d2d2;
+  --cd-doc-line: #b4b4b4;
+}
+
+.cd-container {
+  max-width: 1040px;
+  align-items: stretch;
+  padding-top: 40px;
+}
+
+/* ---------- Breadcrumb + back ---------- */
+.cd-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.cd-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-right: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.cd-back:hover {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+.cd-crumb {
+  padding: 2px 5px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.cd-crumb:hover {
+  background: var(--hover-04);
+  color: var(--text-soft);
+}
+
+.cd-crumb.is-current {
+  color: var(--text-mid);
+  font-weight: 500;
+  cursor: default;
+}
+
+.cd-crumb-sep {
+  color: var(--text-ghost);
+  flex-shrink: 0;
+}
+
+/* ---------- Título + criador + Novo ---------- */
+.cd-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cd-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--text-strong);
+}
+
+.cd-creator {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.cd-novo {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cd-novo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 15px 0 12px;
+  border: 1px solid var(--sb-border);
+  border-radius: 10px;
+  background: var(--pop-surface);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.cd-novo-btn:hover,
+.cd-novo-btn.is-open {
+  background: var(--hover-04);
+}
+
+.cd-novo-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 30;
+  min-width: 184px;
+  padding: 6px;
+  background: var(--pop-surface);
+  border: 1px solid var(--pop-border);
+  border-radius: 12px;
+  box-shadow:
+    0px 2px 8px 0px rgba(0, 0, 0, 0.05),
+    0px 16px 40px -4px rgba(0, 0, 0, 0.1);
+  transform-origin: top right;
+  animation: cd-menu-in 150ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+@keyframes cd-menu-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cd-novo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--text-strong);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 120ms ease;
+}
+
+.cd-novo-item:hover {
+  background: var(--hover-05);
+}
+
+.cd-novo-item svg {
+  display: block;
+  flex-shrink: 0;
+  color: var(--text-soft);
+}
+
+/* ---------- Busca secundária ---------- */
+.cd-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(380px, 100%);
+  height: 40px;
+  padding: 0 14px;
+  margin: 24px 0 20px;
+  background: var(--pop-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: 10px;
+  color: var(--text-faint);
+}
+
+.cd-search svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.cd-search input {
+  flex: 1 0 0;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-strong);
+}
+
+.cd-search input::placeholder {
+  color: var(--text-faint);
+}
+
+/* ---------- Lista: seções + soltos ---------- */
+.cd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 40px;
+}
+
+.cd-section {
+  background: var(--cd-section-bg);
+  border: 1px solid var(--cd-section-border);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.cd-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 6px 10px 8px;
+}
+
+.cd-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.cd-section-dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.cd-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.cd-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background-color 130ms ease, color 130ms ease;
+}
+
+.cd-icon-btn:hover {
+  background: var(--hover-06);
+  color: var(--text-mid);
+}
+
+.cd-icon-btn svg {
+  display: block;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cd-chev-collapsed {
+  transform: rotate(-90deg);
+}
+
+.cd-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- Card de arquivo ---------- */
+.cd-file {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  height: 64px;
+  padding: 0 12px 0 12px;
+  background: var(--pop-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  cursor: pointer;
+  animation: card-in 320ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 24ms);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.cd-file:hover {
+  border-color: var(--card-border-hover);
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.1);
+}
+
+.cd-file-name {
+  flex: 1 0 0;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cd-file-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 130ms ease, background-color 130ms ease, color 130ms ease;
+}
+
+.cd-file:hover .cd-file-more {
+  opacity: 1;
+}
+
+.cd-file-more:hover {
+  background: var(--hover-06);
+  color: var(--text-mid);
+}
+
+.cd-file-more svg {
+  display: block;
+}
+
+/* ---------- Thumbnails ---------- */
+.cd-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.cd-thumb-doc svg {
+  width: 28px;
+  height: 34px;
+  display: block;
+  filter: drop-shadow(0 1px 2.5px rgba(0, 0, 0, 0.12));
+}
+
+.cd-thumb-doc svg rect {
+  fill: var(--cd-doc-page);
+}
+
+.cd-thumb-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--thumb-ph);
+}
+
+.cd-thumb-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cd-thumb-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: var(--lib-tile-neutral);
+  color: var(--text-soft);
+}
+
+.cd-thumb-icon svg {
+  display: block;
+}
+
+/* ---------- Ver todos ---------- */
+.cd-see-all {
+  align-self: center;
+  margin-top: 4px;
+  height: 34px;
+  padding: 0 18px;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.cd-see-all:hover {
+  background: var(--hover-04);
+}
+
+.cd-empty {
+  padding: 48px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-faint);
+}
+
+@media (max-width: 720px) {
+  .cd-container {
+    padding: 32px 20px 40px;
+  }
+  .cd-title {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-file,
+  .cd-novo-menu,
+  .cd-icon-btn svg {
+    animation: none !important;
+    transition: none !important;
+  }
+}

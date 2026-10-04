@@ -5,6 +5,7 @@ import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
 import { MoreHorizontal } from 'lucide-react'
+import CollectionDetail from './CollectionDetail'
 import fPdf from '../assets/library/file-pdf.svg'
 import fImage from '../assets/library/file-image.svg'
 import fText from '../assets/library/file-text.svg'
@@ -63,6 +64,18 @@ export default function LibraryPage() {
   const [filter, setFilter] = useState('Todos')
   /* switcher de visualização — apenas visual (não altera o layout por ora) */
   const [view, setView] = useState<'grid' | 'list'>('list')
+  /* coleção aberta (nível de navegação dentro da Biblioteca) */
+  const [openCollection, setOpenCollection] = useState<string | null>(null)
+
+  if (openCollection) {
+    return (
+      <CollectionDetail
+        name={openCollection}
+        creator="Kauê Chamiso"
+        onBack={() => setOpenCollection(null)}
+      />
+    )
+  }
 
   return (
     <main className="library-page">
@@ -91,7 +104,13 @@ export default function LibraryPage() {
 
           <div className="lib-collections">
             {COLLECTIONS.map((c, i) => (
-              <button className="coll-card" type="button" key={c.name} style={{ '--i': i } as CSSProperties}>
+              <button
+                className="coll-card"
+                type="button"
+                key={c.name}
+                style={{ '--i': i } as CSSProperties}
+                onClick={() => !c.neutral && !c.more && setOpenCollection(c.name)}
+              >
                 <span className="coll-icon" style={tileStyle(c)}>
                   {c.more ? (
                     <MoreHorizontal size={22} strokeWidth={1.8} />
