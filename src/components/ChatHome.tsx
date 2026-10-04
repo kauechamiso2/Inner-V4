@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './chat-home.css'
 import AgentOrb from './AgentOrb'
-import { PlusIcon } from './SidebarIcons'
+import { CaretDownIcon, PlusIcon, VoiceWaveIcon } from './SidebarIcons'
 import sliders from '../assets/sliders.svg'
 import microphone from '../assets/microphone.svg'
 import arrowUp from '../assets/arrow-up.svg'
@@ -9,8 +9,8 @@ import arrowUp from '../assets/arrow-up.svg'
 type InputMode = 'agente' | 'chat'
 
 const PLACEHOLDERS: Record<InputMode, string> = {
-  agente: 'Pergunte ou crie qualquer coisa',
-  chat: 'Pergunte-me qualquer coisa',
+  agente: 'Diga o que devo fazer',
+  chat: 'Pergunte qualquer coisa...',
 }
 
 export default function ChatHome() {
@@ -79,6 +79,20 @@ export default function ChatHome() {
           />
           <div className="chat-controls">
             <div className="chat-controls-left">
+              {mode === 'chat' && (
+                <button className="ch-model" type="button" aria-haspopup="listbox">
+                  <span className="ch-model-dot" aria-hidden="true">
+                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                      <path
+                        d="M4.5 0.6 5.3 3.7 8.4 4.5 5.3 5.3 4.5 8.4 3.7 5.3 0.6 4.5 3.7 3.7 Z"
+                        fill="#ffffff"
+                      />
+                    </svg>
+                  </span>
+                  <span className="ch-model-name">Claude 6 Sonnet Thinking</span>
+                  <CaretDownIcon />
+                </button>
+              )}
               <button className="ch-attach" type="button" aria-label="Anexar">
                 <PlusIcon />
               </button>
@@ -91,14 +105,20 @@ export default function ChatHome() {
               <button className="chat-mic" type="button" aria-label="Falar">
                 <img src={microphone} alt="" aria-hidden="true" />
               </button>
-              <button
-                className={`chat-send${canSend ? ' is-ready' : ''}`}
-                type="button"
-                aria-label="Enviar"
-                disabled={!canSend}
-              >
-                <img src={arrowUp} alt="" aria-hidden="true" />
-              </button>
+              {mode === 'chat' && !canSend ? (
+                <button className="ch-voice" type="button" aria-label="Modo de voz avançado">
+                  <VoiceWaveIcon />
+                </button>
+              ) : (
+                <button
+                  className={`chat-send${canSend ? ' is-ready' : ''}`}
+                  type="button"
+                  aria-label="Enviar"
+                  disabled={!canSend}
+                >
+                  <img src={arrowUp} alt="" aria-hidden="true" />
+                </button>
+              )}
             </div>
           </div>
           </div>

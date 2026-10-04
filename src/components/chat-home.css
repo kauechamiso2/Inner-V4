@@ -252,6 +252,7 @@
 
 .chat-input-field {
   width: 100%;
+  min-height: 52px; /* altura generosa, como ChatGPT e afins */
   border: 0;
   outline: none;
   resize: none;
@@ -260,7 +261,7 @@
   font-family: inherit;
   font-size: 16px;
   font-weight: 400;
-  line-height: normal;
+  line-height: 1.45;
   color: var(--text-strong);
 }
 
@@ -350,6 +351,77 @@
   font-weight: 500;
   color: var(--text-soft);
   white-space: nowrap;
+}
+
+/* ---------- Modo Chat: seletor de modelo e voice mode ---------- */
+
+.ch-model {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 10px 0 6px;
+  background: var(--ctl-bg);
+  border: 1px solid var(--ctl-border);
+  border-radius: 999px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.ch-model:hover {
+  background: var(--ctl-bg-hover);
+}
+
+.ch-model-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: #e2714a;
+}
+
+.ch-model-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
+.ch-model svg:last-child {
+  flex-shrink: 0;
+}
+
+.ch-voice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    background-color 420ms ease;
+}
+
+.ch-voice:hover {
+  transform: scale(1.06);
+}
+
+.ch-voice:active {
+  transform: scale(0.94);
+}
+
+.ch-voice svg {
+  display: block;
 }
 
 .chat-controls-right {
