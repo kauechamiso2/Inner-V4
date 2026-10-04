@@ -10,7 +10,7 @@ type Props = {
   anchorKey: string
 }
 
-/* Coachmark "Conheça a Library" — Figma node 543:892, ancorado ao item da sidebar */
+/* Coachmark "Conheça a Biblioteca" — Figma node 543:892, ancorado ao item da sidebar */
 export default function LibraryCoachmark({ open, onDismiss, anchorKey }: Props) {
   const [closing, setClosing] = useState(false)
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
@@ -58,7 +58,7 @@ export default function LibraryCoachmark({ open, onDismiss, anchorKey }: Props) 
       className={`coachmark${closing ? ' is-closing' : ''}`}
       style={{ top: pos.top, left: pos.left }}
       role="dialog"
-      aria-label="Conheça a Library"
+      aria-label="Conheça a Biblioteca"
     >
       <img className="coachmark-arrow" src={coachArrow} alt="" aria-hidden="true" />
       <div className="coachmark-card">
@@ -68,7 +68,7 @@ export default function LibraryCoachmark({ open, onDismiss, anchorKey }: Props) 
             <img src={coachX} alt="" aria-hidden="true" />
           </button>
         </div>
-        <p className="coachmark-title">Conheça a Library</p>
+        <p className="coachmark-title">Conheça a Biblioteca</p>
         <p className="coachmark-body">
           Todas as suas gerações e uploads, organizados em um só lugar. Adicione arquivos como
           conhecimento e use em qualquer conversa.

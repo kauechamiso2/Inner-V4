@@ -297,7 +297,7 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
             })}
             {rlItem({
               id: 'library',
-              label: 'Library',
+              label: 'Biblioteca',
               icon: MODULE_BY_ID.library.icon,
               active: activeView === 'library',
               onSelect: () => onNavigate('library'),

@@ -169,7 +169,7 @@ export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoa
             onClick={() => onCoachToggle(!coachOpen)}
           >
             <span className="theme-name">
-              Coachmark da Library
+              Coachmark da Biblioteca
               <span className="theme-hint">Força exibir mesmo após fechar</span>
             </span>
             <span className={`mini-switch${coachOpen ? ' is-on' : ''}`} aria-hidden="true">

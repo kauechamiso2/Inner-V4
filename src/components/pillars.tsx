@@ -42,7 +42,7 @@ export type FixedPillar = {
 
 export const FIXED_PILLARS: FixedPillar[] = [
   { id: 'chat', label: 'Chat', icon: <ChatTeardropIcon /> },
-  { id: 'library', label: 'Library', icon: <BooksIcon /> },
+  { id: 'library', label: 'Biblioteca', icon: <BooksIcon /> },
   { id: 'tarefas', label: 'Tarefas', icon: <LightningIcon />, narrowIcon: true },
 ]
 
@@ -127,7 +127,7 @@ export type ModuleDef = {
 }
 
 export const MODULE_DEFS: ModuleDef[] = [
-  { id: 'library', label: 'Library', icon: <BooksIcon />, menuIcon: <BooksIcon /> },
+  { id: 'library', label: 'Biblioteca', icon: <BooksIcon />, menuIcon: <BooksIcon /> },
   {
     id: 'tarefas',
     label: 'Tarefas',

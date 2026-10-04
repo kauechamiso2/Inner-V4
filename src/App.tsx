@@ -28,7 +28,7 @@ function isGridView(view: AppView): view is 'library' | 'tarefas' {
 }
 
 function titleFor(view: Exclude<AppView, 'chat'>): string {
-  if (view === 'library') return 'Library'
+  if (view === 'library') return 'Biblioteca'
   if (view === 'tarefas') return 'Tarefas'
   return PILLAR_BY_ID[view as PillarId].label
 }
