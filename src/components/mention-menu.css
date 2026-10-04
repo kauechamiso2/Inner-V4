@@ -155,3 +155,191 @@
   color: var(--chip-fg);
   white-space: nowrap;
 }
+
+/* ---------- Submenu da Biblioteca (cascata no "Arquivos da Biblioteca") ---------- */
+
+.mm-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.mm-row.is-sub-open {
+  background: var(--hover-05);
+}
+
+.mm-sub-panel {
+  position: fixed;
+  z-index: 80;
+}
+
+.biblioteca-submenu {
+  width: 282px;
+  max-height: 360px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background: var(--pop-surface);
+  border: 1px solid var(--pop-border);
+  border-radius: 14px;
+  box-shadow:
+    0px 2px 8px 0px rgba(0, 0, 0, 0.05),
+    0px 16px 40px -4px rgba(0, 0, 0, 0.1);
+  transform-origin: top left;
+  animation: sub-in 180ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+@keyframes sub-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-6px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.bib-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: var(--hover-04);
+}
+
+.bib-search img {
+  width: 14px;
+  height: 14px;
+  display: block;
+  flex-shrink: 0;
+}
+
+:root[data-dark] .bib-search img {
+  filter: invert(0.6);
+}
+
+.bib-search input {
+  flex: 1 0 0;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--text-strong);
+}
+
+.bib-search input::placeholder {
+  color: var(--text-faint);
+}
+
+.bib-scroll {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.bib-section + .bib-section {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--pop-divider);
+}
+
+.bib-header {
+  padding: 8px 10px 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.bib-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.bib-row:hover {
+  background: var(--hover-05);
+}
+
+.bib-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 7px;
+}
+
+.bib-icon.is-folder {
+  background: var(--lib-tile-neutral);
+}
+
+.bib-icon img {
+  width: 15px;
+  height: 15px;
+  display: block;
+  object-fit: contain;
+}
+
+.bib-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.bib-label {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+.bib-sub {
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.bib-more {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 6px 10px 6px 48px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.bib-more:hover {
+  background: var(--hover-04);
+}
+
+.bib-empty {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: var(--text-faint);
+}

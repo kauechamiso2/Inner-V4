@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import './mention-menu.css'
+import BibliotecaSubmenu from './BibliotecaSubmenu'
 import {
   BooksIcon,
   FileTextIcon,
@@ -37,6 +39,8 @@ export type MentionItem = {
   placeholder?: string
   /* só funciona no modo Agente: em Chat, mostra badge e troca de modo ao clicar */
   agentOnly?: boolean
+  /* abre o submenu da Biblioteca (busca + coleções + arquivos) em cascata */
+  submenu?: boolean
 }
 
 type Section = { label: string; items: MentionItem[] }
@@ -46,7 +50,7 @@ const SECTIONS: Section[] = [
     label: 'Adicionar',
     items: [
       { id: 'upload', label: 'Fotos e arquivos', icon: <UploadSimpleIcon /> },
-      { id: 'biblioteca', label: 'Arquivos da Biblioteca', icon: <BooksIcon /> },
+      { id: 'biblioteca', label: 'Arquivos da Biblioteca', icon: <BooksIcon />, submenu: true },
       {
         id: 'tarefa',
         label: 'Tarefa',
@@ -240,8 +244,28 @@ export default function MentionMenu({
 
   const flat = useMemo(() => sections.flatMap((s) => s.items), [sections])
   const [active, setActive] = useState(0)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [submenuPos, setSubmenuPos] = useState<{ left: number; top: number } | null>(null)
+  const submenuOpen = submenuPos !== null
+  const submenuTimer = useRef<number | undefined>(undefined)
+
+  const openSubmenu = (rowEl: HTMLElement) => {
+    window.clearTimeout(submenuTimer.current)
+    /* ancora no rect do menu; cascata à direita, ou à esquerda se não couber */
+    const r = (menuRef.current ?? rowEl).getBoundingClientRect()
+    const rowTop = rowEl.getBoundingClientRect().top
+    const W = 282
+    const left = r.right + 8 + W < window.innerWidth ? r.right + 8 : r.left - 8 - W
+    const top = Math.max(12, Math.min(rowTop - 6, window.innerHeight - 380))
+    setSubmenuPos({ left, top })
+  }
+  const scheduleCloseSubmenu = () => {
+    window.clearTimeout(submenuTimer.current)
+    submenuTimer.current = window.setTimeout(() => setSubmenuPos(null), 160)
+  }
 
   useEffect(() => setActive(0), [query])
+  useEffect(() => setSubmenuPos(null), [query])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -270,7 +294,8 @@ export default function MentionMenu({
     if (variant !== 'plus') return
     const onDown = (e: PointerEvent) => {
       const t = e.target as HTMLElement
-      if (!t.closest('.mention-menu') && !t.closest('.ch-attach')) onClose()
+      if (!t.closest('.mention-menu') && !t.closest('.mm-sub-panel') && !t.closest('.ch-attach'))
+        onClose()
     }
     const id = window.setTimeout(() => document.addEventListener('pointerdown', onDown), 0)
     return () => {
@@ -288,6 +313,7 @@ export default function MentionMenu({
 
   return (
     <div
+      ref={menuRef}
       className={`mention-menu${variant === 'plus' ? ' is-plus' : ''}`}
       role="listbox"
       aria-label="Invocar ação"
@@ -300,6 +326,42 @@ export default function MentionMenu({
             <div className="mm-header">{section.label}</div>
             {section.items.map((item) => {
               const idx = flat.indexOf(item)
+              if (item.submenu) {
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="option"
+                    aria-selected={idx === active}
+                    aria-haspopup="menu"
+                    aria-expanded={submenuOpen}
+                    className={`mm-row${idx === active ? ' is-active' : ''}${submenuOpen ? ' is-sub-open' : ''}`}
+                    onMouseEnter={(e) => {
+                      setActive(idx)
+                      openSubmenu(e.currentTarget)
+                    }}
+                    onMouseLeave={scheduleCloseSubmenu}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      openSubmenu(e.currentTarget)
+                    }}
+                  >
+                    <span className="mm-icon">{item.icon}</span>
+                    <span className="mm-label">{item.label}</span>
+                    <span className="mm-chevron" aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path
+                          d="M4.5 2.5L8 6l-3.5 3.5"
+                          stroke="currentColor"
+                          strokeWidth="1.3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </button>
+                )
+              }
               return (
                 <button
                   key={item.id}
@@ -325,6 +387,19 @@ export default function MentionMenu({
           </div>
         ))
       )}
+
+      {submenuPos &&
+        createPortal(
+          <div
+            className="mm-sub-panel"
+            style={{ left: submenuPos.left, top: submenuPos.top }}
+            onMouseEnter={() => window.clearTimeout(submenuTimer.current)}
+            onMouseLeave={scheduleCloseSubmenu}
+          >
+            <BibliotecaSubmenu onSelect={onSelect} />
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }
