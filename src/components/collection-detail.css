@@ -3,15 +3,6 @@
 :root {
   --cd-section-bg: var(--lib-list-bg);
   --cd-section-border: var(--lib-list-border);
-  --cd-doc-page: #ffffff;
-  --cd-doc-stroke: #e2e2e2;
-  --cd-doc-line: #c9c9c9;
-}
-
-:root[data-dark] {
-  --cd-doc-page: #f2f2f2;
-  --cd-doc-stroke: #d2d2d2;
-  --cd-doc-line: #b4b4b4;
 }
 
 .cd-container {
@@ -85,6 +76,26 @@
   gap: 16px;
 }
 
+.cd-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cd-coll-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: var(--lib-tile-neutral);
+  font-size: 22px;
+  line-height: 1;
+}
+
 .cd-title {
   margin: 0;
   font-size: 28px;
@@ -94,7 +105,7 @@
 }
 
 .cd-creator {
-  margin: 5px 0 0;
+  margin: 8px 0 0;
   font-size: 13px;
   color: var(--text-faint);
 }
@@ -109,21 +120,25 @@
   align-items: center;
   gap: 6px;
   height: 38px;
-  padding: 0 15px 0 12px;
-  border: 1px solid var(--sb-border);
-  border-radius: 10px;
-  background: var(--pop-surface);
+  padding: 0 16px 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--voice-bg);
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-strong);
+  color: var(--voice-fg);
   cursor: pointer;
-  transition: background-color 150ms ease;
+  transition: opacity 150ms ease, transform 120ms ease;
 }
 
 .cd-novo-btn:hover,
 .cd-novo-btn.is-open {
-  background: var(--hover-04);
+  opacity: 0.88;
+}
+
+.cd-novo-btn:active {
+  transform: scale(0.97);
 }
 
 .cd-novo-menu {
@@ -182,18 +197,25 @@
   color: var(--text-soft);
 }
 
-/* ---------- Busca secundária ---------- */
+/* ---------- Busca secundária + filtro ---------- */
+.cd-search-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 24px 0 20px;
+}
+
 .cd-search {
   display: flex;
   align-items: center;
   gap: 9px;
   width: min(380px, 100%);
   height: 40px;
-  padding: 0 14px;
-  margin: 24px 0 20px;
+  padding: 0 16px;
   background: var(--pop-surface);
   border: 1px solid var(--sb-border);
-  border-radius: 10px;
+  border-radius: 999px;
   color: var(--text-faint);
 }
 
@@ -215,6 +237,30 @@
 
 .cd-search input::placeholder {
   color: var(--text-faint);
+}
+
+/* filtro "fantasma", consistente com a Biblioteca */
+.cd-search-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.cd-search-filter:hover {
+  background: var(--hover-06);
+}
+
+.cd-search-filter svg {
+  display: block;
 }
 
 /* ---------- Lista: seções + soltos ---------- */
@@ -254,6 +300,14 @@
   height: 10px;
   flex-shrink: 0;
   border-radius: 50%;
+}
+
+.cd-section-count {
+  margin-left: 3px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-faint);
+  white-space: nowrap;
 }
 
 .cd-section-actions {
@@ -369,15 +423,16 @@
   flex-shrink: 0;
 }
 
-.cd-thumb-doc svg {
-  width: 28px;
-  height: 34px;
-  display: block;
-  filter: drop-shadow(0 1px 2.5px rgba(0, 0, 0, 0.12));
+.cd-thumb-file {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
 }
 
-.cd-thumb-doc svg rect {
-  fill: var(--cd-doc-page);
+.cd-thumb-file img {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .cd-thumb-img {

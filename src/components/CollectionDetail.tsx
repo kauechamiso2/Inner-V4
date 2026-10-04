@@ -14,59 +14,72 @@ import {
   Search,
   StickyNote,
 } from 'lucide-react'
+import fPdf from '../assets/library/file-pdf.svg'
+import fText from '../assets/library/file-text.svg'
+import fExcel from '../assets/library/excel.svg'
+import fPpt from '../assets/library/ppt.svg'
 
 type FileType = 'pdf' | 'docx' | 'xlsx' | 'pptx' | 'txt' | 'png' | 'url' | 'nota'
 type DetailFile = { id: string; name: string; type: FileType; thumb?: string }
 type Section = { id: string; title: string; color: string; files: DetailFile[] }
+
+/* ícone + cor por extensão (mesma iconografia da Biblioteca) */
+const TYPE_META: Record<string, { icon: string; color: string }> = {
+  pdf: { icon: fPdf, color: '#C0392B' },
+  docx: { icon: fText, color: '#3E63C4' },
+  txt: { icon: fText, color: '#3E63C4' },
+  xlsx: { icon: fExcel, color: '#1F7A4D' },
+  pptx: { icon: fPpt, color: '#C15A2B' },
+}
 
 const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/120/120`
 
 const SECTIONS: Section[] = [
   {
     id: 's-docs',
-    title: 'Employee Documentation',
+    title: 'Documentação de Funcionários',
     color: '#8A8F98',
     files: [
-      { id: 'f1', name: 'Employee Handbook.pdf', type: 'pdf' },
-      { id: 'f2', name: 'Onboarding Guide.pdf', type: 'pdf' },
-      { id: 'f3', name: 'Leave and Attendance Policy.pdf', type: 'pdf' },
-      { id: 'f4', name: 'Code of Conduct.pdf', type: 'pdf' },
-      { id: 'f5', name: 'Remote Work Guidelines.pdf', type: 'pdf' },
-      { id: 'f6', name: 'Travel & Expenses Policy.docx', type: 'docx' },
-      { id: 'f7', name: 'IT Security Checklist.pdf', type: 'pdf' },
+      { id: 'f1', name: 'Manual do Funcionário.pdf', type: 'pdf' },
+      { id: 'f2', name: 'Guia de Integração.pdf', type: 'pdf' },
+      { id: 'f3', name: 'Política de Férias e Ponto.pdf', type: 'pdf' },
+      { id: 'f4', name: 'Código de Conduta.pdf', type: 'pdf' },
+      { id: 'f5', name: 'Diretrizes de Trabalho Remoto.pdf', type: 'pdf' },
+      { id: 'f6', name: 'Política de Viagens e Despesas.docx', type: 'docx' },
+      { id: 'f7', name: 'Checklist de Segurança de TI.pdf', type: 'pdf' },
     ],
   },
   {
     id: 's-hiring',
-    title: 'Recruitment & Hiring',
+    title: 'Recrutamento e Contratação',
     color: '#3E63C4',
     files: [
-      { id: 'f8', name: 'Job Description — Product Designer.docx', type: 'docx' },
-      { id: 'f9', name: 'Interview Scorecard.xlsx', type: 'xlsx' },
-      { id: 'f10', name: 'Offer Letter Template.docx', type: 'docx' },
-      { id: 'f11', name: 'Careers Page', type: 'url' },
-      { id: 'f12', name: 'Hiring Pipeline Q1.xlsx', type: 'xlsx' },
+      { id: 'f8', name: 'Descrição de Vaga — Product Designer.docx', type: 'docx' },
+      { id: 'f9', name: 'Ficha de Entrevista.xlsx', type: 'xlsx' },
+      { id: 'f10', name: 'Modelo de Carta de Oferta.docx', type: 'docx' },
+      { id: 'f11', name: 'Página de Carreiras', type: 'url' },
+      { id: 'f12', name: 'Pipeline de Contratação Q1.xlsx', type: 'xlsx' },
     ],
   },
   {
     id: 's-payroll',
-    title: 'Payroll & Benefits',
+    title: 'Folha e Benefícios',
     color: '#1F7A4D',
     files: [
-      { id: 'f13', name: 'Payroll Calendar 2026.xlsx', type: 'xlsx' },
-      { id: 'f14', name: '401k Enrollment Guide.pdf', type: 'pdf' },
-      { id: 'f15', name: 'Health Plan Comparison.xlsx', type: 'xlsx' },
-      { id: 'f16', name: 'Compensation Bands.pptx', type: 'pptx' },
-      { id: 'f17', name: 'Benefits Overview 2026.pdf', type: 'pdf' },
+      { id: 'f13', name: 'Calendário de Folha 2026.xlsx', type: 'xlsx' },
+      { id: 'f14', name: 'Guia de Previdência Privada.pdf', type: 'pdf' },
+      { id: 'f15', name: 'Comparativo de Planos de Saúde.xlsx', type: 'xlsx' },
+      { id: 'f16', name: 'Faixas Salariais.pptx', type: 'pptx' },
+      { id: 'f17', name: 'Visão Geral de Benefícios 2026.pdf', type: 'pdf' },
     ],
   },
 ]
 
 const LOOSE_FILES: DetailFile[] = [
-  { id: 'l1', name: 'Marketing_Plan.pdf', type: 'pdf' },
-  { id: 'l2', name: 'Org Chart 2026.png', type: 'png', thumb: thumb('orgchart') },
+  { id: 'l1', name: 'Plano_de_Marketing.pdf', type: 'pdf' },
+  { id: 'l2', name: 'Organograma 2026.png', type: 'png', thumb: thumb('orgchart') },
   { id: 'l3', name: 'Notas da última 1:1', type: 'nota' },
-  { id: 'l4', name: 'HR Wiki (Notion)', type: 'url' },
+  { id: 'l4', name: 'Wiki de RH (Notion)', type: 'url' },
 ]
 
 const SHOW_LIMIT = 5
@@ -84,15 +97,6 @@ const normalize = (s: string) =>
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
 
-function DocThumb() {
-  return (
-    <svg viewBox="0 0 28 34" fill="none" aria-hidden="true">
-      <rect x="1.5" y="1" width="25" height="32" rx="2.5" fill="#fff" stroke="var(--cd-doc-stroke)" />
-      <path d="M6 8h16M6 12h16M6 16h16M6 20h11" stroke="var(--cd-doc-line)" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function FileThumbIcon({ file }: { file: DetailFile }) {
   if (file.type === 'png' && file.thumb) {
     return (
@@ -104,20 +108,24 @@ function FileThumbIcon({ file }: { file: DetailFile }) {
   if (file.type === 'url') {
     return (
       <span className="cd-thumb cd-thumb-icon">
-        <LinkIcon size={16} strokeWidth={1.8} />
+        <LinkIcon size={17} strokeWidth={1.8} />
       </span>
     )
   }
   if (file.type === 'nota') {
     return (
       <span className="cd-thumb cd-thumb-icon">
-        <StickyNote size={16} strokeWidth={1.8} />
+        <StickyNote size={17} strokeWidth={1.8} />
       </span>
     )
   }
+  const meta = TYPE_META[file.type]
   return (
-    <span className="cd-thumb cd-thumb-doc">
-      <DocThumb />
+    <span
+      className="cd-thumb cd-thumb-file"
+      style={{ background: `color-mix(in srgb, ${meta.color} 14%, var(--card-surface))` }}
+    >
+      <img src={meta.icon} alt="" />
     </span>
   )
 }
@@ -136,14 +144,19 @@ function FileRow({ file, i }: { file: DetailFile; i: number }) {
 
 export default function CollectionDetail({
   name,
+  emoji,
+  color,
   creator,
   onBack,
 }: {
   name: string
+  emoji?: string
+  color?: string
   creator: string
   onBack: () => void
 }) {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  /* seções começam fechadas */
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set(SECTIONS.map((s) => s.id)))
   const [showAll, setShowAll] = useState<Set<string>>(new Set())
   const [query, setQuery] = useState('')
   const [novoOpen, setNovoOpen] = useState(false)
@@ -198,7 +211,22 @@ export default function CollectionDetail({
 
         <div className="cd-head">
           <div className="cd-head-text">
-            <h1 className="cd-title">{name}</h1>
+            <div className="cd-title-row">
+              {emoji && (
+                <span
+                  className="cd-coll-icon"
+                  aria-hidden="true"
+                  style={
+                    color
+                      ? { background: `color-mix(in srgb, ${color} 16%, var(--card-surface))` }
+                      : undefined
+                  }
+                >
+                  {emoji}
+                </span>
+              )}
+              <h1 className="cd-title">{name}</h1>
+            </div>
             <p className="cd-creator">Criado por {creator}</p>
           </div>
           <div className="cd-novo">
@@ -225,15 +253,28 @@ export default function CollectionDetail({
           </div>
         </div>
 
-        <div className="cd-search">
-          <Search size={15} strokeWidth={1.9} />
-          <input
-            type="text"
-            placeholder="Buscar nesta coleção"
-            spellCheck={false}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+        <div className="cd-search-row">
+          <div className="cd-search">
+            <Search size={15} strokeWidth={1.9} />
+            <input
+              type="text"
+              placeholder="Buscar nesta coleção"
+              spellCheck={false}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          <button className="cd-search-filter" type="button" aria-label="Filtrar">
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path
+                d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
+                stroke="#3D3D3D"
+                strokeWidth="1.125"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
         </div>
 
         <div className="cd-list">
@@ -248,6 +289,9 @@ export default function CollectionDetail({
                   <span className="cd-section-title">
                     <span className="cd-section-dot" style={{ background: section.color }} />
                     {section.title}
+                    <span className="cd-section-count">
+                      {section.files.length} {section.files.length === 1 ? 'arquivo' : 'arquivos'}
+                    </span>
                   </span>
                   <div className="cd-section-actions">
                     <button

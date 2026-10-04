@@ -68,9 +68,12 @@ export default function LibraryPage() {
   const [openCollection, setOpenCollection] = useState<string | null>(null)
 
   if (openCollection) {
+    const coll = COLLECTIONS.find((c) => c.name === openCollection)
     return (
       <CollectionDetail
         name={openCollection}
+        emoji={coll?.emoji}
+        color={coll?.color}
         creator="Kauê Chamiso"
         onBack={() => setOpenCollection(null)}
       />
