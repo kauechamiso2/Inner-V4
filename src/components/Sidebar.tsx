@@ -7,6 +7,7 @@ import avatar from '../assets/avatar.png'
 import {
   CaretRightIcon,
   ChatTeardropIcon,
+  DevicesIcon,
   DotsThreeIcon,
   FolderSimpleIcon,
   GraduationCapIcon,
@@ -48,6 +49,7 @@ const ESPACOS: Item[] = [
 const UTILITARIOS: Item[] = [
   { label: 'Indique e ganhe', href: '#indique', icon: <TicketIcon /> },
   { label: 'Ajuda', href: '#ajuda', icon: <QuestionIcon /> },
+  { label: 'Baixe o app', href: '#app', icon: <DevicesIcon /> },
 ]
 
 function NavItem({
@@ -361,6 +363,12 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
             <QuestionIcon />
             <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
               Ajuda
+            </span>
+          </button>
+          <button className="rl-util" type="button">
+            <DevicesIcon />
+            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+              Baixe o app
             </span>
           </button>
 

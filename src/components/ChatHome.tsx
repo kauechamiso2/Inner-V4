@@ -21,16 +21,22 @@ export default function ChatHome() {
   return (
     <main className="chat-home">
       <div className="chat-column">
-        <div className="chat-greeting">
-          <span className="greeting-orb">
-            <span className="greeting-orb-glow">
-              <AgentOrb size={26} />
-            </span>
-            <span className="greeting-orb-core">
-              <AgentOrb size={26} />
-            </span>
-          </span>
-          <h1 className="greeting-text">Me dê uma tarefa...</h1>
+        <div className="chat-greeting" key={mode}>
+          {mode === 'agente' ? (
+            <>
+              <span className="greeting-orb">
+                <span className="greeting-orb-glow">
+                  <AgentOrb size={26} />
+                </span>
+                <span className="greeting-orb-core">
+                  <AgentOrb size={26} />
+                </span>
+              </span>
+              <h1 className="greeting-text">Me dê uma tarefa...</h1>
+            </>
+          ) : (
+            <h1 className="greeting-text">Converse com modelos de IA</h1>
+          )}
         </div>
 
         <div className="chat-input-wrap">
@@ -77,7 +83,7 @@ export default function ChatHome() {
             value={value}
             onChange={(e) => setValue(e.target.value)}
           />
-          <div className="chat-controls">
+          <div className="chat-controls" key={mode}>
             <div className="chat-controls-left">
               {mode === 'chat' && (
                 <button className="ch-model" type="button" aria-haspopup="listbox">

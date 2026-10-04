@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 // Ícones do design (Phosphor), inline para permitir animação por sub-forma.
 // Path data copiado exatamente dos SVGs exportados do Figma — não editar à mão.
 
@@ -374,6 +376,44 @@ export function VoiceWaveIcon() {
         <path d="M8.4 2.5v10" />
         <path d="M11.5 4.8v5.4" />
         <path d="M14 6.3v2.4" />
+      </g>
+    </svg>
+  )
+}
+
+/* Baixe o app: monitor + celular (recriado no traço da família, com recorte) */
+export function DevicesIcon() {
+  const id = useId()
+  return (
+    <svg className="nav-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <defs>
+        <mask id={id}>
+          <rect x="0" y="0" width="18" height="18" fill="white" />
+          <rect x="9.4" y="5.6" width="8.2" height="12" rx="2.2" fill="black" />
+        </mask>
+      </defs>
+      <g
+        mask={`url(#${id})`}
+        stroke="#3D3D3D"
+        strokeWidth="1.125"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="1.6" y="3.8" width="12.6" height="8.8" rx="1.6" />
+        <path d="M6.4 12.6v2.1" />
+        <path d="M4.4 14.9h4" />
+      </g>
+      <g className="anim anim-phone">
+        <rect
+          x="10.6"
+          y="6.8"
+          width="5.8"
+          height="9.6"
+          rx="1.5"
+          stroke="#3D3D3D"
+          strokeWidth="1.125"
+        />
+        <path d="M12.9 14.3h1.2" stroke="#3D3D3D" strokeWidth="1.125" strokeLinecap="round" />
       </g>
     </svg>
   )
