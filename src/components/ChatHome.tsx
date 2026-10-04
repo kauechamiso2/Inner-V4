@@ -15,12 +15,16 @@ const PLACEHOLDERS: Record<InputMode, string> = {
   chat: 'Pergunte qualquer coisa...',
 }
 
-/* regex do highlight: @ + rótulo conhecido (mais longo primeiro) ou @palavra */
+/* regex do highlight: @ + token conhecido (rótulo ou projeto citado, mais
+   longo primeiro, para casar nomes com espaço) ou @palavra solta */
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-const MENTION_RE = new RegExp(
-  `@(?:${[...MENTION_LABELS].sort((a, b) => b.length - a.length).map(escapeRe).join('|')})|@[\\p{L}0-9_-]*`,
-  'gu',
-)
+const buildMentionRe = (citations: string[]) => {
+  const tokens = [...citations, ...MENTION_LABELS]
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRe)
+  return new RegExp(`@(?:${tokens.join('|')})|@[\\p{L}0-9_-]*`, 'gu')
+}
 
 type MentionState = { start: number; query: string }
 
@@ -40,9 +44,13 @@ export default function ChatHome() {
   const [feature, setFeature] = useState<MentionItem | null>(null)
   /* anexos (arquivos/imagens) — vários permitidos, acima do input */
   const [attachments, setAttachments] = useState<(Attachment & { uid: string })[]>([])
+  /* projetos citados no texto como @Nome (tratados como tokens atômicos) */
+  const [citations, setCitations] = useState<string[]>([])
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const canSend = value.trim().length > 0
+
+  const mentionRe = useMemo(() => buildMentionRe(citations), [citations])
 
   const syncMention = (val: string, caret: number) => {
     const next = findMention(val, caret)
@@ -50,8 +58,50 @@ export default function ChatHome() {
     if (next) setPlusOpen(false)
   }
 
+  const removeCitation = (name: string) =>
+    setCitations((cs) => {
+      const i = cs.indexOf(name)
+      if (i < 0) return cs
+      const next = [...cs]
+      next.splice(i, 1)
+      return next
+    })
+
   /* seleção vinda de qualquer gatilho (@ ou +): ativa a feature como pill */
   const applyItem = (item: MentionItem) => {
+    // Projeto: entra como citação inline @Nome (não como pill/anexo), podendo
+    // conviver com anexos; o usuário continua escrevendo logo após.
+    if (item.citation) {
+      const name = item.citation
+      const token = `@${name} `
+      let start: number
+      let removeLen: number
+      let lead = ''
+      if (mention) {
+        start = mention.start
+        removeLen = 1 + mention.query.length
+      } else {
+        start = fieldRef.current?.selectionStart ?? value.length
+        removeLen = 0
+        if (start > 0 && !/\s$/.test(value.slice(0, start))) lead = ' '
+      }
+      const head = value.slice(0, start) + lead
+      const next = head + token + value.slice(start + removeLen)
+      const caret = head.length + token.length
+      setValue(next)
+      setCitations((cs) => [...cs, name])
+      requestAnimationFrame(() => {
+        const el = fieldRef.current
+        if (el) {
+          el.focus()
+          el.setSelectionRange(caret, caret)
+        }
+      })
+      setMention(null)
+      setPlusOpen(false)
+      return
+    }
+
     // remove o "@query" que disparou o menu, se veio do @
     if (mention) {
       const end = mention.start + 1 + mention.query.length
@@ -96,7 +146,7 @@ export default function ChatHome() {
   const segments = useMemo(() => {
     const parts: { text: string; mention: boolean }[] = []
     let last = 0
-    for (const m of value.matchAll(MENTION_RE)) {
+    for (const m of value.matchAll(mentionRe)) {
       const i = m.index ?? 0
       if (i > last) parts.push({ text: value.slice(last, i), mention: false })
       parts.push({ text: m[0], mention: true })
@@ -104,7 +154,7 @@ export default function ChatHome() {
     }
     if (last < value.length) parts.push({ text: value.slice(last), mention: false })
     return parts
-  }, [value])
+  }, [value, mentionRe])
 
   return (
     <main className="chat-home">
@@ -231,8 +281,54 @@ export default function ChatHome() {
               spellCheck={false}
               value={value}
               onChange={(e) => {
-                setValue(e.target.value)
-                syncMention(e.target.value, e.target.selectionStart ?? 0)
+                const v = e.target.value
+                setValue(v)
+                // mantém só as citações que ainda existem no texto
+                setCitations((cs) => cs.filter((n) => v.includes(`@${n}`)))
+                syncMention(v, e.target.selectionStart ?? 0)
+              }}
+              onKeyDown={(e) => {
+                // citação de projeto = token atômico: apaga o @Nome inteiro
+                const el = e.currentTarget
+                const s = el.selectionStart ?? 0
+                const en = el.selectionEnd ?? 0
+                if (s !== en || citations.length === 0) return
+                const tokens = citations.map((n) => `@${n}`)
+                if (e.key === 'Backspace' && s > 0) {
+                  const before = value.slice(0, s)
+                  const hit = tokens
+                    .filter((t) => before.endsWith(t))
+                    .sort((a, b) => b.length - a.length)[0]
+                  if (hit) {
+                    e.preventDefault()
+                    const from = s - hit.length
+                    const next = value.slice(0, from) + value.slice(s)
+                    setValue(next)
+                    removeCitation(hit.slice(1))
+                    syncMention(next, from)
+                    requestAnimationFrame(() => {
+                      el.focus()
+                      el.setSelectionRange(from, from)
+                    })
+                  }
+                } else if (e.key === 'Delete') {
+                  const after = value.slice(s)
+                  const hit = tokens
+                    .filter((t) => after.startsWith(t))
+                    .sort((a, b) => b.length - a.length)[0]
+                  if (hit) {
+                    e.preventDefault()
+                    const to = s + hit.length
+                    const next = value.slice(0, s) + value.slice(to)
+                    setValue(next)
+                    removeCitation(hit.slice(1))
+                    syncMention(next, s)
+                    requestAnimationFrame(() => {
+                      el.focus()
+                      el.setSelectionRange(s, s)
+                    })
+                  }
+                }
               }}
               onKeyUp={(e) => syncMention(value, e.currentTarget.selectionStart ?? 0)}
               onClick={(e) => syncMention(value, e.currentTarget.selectionStart ?? 0)}

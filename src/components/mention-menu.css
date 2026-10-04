@@ -175,7 +175,8 @@
   z-index: 80;
 }
 
-.biblioteca-submenu {
+.biblioteca-submenu,
+.projetos-submenu {
   width: 282px;
   max-height: 360px;
   display: flex;

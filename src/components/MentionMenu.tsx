@@ -3,9 +3,11 @@ import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import './mention-menu.css'
 import BibliotecaSubmenu from './BibliotecaSubmenu'
+import ProjetosSubmenu from './ProjetosSubmenu'
 import {
   BooksIcon,
   FileTextIcon,
+  FolderSimpleIcon,
   GlobeIcon,
   ImageIcon,
   LightningIcon,
@@ -39,10 +41,12 @@ export type MentionItem = {
   placeholder?: string
   /* só funciona no modo Agente: em Chat, mostra badge e troca de modo ao clicar */
   agentOnly?: boolean
-  /* abre o submenu da Biblioteca (busca + coleções + arquivos) em cascata */
-  submenu?: boolean
+  /* abre um submenu em cascata (busca + lista) — Biblioteca ou Projetos */
+  submenu?: 'biblioteca' | 'projetos'
   /* quando selecionado, entra como anexo (acima do input), não como pill */
   attachment?: Attachment
+  /* projeto: entra como citação inline (@Nome) no texto do input */
+  citation?: string
 }
 
 export type Attachment = {
@@ -62,7 +66,8 @@ const SECTIONS: Section[] = [
     label: 'Adicionar',
     items: [
       { id: 'upload', label: 'Fotos e arquivos', icon: <UploadSimpleIcon /> },
-      { id: 'biblioteca', label: 'Arquivos da Biblioteca', icon: <BooksIcon />, submenu: true },
+      { id: 'biblioteca', label: 'Arquivos da Biblioteca', icon: <BooksIcon />, submenu: 'biblioteca' },
+      { id: 'projetos', label: 'Projetos', icon: <FolderSimpleIcon />, submenu: 'projetos' },
       {
         id: 'tarefa',
         label: 'Tarefa',
@@ -258,11 +263,13 @@ export default function MentionMenu({
   const [active, setActive] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
   const [submenuPos, setSubmenuPos] = useState<{ left: number; top: number } | null>(null)
+  const [submenuKind, setSubmenuKind] = useState<'biblioteca' | 'projetos'>('biblioteca')
   const submenuOpen = submenuPos !== null
   const submenuTimer = useRef<number | undefined>(undefined)
 
-  const openSubmenu = (rowEl: HTMLElement) => {
+  const openSubmenu = (rowEl: HTMLElement, kind: 'biblioteca' | 'projetos') => {
     window.clearTimeout(submenuTimer.current)
+    setSubmenuKind(kind)
     /* ancora no rect do menu; cascata à direita, ou à esquerda se não couber */
     const r = (menuRef.current ?? rowEl).getBoundingClientRect()
     const rowTop = rowEl.getBoundingClientRect().top
@@ -350,16 +357,16 @@ export default function MentionMenu({
                     role="option"
                     aria-selected={idx === active}
                     aria-haspopup="menu"
-                    aria-expanded={submenuOpen}
-                    className={`mm-row${idx === active ? ' is-active' : ''}${submenuOpen ? ' is-sub-open' : ''}`}
+                    aria-expanded={submenuOpen && submenuKind === item.submenu}
+                    className={`mm-row${idx === active ? ' is-active' : ''}${submenuOpen && submenuKind === item.submenu ? ' is-sub-open' : ''}`}
                     onMouseEnter={(e) => {
                       setActive(idx)
-                      openSubmenu(e.currentTarget)
+                      openSubmenu(e.currentTarget, item.submenu!)
                     }}
                     onMouseLeave={scheduleCloseSubmenu}
                     onMouseDown={(e) => {
                       e.preventDefault()
-                      openSubmenu(e.currentTarget)
+                      openSubmenu(e.currentTarget, item.submenu!)
                     }}
                   >
                     <span className="mm-icon">{item.icon}</span>
@@ -412,7 +419,11 @@ export default function MentionMenu({
             onMouseEnter={() => window.clearTimeout(submenuTimer.current)}
             onMouseLeave={scheduleCloseSubmenu}
           >
-            <BibliotecaSubmenu onSelect={onSelect} />
+            {submenuKind === 'projetos' ? (
+              <ProjetosSubmenu onSelect={onSelect} />
+            ) : (
+              <BibliotecaSubmenu onSelect={onSelect} />
+            )}
           </div>,
           document.body,
         )}
