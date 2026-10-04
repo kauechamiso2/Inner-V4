@@ -36,7 +36,8 @@ export default function ChatHome() {
   const [mode, setMode] = useState<InputMode>('agente')
   const [mention, setMention] = useState<MentionState | null>(null)
   const [plusOpen, setPlusOpen] = useState(false)
-  const [features, setFeatures] = useState<MentionItem[]>([])
+  /* apenas uma tool ativa por vez: ativar outra substitui a atual */
+  const [feature, setFeature] = useState<MentionItem | null>(null)
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const canSend = value.trim().length > 0
@@ -62,14 +63,10 @@ export default function ChatHome() {
         }
       })
     }
-    if (item.feature) {
-      setFeatures((f) => (f.some((x) => x.id === item.id) ? f : [...f, item]))
-    }
+    if (item.feature) setFeature(item)
     setMention(null)
     setPlusOpen(false)
   }
-
-  const removeFeature = (id: string) => setFeatures((f) => f.filter((x) => x.id !== id))
 
   /* segmentos do backdrop: menções em índigo */
   const segments = useMemo(() => {
@@ -223,16 +220,16 @@ export default function ChatHome() {
                 <img className="is-rotated" src={sliders} alt="" aria-hidden="true" />
                 <span>Ferramentas</span>
               </button>
-              {features.map((f) => (
-                <span className="feature-pill" key={f.id}>
+              {feature && (
+                <span className="feature-pill" key={feature.id}>
                   <button
                     type="button"
-                    className={`fp-remove${f.mono ? ' is-mono' : ''}`}
-                    aria-label={`Remover ${f.label}`}
-                    onClick={() => removeFeature(f.id)}
+                    className={`fp-remove${feature.mono ? ' is-mono' : ''}`}
+                    aria-label={`Remover ${feature.label}`}
+                    onClick={() => setFeature(null)}
                   >
                     <span className="fp-glyph">
-                      {f.img ? <img src={f.img} alt="" /> : f.icon}
+                      {feature.img ? <img src={feature.img} alt="" /> : feature.icon}
                     </span>
                     <span className="fp-x" aria-hidden="true">
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -245,12 +242,12 @@ export default function ChatHome() {
                       </svg>
                     </span>
                     <span className="pill-tooltip fp-tip" role="tooltip" aria-hidden="true">
-                      Remover {f.label}
+                      Remover {feature.label}
                     </span>
                   </button>
-                  <span className="fp-label">{f.label}</span>
+                  <span className="fp-label">{feature.label}</span>
                 </span>
-              ))}
+              )}
             </div>
             <div className="chat-controls-right">
               <button className="chat-mic" type="button" aria-label="Falar">

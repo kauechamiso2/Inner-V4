@@ -65,6 +65,9 @@
   --send-idle: #e6e8ee;
   --voice-bg: #1c1c1c;
   --voice-fg: #ffffff;
+  --feature-bg: rgba(26, 115, 232, 0.08);
+  --feature-border: rgba(26, 115, 232, 0.24);
+  --feature-remove-hover: rgba(26, 115, 232, 0.16);
 
   /* Diversos */
   --thumb-ph: #ececec;
@@ -142,6 +145,9 @@
   --send-idle: rgba(255, 255, 255, 0.16);
   --voice-bg: #ececec;
   --voice-fg: #1c1c1c;
+  --feature-bg: rgba(99, 160, 255, 0.16);
+  --feature-border: rgba(99, 160, 255, 0.32);
+  --feature-remove-hover: rgba(99, 160, 255, 0.26);
 
   /* Figma: botão "Nova conversa" dark = #2d2a47 com texto #a9a1f2 */
   --newbtn-base: #1a1a1e;
