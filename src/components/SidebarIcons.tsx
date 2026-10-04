@@ -1,4 +1,23 @@
 import { useId } from 'react'
+import { Bot, Brackets, CalendarClock, House } from 'lucide-react'
+
+/* Ícones de navegação via Lucide (currentColor = --text-mid, casa com a
+   família de ícones do sidebar em claro/escuro). */
+type NavIconProps = { size?: number }
+const navStyle = { color: 'var(--text-mid)' as const }
+
+export function HomeNavIcon({ size = 18 }: NavIconProps) {
+  return <House size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
+}
+export function AgendadoIcon({ size = 18 }: NavIconProps) {
+  return <CalendarClock size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
+}
+export function PromptsPillarIcon({ size = 18 }: NavIconProps) {
+  return <Brackets size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
+}
+export function AssistentesIcon({ size = 18 }: NavIconProps) {
+  return <Bot size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
+}
 
 // Ícones do design (Phosphor), inline para permitir animação por sub-forma.
 // Path data copiado exatamente dos SVGs exportados do Figma — não editar à mão.

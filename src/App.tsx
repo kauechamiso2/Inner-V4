@@ -15,22 +15,24 @@ import type { Task } from './components/tasks'
 
 type Drawer = { kind: 'task'; task: Task; closing?: boolean } | null
 
-const LAYOUT_KEY = 'inner-v4-layout'
+const LAYOUT_KEY = 'inner-v4-layout-v2'
 const COACH_KEY = 'inner-v4-coach-library'
 
 function readSavedLayout(): SidebarLayout {
   try {
     const saved = localStorage.getItem(LAYOUT_KEY)
-    if (saved === 'a' || saved === 'b' || saved === 'c' || saved === 'd') return saved
+    if (['a', 'b', 'c', 'd', 'e'].includes(saved ?? '')) return saved as SidebarLayout
   } catch {
     /* storage indisponível */
   }
   return 'a'
 }
 
-const GRID_VIEWS = ['library', 'tarefas', 'sites'] as const
+const GRID_VIEWS = ['library', 'tarefas', 'sites', 'prompts', 'assistentes'] as const
 
-function isGridView(view: AppView): view is 'library' | 'tarefas' | 'sites' {
+function isGridView(
+  view: AppView,
+): view is 'library' | 'tarefas' | 'sites' | 'prompts' | 'assistentes' {
   return (GRID_VIEWS as readonly string[]).includes(view)
 }
 
@@ -56,6 +58,8 @@ export default function App() {
   })
   /* drawer aberto (um por vez, nunca junto da sidebar expandida) */
   const [drawer, setDrawer] = useState<Drawer>(null)
+  /* modo do input do Chat (agente/chat) — compartilhado com o painel Home */
+  const [chatMode, setChatMode] = useState<'agente' | 'chat'>('agente')
   const [coachOpen, setCoachOpen] = useState<boolean>(() => {
     try {
       return sessionStorage.getItem(COACH_KEY) !== 'dismissed'
@@ -116,9 +120,9 @@ export default function App() {
         coachOpen={coachOpen}
         onCoachDismiss={() => changeCoach(false)}
       />
-      <HistoryPanel view={panelView} hidden={isGridView(view)} />
+      <HistoryPanel view={panelView} hidden={isGridView(view)} chatMode={chatMode} />
       {view === 'chat' ? (
-        <ChatHome />
+        <ChatHome mode={chatMode} onModeChange={setChatMode} />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
       ) : view === 'library' ? (

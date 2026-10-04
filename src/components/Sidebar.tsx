@@ -6,11 +6,11 @@ import ultra from '../assets/ultra.svg'
 import avatar from '../assets/avatar.png'
 import {
   CaretRightIcon,
-  ChatTeardropIcon,
   DevicesIcon,
   DotsThreeIcon,
   FolderSimpleIcon,
   GraduationCapIcon,
+  HomeNavIcon,
   PacksIcon,
   QuestionIcon,
   SidebarSimpleIcon,
@@ -110,10 +110,10 @@ export default function Sidebar({
   const [scrollAnimating, setScrollAnimating] = useState(false)
   const cooldownRef = useRef(false)
 
-  /* A e C compartilham o pool de pilares; B inclui Library/Tarefas no jogo */
+  /* A/B/D compartilham o pool de pilares; C ("tudo fixável") inclui Library/Tarefas */
   const [pinnedA, setPinnedA] = useState<PillarId[]>(DEFAULT_PINNED)
   const [pinnedB, setPinnedB] = useState<ModuleId[]>(DEFAULT_PINNED_B)
-  const pinned: ModuleId[] = layout === 'b' ? pinnedB : pinnedA
+  const pinned: ModuleId[] = layout === 'c' ? pinnedB : pinnedA
 
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
   const [projectsAnchor, setProjectsAnchor] = useState<DOMRect | null>(null)
@@ -162,7 +162,7 @@ export default function Sidebar({
 
   const handleTogglePin = (id: ModuleId) => {
     capturePilares()
-    if (layout === 'b') {
+    if (layout === 'c') {
       setPinnedB((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
     } else {
       const pid = id as PillarId
@@ -172,15 +172,15 @@ export default function Sidebar({
 
   const handleReorder = (order: ModuleId[]) => {
     capturePilares()
-    if (layout === 'b') setPinnedB(order)
+    if (layout === 'c') setPinnedB(order)
     else setPinnedA(order as PillarId[])
   }
 
   /* módulos disponíveis no menu "Mais" conforme a diagramação */
-  const menuModules = layout === 'b' ? MODULE_DEFS : MODULE_DEFS.filter((m) => m.id in PILLAR_BY)
+  const menuModules = layout === 'c' ? MODULE_DEFS : MODULE_DEFS.filter((m) => m.id in PILLAR_BY)
   const activeModule = (activeView !== 'chat' && activeView !== 'library' && activeView !== 'tarefas'
     ? activeView
-    : layout === 'b' && (activeView === 'library' || activeView === 'tarefas')
+    : layout === 'c' && (activeView === 'library' || activeView === 'tarefas')
       ? activeView
       : null) as ModuleId | null
   const maisActive = activeModule !== null && !pinned.includes(activeModule)
@@ -192,9 +192,9 @@ export default function Sidebar({
       index={itemIndex++}
       onSelect={() => onNavigate('chat')}
       item={{
-        label: 'Chat',
+        label: 'Home',
         href: '#chat',
-        icon: <ChatTeardropIcon />,
+        icon: <HomeNavIcon />,
         active: activeView === 'chat',
       }}
     />
@@ -264,7 +264,7 @@ export default function Sidebar({
     </div>
   )
 
-  const isRailLabels = layout === 'd'
+  const isRailLabels = layout === 'e'
 
   const rlItem = (opts: {
     id: string
@@ -303,8 +303,8 @@ export default function Sidebar({
           <nav className="rl-group" aria-label="Pilares" ref={pilaresRef}>
             {rlItem({
               id: 'chat',
-              label: 'Chat',
-              icon: <ChatTeardropIcon />,
+              label: 'Home',
+              icon: <HomeNavIcon />,
               active: activeView === 'chat',
               onSelect: () => onNavigate('chat'),
             })}
@@ -419,7 +419,7 @@ export default function Sidebar({
       <div className="sidebar-content">
         <div className="sidebar-spacer-top" />
 
-        {layout === 'a' && (
+        {(layout === 'a' || layout === 'b') && (
           <>
             <nav className="sidebar-group" aria-label="Pilares fixos">
               {chatItem}
@@ -434,7 +434,7 @@ export default function Sidebar({
           </>
         )}
 
-        {layout === 'b' && (
+        {layout === 'c' && (
           <nav className="sidebar-group" aria-label="Pilares" ref={pilaresRef}>
             {chatItem}
             {pinned.map((id) => moduleNav(id, itemIndex++))}
@@ -442,7 +442,7 @@ export default function Sidebar({
           </nav>
         )}
 
-        {layout === 'c' && (
+        {layout === 'd' && (
           <>
             <nav className="sidebar-group" aria-label="Pilares" ref={pilaresRef}>
               {chatItem}

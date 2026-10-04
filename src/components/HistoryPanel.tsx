@@ -1,8 +1,10 @@
+import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
+import { Pin, Search as SearchIcon } from 'lucide-react'
 import './history.css'
-import cursorText from '../assets/cursor-text.svg'
-import robot from '../assets/robot.svg'
 import magnifyingGlass from '../assets/magnifying-glass.svg'
+import folder from '../assets/library/folder.svg'
+import { PROJECTS } from './projects'
 import AgentOrb from './AgentOrb'
 import modelBlue from '../assets/model-blue.svg'
 import modelAvatarRing from '../assets/model-avatar-ring.svg'
@@ -169,7 +171,7 @@ const PILLAR_GROUPS: Record<GenPillarId, GenGroup[]> = {
 }
 
 const PANEL_CONFIG: Record<PanelView, { title: string; newLabel: string }> = {
-  chat: { title: 'Chat', newLabel: 'Nova conversa' },
+  chat: { title: 'Home', newLabel: 'Nova tarefa' },
   imagens: { title: 'Imagens', newLabel: 'Nova imagem' },
   videos: { title: 'Vídeos', newLabel: 'Novo vídeo' },
   audio: { title: 'Áudio', newLabel: 'Novo áudio' },
@@ -219,25 +221,149 @@ function ModelIcon({ source }: { source: Exclude<ChatSource, 'agent'> }) {
   )
 }
 
-function ChatRow({ chat }: { chat: Chat }) {
-  if (chat.source === 'agent') {
-    return (
-      <a className="chat-row is-agent" href="#conversa">
-        <span className="chat-row-main">
-          <AgentOrb />
-          <span className="chat-row-title">{chat.title}</span>
-        </span>
-        <span className="chat-chip">Agent</span>
-      </a>
-    )
-  }
+type PinRef = { kind: 'chat' | 'project'; id: string }
+
+const ALL_CHATS: Chat[] = CHAT_GROUPS.flatMap((g) => g.chats)
+
+function PinButton({ pinned, onToggle }: { pinned: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      className={`chat-pin${pinned ? ' is-pinned' : ''}`}
+      aria-label={pinned ? 'Desafixar' : 'Fixar'}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onToggle()
+      }}
+    >
+      <Pin size={14} strokeWidth={1.8} fill={pinned ? 'currentColor' : 'none'} />
+    </button>
+  )
+}
+
+function ChatRow({
+  chat,
+  pinned,
+  onTogglePin,
+}: {
+  chat: Chat
+  pinned: boolean
+  onTogglePin: () => void
+}) {
+  const isAgent = chat.source === 'agent'
   return (
     <a className="chat-row" href="#conversa">
       <span className="chat-row-main">
-        <ModelIcon source={chat.source} />
-        <span className="chat-row-title is-model">{chat.title}</span>
+        {isAgent ? <AgentOrb /> : <ModelIcon source={chat.source as Exclude<ChatSource, 'agent'>} />}
+        <span className={`chat-row-title${isAgent ? '' : ' is-model'}`}>{chat.title}</span>
       </span>
+      {isAgent && !pinned && <span className="chat-chip">Agent</span>}
+      <PinButton pinned={pinned} onToggle={onTogglePin} />
     </a>
+  )
+}
+
+function ProjectRow({
+  name,
+  pinned,
+  onTogglePin,
+}: {
+  name: string
+  pinned: boolean
+  onTogglePin: () => void
+}) {
+  return (
+    <a className="chat-row" href="#projeto">
+      <span className="chat-row-main">
+        <span className="proj-row-icon" aria-hidden="true">
+          <img src={folder} alt="" />
+        </span>
+        <span className="chat-row-title is-model">{name}</span>
+      </span>
+      <PinButton pinned={pinned} onToggle={onTogglePin} />
+    </a>
+  )
+}
+
+function PinPicker({
+  isPinned,
+  togglePin,
+}: {
+  isPinned: (kind: PinRef['kind'], id: string) => boolean
+  togglePin: (kind: PinRef['kind'], id: string) => void
+}) {
+  const [q, setQ] = useState('')
+  const nq = q.trim().toLowerCase()
+  const chats = ALL_CHATS.filter((c) => c.title.toLowerCase().includes(nq))
+  const projects = PROJECTS.filter((p) => p.name.toLowerCase().includes(nq))
+
+  return (
+    <div className="pin-picker">
+      <div className="pin-picker-search">
+        <SearchIcon size={15} />
+        <input
+          type="text"
+          placeholder="Buscar chats e projetos"
+          spellCheck={false}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          autoFocus
+        />
+      </div>
+      <div className="pin-picker-scroll">
+        {projects.length > 0 && (
+          <div className="pin-picker-section">
+            <div className="pin-picker-label">Projetos</div>
+            {projects.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className="pin-pick-row"
+                onClick={() => togglePin('project', p.id)}
+              >
+                <span className="proj-row-icon" aria-hidden="true">
+                  <img src={folder} alt="" />
+                </span>
+                <span className="pin-pick-title">{p.name}</span>
+                <span className={`chat-pin is-static${isPinned('project', p.id) ? ' is-pinned' : ''}`}>
+                  <Pin size={14} strokeWidth={1.8} fill={isPinned('project', p.id) ? 'currentColor' : 'none'} />
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+        {chats.length > 0 && (
+          <div className="pin-picker-section">
+            <div className="pin-picker-label">Chats</div>
+            {chats.map((c) => {
+              const isAgent = c.source === 'agent'
+              return (
+                <button
+                  key={c.title}
+                  type="button"
+                  className="pin-pick-row"
+                  onClick={() => togglePin('chat', c.title)}
+                >
+                  {isAgent ? (
+                    <AgentOrb />
+                  ) : (
+                    <ModelIcon source={c.source as Exclude<ChatSource, 'agent'>} />
+                  )}
+                  <span className="pin-pick-title">{c.title}</span>
+                  <span className={`chat-pin is-static${isPinned('chat', c.title) ? ' is-pinned' : ''}`}>
+                    <Pin size={14} strokeWidth={1.8} fill={isPinned('chat', c.title) ? 'currentColor' : 'none'} />
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+        {chats.length === 0 && projects.length === 0 && (
+          <div className="pin-picker-empty">Sem resultados</div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -264,11 +390,45 @@ function GenRow({ view, gen }: { view: GenPillarId; gen: Gen }) {
 
 /* ---------- Painel ---------- */
 
-type Props = { view: PanelView; hidden?: boolean }
+type Props = { view: PanelView; hidden?: boolean; chatMode?: 'agente' | 'chat' }
 
-export default function HistoryPanel({ view, hidden = false }: Props) {
+export default function HistoryPanel({ view, hidden = false, chatMode = 'agente' }: Props) {
   const config = PANEL_CONFIG[view]
   const color = PILLAR_COLORS[view]
+  const isChat = view === 'chat'
+  const newLabel = isChat ? (chatMode === 'agente' ? 'Nova tarefa' : 'Novo Chat') : config.newLabel
+
+  const [pins, setPins] = useState<PinRef[]>([
+    { kind: 'chat', id: 'Análise do churn de setembro' },
+    { kind: 'project', id: 'p-rebrand' },
+  ])
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  const isPinned = (kind: PinRef['kind'], id: string) =>
+    pins.some((p) => p.kind === kind && p.id === id)
+  const togglePin = (kind: PinRef['kind'], id: string) =>
+    setPins((prev) =>
+      prev.some((p) => p.kind === kind && p.id === id)
+        ? prev.filter((p) => !(p.kind === kind && p.id === id))
+        : [...prev, { kind, id }],
+    )
+  const pinnedChatIds = useMemo(
+    () => new Set(pins.filter((p) => p.kind === 'chat').map((p) => p.id)),
+    [pins],
+  )
+
+  useEffect(() => {
+    if (!pickerOpen) return
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as HTMLElement
+      if (!t.closest('.pin-picker') && !t.closest('.pinados-add')) setPickerOpen(false)
+    }
+    const id = window.setTimeout(() => document.addEventListener('pointerdown', onDown), 0)
+    return () => {
+      window.clearTimeout(id)
+      document.removeEventListener('pointerdown', onDown)
+    }
+  }, [pickerOpen])
 
   return (
     <section
@@ -286,21 +446,53 @@ export default function HistoryPanel({ view, hidden = false }: Props) {
           <div className="history-actions">
             <button className="history-new" type="button">
               <PlusIcon />
-              <span>{config.newLabel}</span>
+              <span>{newLabel}</span>
             </button>
-            {view === 'chat' && (
-              <>
-                <a className="history-action" href="#prompts">
-                  <img src={cursorText} alt="" aria-hidden="true" />
-                  <span>Prompts</span>
-                </a>
-                <a className="history-action" href="#assistentes">
-                  <img src={robot} alt="" aria-hidden="true" />
-                  <span>Assistentes</span>
-                </a>
-              </>
-            )}
           </div>
+
+          {isChat && (
+            <div className="pinados">
+              <div className="pinados-head">
+                <span className="history-label">Pinados</span>
+                <button
+                  type="button"
+                  className={`pinados-add${pickerOpen ? ' is-open' : ''}`}
+                  aria-label="Fixar chat ou projeto"
+                  aria-expanded={pickerOpen}
+                  onClick={() => setPickerOpen((o) => !o)}
+                >
+                  <PlusIcon />
+                </button>
+              </div>
+              {pins.length > 0 && (
+                <div className="history-group-list">
+                  {pins.map((p) => {
+                    if (p.kind === 'chat') {
+                      const c = ALL_CHATS.find((x) => x.title === p.id)
+                      return c ? (
+                        <ChatRow
+                          key={`pin-${p.id}`}
+                          chat={c}
+                          pinned
+                          onTogglePin={() => togglePin('chat', p.id)}
+                        />
+                      ) : null
+                    }
+                    const pr = PROJECTS.find((x) => x.id === p.id)
+                    return pr ? (
+                      <ProjectRow
+                        key={`pin-${p.id}`}
+                        name={pr.name}
+                        pinned
+                        onTogglePin={() => togglePin('project', p.id)}
+                      />
+                    ) : null
+                  })}
+                </div>
+              )}
+              {pickerOpen && <PinPicker isPinned={isPinned} togglePin={togglePin} />}
+            </div>
+          )}
 
           <div className="history-label-row">
             <span className="history-label">Histórico</span>
@@ -311,17 +503,26 @@ export default function HistoryPanel({ view, hidden = false }: Props) {
 
           <div className="history-scroll">
             <div className="history-groups">
-              {view === 'chat'
-                ? CHAT_GROUPS.map((group) => (
-                    <div className="history-group" key={group.label}>
-                      <div className="history-group-label">{group.label}</div>
-                      <div className="history-group-list">
-                        {group.chats.map((chat) => (
-                          <ChatRow chat={chat} key={chat.title} />
-                        ))}
+              {isChat
+                ? CHAT_GROUPS.map((group) => {
+                    const chats = group.chats.filter((c) => !pinnedChatIds.has(c.title))
+                    if (chats.length === 0) return null
+                    return (
+                      <div className="history-group" key={group.label}>
+                        <div className="history-group-label">{group.label}</div>
+                        <div className="history-group-list">
+                          {chats.map((chat) => (
+                            <ChatRow
+                              chat={chat}
+                              key={chat.title}
+                              pinned={false}
+                              onTogglePin={() => togglePin('chat', chat.title)}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    )
+                  })
                 : PILLAR_GROUPS[view].map((group) => (
                     <div className="history-group" key={group.label}>
                       <div className="history-group-label">{group.label}</div>

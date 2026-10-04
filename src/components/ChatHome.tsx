@@ -35,9 +35,15 @@ function findMention(value: string, caret: number): MentionState | null {
   return { start: caret - m[0].length, query: m[1] }
 }
 
-export default function ChatHome() {
+export default function ChatHome({
+  mode,
+  onModeChange,
+}: {
+  mode: InputMode
+  onModeChange: (m: InputMode) => void
+}) {
   const [value, setValue] = useState('')
-  const [mode, setMode] = useState<InputMode>('agente')
+  const setMode = onModeChange
   const [mention, setMention] = useState<MentionState | null>(null)
   const [plusOpen, setPlusOpen] = useState(false)
   /* apenas uma tool ativa por vez: ativar outra substitui a atual */

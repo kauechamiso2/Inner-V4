@@ -1,24 +1,35 @@
 import type { ReactNode } from 'react'
 import {
+  AgendadoIcon,
+  AssistentesIcon,
   BooksIcon,
-  ChatTeardropIcon,
   FileTextIcon,
   GlobeIcon,
+  HomeNavIcon,
   ImageIcon,
-  LightningIcon,
   PresentationChartIcon,
+  PromptsPillarIcon,
   SlidesIcon,
   SpeakerHighIcon,
   VideoCameraIcon,
 } from './SidebarIcons'
 
-/* Pilares com fluxo de geração prototipado (Sites fica de fora por enquanto) */
-export type GenPillarId = Exclude<PillarId, 'sites'>
+/* Pilares com fluxo de geração prototipado (Sites/Prompts/Assistentes ficam
+   de fora — abrem página placeholder, sem painel de histórico) */
+export type GenPillarId = Exclude<PillarId, 'sites' | 'prompts' | 'assistentes'>
 
-export const isGenPillar = (id: PillarId): id is GenPillarId => id !== 'sites'
+export const isGenPillar = (id: PillarId): id is GenPillarId =>
+  id !== 'sites' && id !== 'prompts' && id !== 'assistentes'
 
 /* Views navegáveis da aplicação */
-export type AppView = 'chat' | 'library' | 'tarefas' | 'sites' | GenPillarId
+export type AppView =
+  | 'chat'
+  | 'library'
+  | 'tarefas'
+  | 'sites'
+  | 'prompts'
+  | 'assistentes'
+  | GenPillarId
 
 /* Views que abrem o painel de histórico (chat + pilares de geração) */
 export type PanelView = 'chat' | GenPillarId
@@ -43,9 +54,9 @@ export type FixedPillar = {
 }
 
 export const FIXED_PILLARS: FixedPillar[] = [
-  { id: 'chat', label: 'Chat', icon: <ChatTeardropIcon /> },
+  { id: 'chat', label: 'Home', icon: <HomeNavIcon /> },
   { id: 'library', label: 'Biblioteca', icon: <BooksIcon /> },
-  { id: 'tarefas', label: 'Tarefas', icon: <LightningIcon />, narrowIcon: true },
+  { id: 'tarefas', label: 'Tarefas', icon: <AgendadoIcon /> },
 ]
 
 /* Pilares personalizáveis: podem ser fixados e reordenados pelo menu */
@@ -57,6 +68,8 @@ export type PillarId =
   | 'documentos'
   | 'apresentacoes'
   | 'sites'
+  | 'prompts'
+  | 'assistentes'
 
 export type PillarDef = {
   id: PillarId
@@ -111,6 +124,18 @@ export const PILLAR_DEFS: PillarDef[] = [
     icon: <GlobeIcon size={18} />,
     menuIcon: <GlobeIcon />,
   },
+  {
+    id: 'assistentes',
+    label: 'Assistentes',
+    icon: <AssistentesIcon />,
+    menuIcon: <AssistentesIcon size={17} />,
+  },
+  {
+    id: 'prompts',
+    label: 'Prompts',
+    icon: <PromptsPillarIcon />,
+    menuIcon: <PromptsPillarIcon size={17} />,
+  },
 ]
 
 export const PILLAR_BY_ID = Object.fromEntries(PILLAR_DEFS.map((p) => [p.id, p])) as Record<
@@ -118,11 +143,11 @@ export const PILLAR_BY_ID = Object.fromEntries(PILLAR_DEFS.map((p) => [p.id, p])
   PillarDef
 >
 
-export const DEFAULT_PINNED: PillarId[] = ['imagens', 'videos']
+export const DEFAULT_PINNED: PillarId[] = ['assistentes', 'prompts', 'sites']
 
 /* ============ Diagramações da sidebar ============ */
 
-export type SidebarLayout = 'a' | 'b' | 'c' | 'd'
+export type SidebarLayout = 'a' | 'b' | 'c' | 'd' | 'e'
 
 /* Módulos: tudo que pode aparecer na área personalizável (na Diagramação B,
    Library e Tarefas também entram no jogo de fixar/arrastar) */
@@ -146,9 +171,8 @@ export const MODULE_DEFS: ModuleDef[] = [
   {
     id: 'tarefas',
     label: 'Tarefas',
-    icon: <LightningIcon />,
-    menuIcon: <LightningIcon />,
-    narrowIcon: true,
+    icon: <AgendadoIcon />,
+    menuIcon: <AgendadoIcon size={17} />,
   },
   ...PILLAR_DEFS,
 ]
