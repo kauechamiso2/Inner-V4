@@ -13,6 +13,7 @@ import {
   FileTextIcon,
   PlusIcon,
   PresentationChartIcon,
+  SlidesIcon,
   SpeakerHighIcon,
 } from './SidebarIcons'
 import { PILLAR_COLORS } from './pillars'
@@ -150,6 +151,21 @@ const PILLAR_GROUPS: Record<GenPillarId, GenGroup[]> = {
       ],
     },
   ],
+  apresentacoes: [
+    {
+      label: 'Hoje',
+      items: [{ title: 'Pitch pra investidores' }, { title: 'Deck do kickoff' }],
+    },
+    {
+      label: 'Esta semana',
+      items: [
+        { title: 'Apresentação do Q3' },
+        { title: 'Roadmap do produto 2027' },
+        { title: 'Treinamento de onboarding' },
+        { title: 'Review de design semanal' },
+      ],
+    },
+  ],
 }
 
 const PANEL_CONFIG: Record<PanelView, { title: string; newLabel: string }> = {
@@ -159,12 +175,14 @@ const PANEL_CONFIG: Record<PanelView, { title: string; newLabel: string }> = {
   audio: { title: 'Áudio', newLabel: 'Novo áudio' },
   reunioes: { title: 'Reuniões', newLabel: 'Nova reunião' },
   documentos: { title: 'Documentos', newLabel: 'Novo documento' },
+  apresentacoes: { title: 'Apresentações', newLabel: 'Nova apresentação' },
 }
 
 const PILLAR_ROW_ICONS: Partial<Record<GenPillarId, (color: string) => ReactNode>> = {
   audio: (c) => <SpeakerHighIcon size={16} color={c} />,
   reunioes: (c) => <PresentationChartIcon size={16} color={c} />,
   documentos: (c) => <FileTextIcon size={16} color={c} />,
+  apresentacoes: (c) => <SlidesIcon size={16} color={c} />,
 }
 
 /* ---------- Ícones de modelo (chat) ---------- */

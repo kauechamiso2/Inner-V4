@@ -7,6 +7,7 @@ import {
   ImageIcon,
   LightningIcon,
   PresentationChartIcon,
+  SlidesIcon,
   SpeakerHighIcon,
   VideoCameraIcon,
 } from './SidebarIcons'
@@ -22,7 +23,7 @@ export type AppView = 'chat' | 'library' | 'tarefas' | GenPillarId
 /* Views que abrem o painel de histórico (chat + pilares de geração) */
 export type PanelView = 'chat' | GenPillarId
 
-/* Cor de cada pilar (reunioes: tom escolhido como placeholder) */
+/* Cor de cada pilar (reunioes/apresentacoes: tons escolhidos como placeholder) */
 export const PILLAR_COLORS: Record<PanelView, string> = {
   chat: '#6E62E5',
   imagens: '#F36430',
@@ -30,6 +31,7 @@ export const PILLAR_COLORS: Record<PanelView, string> = {
   audio: '#8B5CF6',
   reunioes: '#1E40AF',
   documentos: '#4285F4',
+  apresentacoes: '#E0A82E',
 }
 
 /* Pilares fixos: sempre presentes na sidebar, não entram na personalização */
@@ -47,7 +49,14 @@ export const FIXED_PILLARS: FixedPillar[] = [
 ]
 
 /* Pilares personalizáveis: podem ser fixados e reordenados pelo menu */
-export type PillarId = 'imagens' | 'videos' | 'audio' | 'reunioes' | 'documentos' | 'sites'
+export type PillarId =
+  | 'imagens'
+  | 'videos'
+  | 'audio'
+  | 'reunioes'
+  | 'documentos'
+  | 'apresentacoes'
+  | 'sites'
 
 export type PillarDef = {
   id: PillarId
@@ -89,6 +98,12 @@ export const PILLAR_DEFS: PillarDef[] = [
     label: 'Documentos',
     icon: <FileTextIcon size={18} />,
     menuIcon: <FileTextIcon />,
+  },
+  {
+    id: 'apresentacoes',
+    label: 'Apresentações',
+    icon: <SlidesIcon size={18} />,
+    menuIcon: <SlidesIcon />,
   },
   {
     id: 'sites',

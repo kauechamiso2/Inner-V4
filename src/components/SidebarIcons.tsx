@@ -433,11 +433,11 @@ export function UploadSimpleIcon() {
 }
 
 /* Apresentação (slides) — traço da família */
-export function SlidesIcon() {
+export function SlidesIcon({ size = 17, color = '#3D3D3D' }: SizeProps) {
   return (
-    <svg className="nav-icon" width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <rect x="2.1" y="3.6" width="13.8" height="10.8" rx="1.6" stroke="#3D3D3D" strokeWidth="1.125" />
-      <rect x="4.6" y="9.1" width="5.2" height="2.9" rx="0.8" fill="#3D3D3D" />
+    <svg className="nav-icon" width={size} height={size} viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <rect x="2.1" y="3.6" width="13.8" height="10.8" rx="1.6" stroke={color} strokeWidth="1.125" />
+      <rect className="anim anim-slide" x="4.6" y="9.1" width="5.2" height="2.9" rx="0.8" fill={color} />
     </svg>
   )
 }

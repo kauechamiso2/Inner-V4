@@ -216,7 +216,8 @@
 }
 
 /* Remapeamento dos ícones (fills do Phosphor gravados nos SVGs inline) */
-:root[data-dark] svg path[fill='#3D3D3D'] {
+:root[data-dark] svg path[fill='#3D3D3D'],
+:root[data-dark] svg rect[fill='#3D3D3D'] {
   fill: #c9c9c9;
 }
 
