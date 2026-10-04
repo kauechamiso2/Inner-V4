@@ -7,9 +7,13 @@ import ImagesPage from './components/ImagesPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
 import SitesPage from './components/SitesPage'
+import TaskDrawer from './components/TaskDrawer'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import { PILLAR_BY_ID } from './components/pillars'
 import type { AppView, PanelView, PillarId, SidebarLayout } from './components/pillars'
+import type { Task } from './components/tasks'
+
+type Drawer = { kind: 'task'; task: Task; closing?: boolean } | null
 
 const LAYOUT_KEY = 'inner-v4-layout'
 const COACH_KEY = 'inner-v4-coach-library'
@@ -42,6 +46,16 @@ export default function App() {
   /* última view com painel de histórico: mantém o conteúdo durante o colapso */
   const [panelView, setPanelView] = useState<PanelView>('chat')
   const [layout, setLayout] = useState<SidebarLayout>(readSavedLayout)
+  /* colapso da sidebar — gerenciado aqui para a regra "drawer ⇄ sidebar" */
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    try {
+      return window.matchMedia('(max-width: 640px)').matches
+    } catch {
+      return false
+    }
+  })
+  /* drawer aberto (um por vez, nunca junto da sidebar expandida) */
+  const [drawer, setDrawer] = useState<Drawer>(null)
   const [coachOpen, setCoachOpen] = useState<boolean>(() => {
     try {
       return sessionStorage.getItem(COACH_KEY) !== 'dismissed'
@@ -71,6 +85,24 @@ export default function App() {
   const navigate = (next: AppView) => {
     setView(next)
     if (!isGridView(next)) setPanelView(next)
+    setDrawer(null) // trocar de página fecha qualquer drawer aberto
+  }
+
+  /* Regra global: drawer e sidebar expandida não coexistem. */
+  const openTaskDrawer = (task: Task) => {
+    setDrawer({ kind: 'task', task })
+    setCollapsed(true)
+  }
+
+  const closeDrawer = () => {
+    setDrawer((d) => (d ? { ...d, closing: true } : d))
+    window.setTimeout(() => setDrawer(null), 230)
+  }
+
+  const toggleCollapsed = () => {
+    const next = !collapsed
+    setCollapsed(next)
+    if (!next) closeDrawer() // abrir a sidebar fecha o drawer
   }
 
   return (
@@ -79,6 +111,8 @@ export default function App() {
         activeView={view}
         onNavigate={navigate}
         layout={layout}
+        collapsed={collapsed}
+        onToggleCollapsed={toggleCollapsed}
         coachOpen={coachOpen}
         onCoachDismiss={() => changeCoach(false)}
       />
@@ -90,11 +124,14 @@ export default function App() {
       ) : view === 'library' ? (
         <LibraryPage key="library" />
       ) : view === 'tarefas' ? (
-        <TarefasPage key="tarefas" />
+        <TarefasPage key="tarefas" onOpenTask={openTaskDrawer} />
       ) : view === 'sites' ? (
         <SitesPage key="sites" />
       ) : (
         <PageView key={view} title={titleFor(view)} />
+      )}
+      {drawer?.kind === 'task' && (
+        <TaskDrawer task={drawer.task} closing={!!drawer.closing} onClose={closeDrawer} />
       )}
       <ThemeSwitcher
         layout={layout}

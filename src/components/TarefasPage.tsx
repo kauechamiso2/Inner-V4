@@ -4,60 +4,8 @@ import './library-page.css'
 import './tasks-page.css'
 import searchIcon from '../assets/library/search.svg'
 import { MoreHorizontal, Pencil, Pause, Play, Repeat, Trash2, Zap } from 'lucide-react'
-
-type Task = {
-  id: string
-  name: string
-  emoji: string
-  color: string
-  recurring: boolean
-  next: string | null
-  last: string | null
-  status?: string
-}
-
-const ACTIVE: Task[] = [
-  {
-    id: 'voo',
-    name: 'Monitoramento de voo LH441',
-    emoji: '✈️',
-    color: '#2563B8',
-    recurring: true,
-    next: 'Hoje, 18:45',
-    last: 'há 6 minutos',
-  },
-  {
-    id: 'email',
-    name: 'Monitoramento de e-mails importantes',
-    emoji: '✉️',
-    color: '#6B46C1',
-    recurring: true,
-    next: 'Hoje, 15:00',
-    last: 'há 38 minutos',
-  },
-  {
-    id: 'vendas',
-    name: 'Relatório de vendas Q4',
-    emoji: '📊',
-    color: '#1F7A4D',
-    recurring: false,
-    next: '20 out, 09:00',
-    last: null,
-  },
-]
-
-const INACTIVE: Task[] = [
-  {
-    id: 'precos',
-    name: 'Monitoramento de preços',
-    emoji: '🏷️',
-    color: '#C15A2B',
-    recurring: true,
-    next: null,
-    last: 'há 2 dias',
-    status: 'Pausada',
-  },
-]
+import { ACTIVE_TASKS, INACTIVE_TASKS } from './tasks'
+import type { Task } from './tasks'
 
 function TaskCard({
   task,
@@ -65,19 +13,33 @@ function TaskCard({
   inactive,
   open,
   onToggle,
+  onOpen,
 }: {
   task: Task
   i: number
   inactive?: boolean
   open: boolean
   onToggle: () => void
+  onOpen: () => void
 }) {
   const iconStyle: CSSProperties = inactive
     ? { background: 'var(--lib-tile-neutral)' }
     : { background: `color-mix(in srgb, ${task.color} 16%, var(--card-surface))` }
 
   return (
-    <div className={`task-card${inactive ? ' is-inactive' : ''}`} style={{ '--i': i } as CSSProperties}>
+    <div
+      className={`task-card${inactive ? ' is-inactive' : ''}`}
+      style={{ '--i': i } as CSSProperties}
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onOpen()
+        }
+      }}
+    >
       <button
         type="button"
         className={`task-more${open ? ' is-open' : ''}`}
@@ -93,7 +55,7 @@ function TaskCard({
       </button>
 
       {open && (
-        <div className="task-menu" role="menu">
+        <div className="task-menu" role="menu" onClick={(e) => e.stopPropagation()}>
           <button type="button" className="task-menu-item" role="menuitem">
             <Zap size={15} strokeWidth={1.9} />
             Executar agora
@@ -143,7 +105,7 @@ function TaskCard({
   )
 }
 
-export default function TarefasPage() {
+export default function TarefasPage({ onOpenTask }: { onOpenTask: (task: Task) => void }) {
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [openMenu, setOpenMenu] = useState<string | null>(null)
 
@@ -242,8 +204,15 @@ export default function TarefasPage() {
           </div>
 
           <div className="tasks-grid">
-            {ACTIVE.map((t, i) => (
-              <TaskCard key={t.id} task={t} i={i} open={openMenu === t.id} onToggle={() => toggle(t.id)} />
+            {ACTIVE_TASKS.map((t, i) => (
+              <TaskCard
+                key={t.id}
+                task={t}
+                i={i}
+                open={openMenu === t.id}
+                onToggle={() => toggle(t.id)}
+                onOpen={() => onOpenTask(t)}
+              />
             ))}
           </div>
         </section>
@@ -256,7 +225,7 @@ export default function TarefasPage() {
           </div>
 
           <div className="tasks-grid">
-            {INACTIVE.map((t, i) => (
+            {INACTIVE_TASKS.map((t, i) => (
               <TaskCard
                 key={t.id}
                 task={t}
@@ -264,6 +233,7 @@ export default function TarefasPage() {
                 inactive
                 open={openMenu === t.id}
                 onToggle={() => toggle(t.id)}
+                onOpen={() => onOpenTask(t)}
               />
             ))}
           </div>

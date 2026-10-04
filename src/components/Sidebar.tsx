@@ -92,12 +92,21 @@ type SidebarProps = {
   activeView: AppView
   onNavigate: (view: AppView) => void
   layout: SidebarLayout
+  collapsed: boolean
+  onToggleCollapsed: () => void
   coachOpen: boolean
   onCoachDismiss: () => void
 }
 
-export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onCoachDismiss }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false)
+export default function Sidebar({
+  activeView,
+  onNavigate,
+  layout,
+  collapsed,
+  onToggleCollapsed,
+  coachOpen,
+  onCoachDismiss,
+}: SidebarProps) {
   const [scrollAnimating, setScrollAnimating] = useState(false)
   const cooldownRef = useRef(false)
 
@@ -132,11 +141,6 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
     return () => document.removeEventListener('scroll', onScroll, { capture: true })
   }, [])
 
-  // Em telas pequenas, começa recolhida
-  useEffect(() => {
-    if (window.matchMedia('(max-width: 640px)').matches) setCollapsed(true)
-  }, [])
-
   // fecha o menu ao trocar de diagramação
   useEffect(() => {
     setMenuAnchor(null)
@@ -144,7 +148,7 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
 
   const toggleSidebar = () => {
     setMenuAnchor(null)
-    setCollapsed((c) => !c)
+    onToggleCollapsed()
   }
 
   const toggleMenu = () => {
