@@ -5,6 +5,7 @@ import './history.css'
 import magnifyingGlass from '../assets/magnifying-glass.svg'
 import folder from '../assets/library/folder.svg'
 import { PROJECTS } from './projects'
+import { COLLECTIONS as LIB_COLLECTIONS } from './libraryEntries'
 import AgentOrb from './AgentOrb'
 import modelBlue from '../assets/model-blue.svg'
 import modelAvatarRing from '../assets/model-avatar-ring.svg'
@@ -230,6 +231,15 @@ type PinRef = { kind: 'chat' | 'project'; id: string }
 
 const ALL_CHATS: Chat[] = CHAT_GROUPS.flatMap((g) => g.chats)
 
+/* Projetos fixáveis = coleções da Biblioteca (ex.: HR Stuff, com emoji) +
+   projetos fake de demonstração */
+type ProjectEntry = { id: string; name: string; emoji?: string }
+const PROJECT_ENTRIES: ProjectEntry[] = [
+  ...LIB_COLLECTIONS.map((c) => ({ id: c.id, name: c.label, emoji: c.emoji })),
+  ...PROJECTS.map((p) => ({ id: p.id, name: p.name })),
+]
+const findProject = (id: string) => PROJECT_ENTRIES.find((p) => p.id === id) ?? null
+
 function PinButton({ pinned, onToggle }: { pinned: boolean; onToggle: () => void }) {
   return (
     <button
@@ -279,19 +289,27 @@ function ChatRow({
 
 function ProjectRow({
   name,
+  emoji,
   pinned,
   onTogglePin,
 }: {
   name: string
+  emoji?: string
   pinned: boolean
   onTogglePin: () => void
 }) {
   return (
     <a className="chat-row" href="#projeto">
       <span className="chat-row-main">
-        <span className="proj-row-icon" aria-hidden="true">
-          <img src={folder} alt="" />
-        </span>
+        {emoji ? (
+          <span className="chat-task-emoji" aria-hidden="true">
+            {emoji}
+          </span>
+        ) : (
+          <span className="proj-row-icon" aria-hidden="true">
+            <img src={folder} alt="" />
+          </span>
+        )}
         <span className="chat-row-title is-model">{name}</span>
       </span>
       <PinButton pinned={pinned} onToggle={onTogglePin} />
@@ -309,7 +327,7 @@ function PinPicker({
   const [q, setQ] = useState('')
   const nq = q.trim().toLowerCase()
   const chats = ALL_CHATS.filter((c) => c.title.toLowerCase().includes(nq))
-  const projects = PROJECTS.filter((p) => p.name.toLowerCase().includes(nq))
+  const projects = PROJECT_ENTRIES.filter((p) => p.name.toLowerCase().includes(nq))
 
   return (
     <div className="pin-picker">
@@ -335,9 +353,15 @@ function PinPicker({
                 className="pin-pick-row"
                 onClick={() => togglePin('project', p.id)}
               >
-                <span className="proj-row-icon" aria-hidden="true">
-                  <img src={folder} alt="" />
-                </span>
+                {p.emoji ? (
+                  <span className="chat-task-emoji" aria-hidden="true">
+                    {p.emoji}
+                  </span>
+                ) : (
+                  <span className="proj-row-icon" aria-hidden="true">
+                    <img src={folder} alt="" />
+                  </span>
+                )}
                 <span className="pin-pick-title">{p.name}</span>
                 <span className={`chat-pin is-static${isPinned('project', p.id) ? ' is-pinned' : ''}`}>
                   <Pin size={14} strokeWidth={1.8} fill={isPinned('project', p.id) ? 'currentColor' : 'none'} />
@@ -407,28 +431,30 @@ function GenRow({ view, gen }: { view: GenPillarId; gen: Gen }) {
 
 /* ---------- Painel ---------- */
 
-type Props = { view: PanelView; hidden?: boolean; chatMode?: 'agente' | 'chat' }
+type Props = {
+  view: PanelView
+  hidden?: boolean
+  chatMode?: 'agente' | 'chat'
+  pins: PinRef[]
+  isPinned: (kind: PinRef['kind'], id: string) => boolean
+  togglePin: (kind: PinRef['kind'], id: string) => void
+}
 
-export default function HistoryPanel({ view, hidden = false, chatMode = 'agente' }: Props) {
+export default function HistoryPanel({
+  view,
+  hidden = false,
+  chatMode = 'agente',
+  pins,
+  isPinned,
+  togglePin,
+}: Props) {
   const config = PANEL_CONFIG[view]
   const color = PILLAR_COLORS[view]
   const isChat = view === 'chat'
   const newLabel = isChat ? (chatMode === 'agente' ? 'Nova tarefa' : 'Novo Chat') : config.newLabel
 
-  const [pins, setPins] = useState<PinRef[]>([
-    { kind: 'chat', id: 'Análise do churn de setembro' },
-    { kind: 'project', id: 'p-rebrand' },
-  ])
   const [pickerOpen, setPickerOpen] = useState(false)
 
-  const isPinned = (kind: PinRef['kind'], id: string) =>
-    pins.some((p) => p.kind === kind && p.id === id)
-  const togglePin = (kind: PinRef['kind'], id: string) =>
-    setPins((prev) =>
-      prev.some((p) => p.kind === kind && p.id === id)
-        ? prev.filter((p) => !(p.kind === kind && p.id === id))
-        : [...prev, { kind, id }],
-    )
   const pinnedChatIds = useMemo(
     () => new Set(pins.filter((p) => p.kind === 'chat').map((p) => p.id)),
     [pins],
@@ -495,11 +521,12 @@ export default function HistoryPanel({ view, hidden = false, chatMode = 'agente'
                         />
                       ) : null
                     }
-                    const pr = PROJECTS.find((x) => x.id === p.id)
+                    const pr = findProject(p.id)
                     return pr ? (
                       <ProjectRow
                         key={`pin-${p.id}`}
                         name={pr.name}
+                        emoji={pr.emoji}
                         pinned
                         onTogglePin={() => togglePin('project', p.id)}
                       />

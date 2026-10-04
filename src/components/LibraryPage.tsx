@@ -4,6 +4,7 @@ import './library-page.css'
 import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
+import folder from '../assets/library/folder.svg'
 import { MoreHorizontal } from 'lucide-react'
 import CollectionDetail from './CollectionDetail'
 import fPdf from '../assets/library/file-pdf.svg'
@@ -17,6 +18,7 @@ import fGlobe from '../assets/library/globe-file.svg'
 import fZip from '../assets/library/filezip.svg'
 
 type Collection = {
+  id: string
   name: string
   count: string
   emoji?: string
@@ -26,9 +28,18 @@ type Collection = {
 }
 
 /* cor + emoji são apenas defaults de demonstração — no produto o usuário
-   escolhe ambos na criação da coleção */
+   escolhe ambos na criação do projeto */
 const COLLECTIONS: Collection[] = [
-  { name: 'HR Stuff', count: '54 arquivos', emoji: '🧑‍💼', color: '#3E63C4' },
+  { id: 'col-hr', name: 'HR Stuff', count: '54 arquivos', emoji: '🧑‍💼', color: '#3E63C4' },
+]
+
+/* pastas de arquivos soltas na Biblioteca (nomes de demonstração) */
+type FolderRow = { name: string; modified: string }
+const FOLDERS: FolderRow[] = [
+  { name: 'Campanha de Verão 2026', modified: 'há 2 horas' },
+  { name: 'Assets de Marca', modified: 'ontem' },
+  { name: 'Contratos e Jurídico', modified: '3 dias atrás' },
+  { name: 'Referências Visuais', modified: '1 semana atrás' },
 ]
 
 const FILE_FILTERS = ['Todos', 'Texto e PDF', 'Slides', 'Planilhas', 'Imagens', 'Vídeos', 'Áudio', 'Outros']
@@ -60,21 +71,30 @@ function tileStyle(c: Collection): CSSProperties {
   return { background: `color-mix(in srgb, ${c.color} 16%, var(--card-surface))` }
 }
 
-export default function LibraryPage() {
+export default function LibraryPage({
+  isPinned,
+  togglePin,
+}: {
+  isPinned: (kind: 'chat' | 'project', id: string) => boolean
+  togglePin: (kind: 'chat' | 'project', id: string) => void
+}) {
   const [filter, setFilter] = useState('Todos')
   /* switcher de visualização — apenas visual (não altera o layout por ora) */
   const [view, setView] = useState<'grid' | 'list'>('list')
-  /* coleção aberta (nível de navegação dentro da Biblioteca) */
+  /* projeto aberto (nível de navegação dentro da Biblioteca) */
   const [openCollection, setOpenCollection] = useState<string | null>(null)
 
   if (openCollection) {
     const coll = COLLECTIONS.find((c) => c.name === openCollection)
+    const projectId = coll?.id ?? openCollection
     return (
       <CollectionDetail
         name={openCollection}
         emoji={coll?.emoji}
         color={coll?.color}
         creator="Kauê Chamiso"
+        pinned={isPinned('project', projectId)}
+        onTogglePin={() => togglePin('project', projectId)}
         onBack={() => setOpenCollection(null)}
       />
     )
@@ -90,17 +110,17 @@ export default function LibraryPage() {
           <input type="text" placeholder="Buscar em toda a Biblioteca" spellCheck={false} />
         </div>
 
-        {/* Coleções */}
+        {/* Projetos */}
         <section className="lib-section">
           <div className="lib-section-head">
             <div className="lib-section-title">
-              <h2>Coleções</h2>
-              <p>Conteúdo agrupado por tema para usar como conhecimento</p>
+              <h2>Projetos</h2>
+              <p>Arquivos agrupados por projeto para usar como contexto</p>
             </div>
-            <button className="lib-new" type="button" aria-label="Nova coleção">
+            <button className="lib-new" type="button" aria-label="Novo projeto">
               <img src={plus} alt="" aria-hidden="true" />
               <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                Nova coleção
+                Novo projeto
               </span>
             </button>
           </div>
@@ -216,6 +236,22 @@ export default function LibraryPage() {
               <span className="col-mod">Modificado</span>
               <span className="col-act" />
             </div>
+            {FOLDERS.map((f) => (
+              <div className="file-row is-folder" key={f.name}>
+                <span
+                  className="file-icon is-folder"
+                  style={{ background: 'color-mix(in srgb, #8A8A82 18%, var(--card-surface))' }}
+                >
+                  <img src={folder} alt="" />
+                </span>
+                <span className="col-name file-name">{f.name}</span>
+                <span className="col-type file-type">Pasta</span>
+                <span className="col-mod file-mod">{f.modified}</span>
+                <button className="col-act file-act" type="button" aria-label="Ações">
+                  <img src={icDotsActions} alt="" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
             {FILES.map((file) => (
               <div className="file-row" key={file.name}>
                 {file.thumb ? (

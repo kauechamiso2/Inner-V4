@@ -15,6 +15,11 @@ import type { Task } from './components/tasks'
 
 type Drawer = { kind: 'task'; task: Task; closing?: boolean } | null
 
+/* Pins do histórico da Home — elevados ao App para que a página de um Projeto
+   (ex.: HR Stuff) consiga fixar/desafixar e refletir no painel Home. */
+export type PinKind = 'chat' | 'project'
+export type PinRef = { kind: PinKind; id: string }
+
 const LAYOUT_KEY = 'inner-v4-layout-v2'
 const COACH_KEY = 'inner-v4-coach-library'
 
@@ -60,6 +65,19 @@ export default function App() {
   const [drawer, setDrawer] = useState<Drawer>(null)
   /* modo do input do Chat (agente/chat) — compartilhado com o painel Home */
   const [chatMode, setChatMode] = useState<'agente' | 'chat'>('agente')
+  /* pins do histórico da Home (chats + projetos) */
+  const [pins, setPins] = useState<PinRef[]>([
+    { kind: 'chat', id: 'Análise do churn de setembro' },
+    { kind: 'project', id: 'p-rebrand' },
+  ])
+  const isPinned = (kind: PinKind, id: string) =>
+    pins.some((p) => p.kind === kind && p.id === id)
+  const togglePin = (kind: PinKind, id: string) =>
+    setPins((prev) =>
+      prev.some((p) => p.kind === kind && p.id === id)
+        ? prev.filter((p) => !(p.kind === kind && p.id === id))
+        : [...prev, { kind, id }],
+    )
   const [coachOpen, setCoachOpen] = useState<boolean>(() => {
     try {
       return sessionStorage.getItem(COACH_KEY) !== 'dismissed'
@@ -120,13 +138,20 @@ export default function App() {
         coachOpen={coachOpen}
         onCoachDismiss={() => changeCoach(false)}
       />
-      <HistoryPanel view={panelView} hidden={isGridView(view)} chatMode={chatMode} />
+      <HistoryPanel
+        view={panelView}
+        hidden={isGridView(view)}
+        chatMode={chatMode}
+        pins={pins}
+        isPinned={isPinned}
+        togglePin={togglePin}
+      />
       {view === 'chat' ? (
         <ChatHome mode={chatMode} onModeChange={setChatMode} />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
       ) : view === 'library' ? (
-        <LibraryPage key="library" />
+        <LibraryPage key="library" isPinned={isPinned} togglePin={togglePin} />
       ) : view === 'tarefas' ? (
         <TarefasPage key="tarefas" onOpenTask={openTaskDrawer} />
       ) : view === 'sites' ? (

@@ -4,7 +4,6 @@ import {
   AssistentesIcon,
   BooksIcon,
   FileTextIcon,
-  FolderSimpleIcon,
   GlobeIcon,
   HomeNavIcon,
   ImageIcon,
@@ -142,12 +141,6 @@ export const PILLAR_DEFS: PillarDef[] = [
     icon: <PromptsPillarIcon />,
     menuIcon: <PromptsPillarIcon size={17} />,
   },
-  {
-    id: 'projetos',
-    label: 'Projetos',
-    icon: <FolderSimpleIcon />,
-    menuIcon: <FolderSimpleIcon />,
-  },
 ]
 
 export const PILLAR_BY_ID = Object.fromEntries(PILLAR_DEFS.map((p) => [p.id, p])) as Record<
@@ -155,7 +148,7 @@ export const PILLAR_BY_ID = Object.fromEntries(PILLAR_DEFS.map((p) => [p.id, p])
   PillarDef
 >
 
-export const DEFAULT_PINNED: PillarId[] = ['assistentes', 'prompts', 'sites', 'projetos']
+export const DEFAULT_PINNED: PillarId[] = ['assistentes', 'prompts', 'sites']
 
 /* ============ Diagramações da sidebar ============ */
 

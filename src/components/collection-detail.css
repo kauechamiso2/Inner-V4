@@ -104,6 +104,37 @@
   color: var(--text-strong);
 }
 
+/* pin: fixar o projeto no histórico da Home */
+.cd-pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.cd-pin:hover {
+  background: var(--hover-06);
+  color: var(--text-mid);
+}
+
+.cd-pin.is-pinned {
+  color: var(--text-strong);
+}
+
+.cd-pin svg {
+  display: block;
+}
+
 .cd-creator {
   margin: 8px 0 0;
   font-size: 13px;
@@ -115,12 +146,14 @@
   flex-shrink: 0;
 }
 
-.cd-novo-btn {
+/* CTA primário preto: Chat com Projeto */
+.cd-chat-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 16px 0 13px;
+  gap: 7px;
+  height: 40px;
+  padding: 0 18px;
+  flex-shrink: 0;
   border: 0;
   border-radius: 999px;
   background: var(--voice-bg);
@@ -132,13 +165,45 @@
   transition: opacity 150ms ease, transform 120ms ease;
 }
 
-.cd-novo-btn:hover,
-.cd-novo-btn.is-open {
+.cd-chat-btn:hover {
   opacity: 0.88;
 }
 
-.cd-novo-btn:active {
+.cd-chat-btn:active {
   transform: scale(0.97);
+}
+
+.cd-chat-btn svg {
+  display: block;
+}
+
+/* botão "Novo" secundário (fica na linha da busca) */
+.cd-novo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px 0 13px;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.cd-novo-btn:hover,
+.cd-novo-btn.is-open {
+  background: var(--hover-04);
+  border-color: var(--card-border-hover);
+}
+
+.cd-novo-btn svg {
+  display: block;
+  color: var(--text-soft);
 }
 
 .cd-novo-menu {
@@ -204,6 +269,13 @@
   justify-content: space-between;
   gap: 12px;
   margin: 24px 0 20px;
+}
+
+.cd-search-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .cd-search {

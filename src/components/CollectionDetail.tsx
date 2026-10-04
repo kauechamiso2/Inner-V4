@@ -8,7 +8,9 @@ import {
   ChevronRight,
   FileText,
   Link as LinkIcon,
+  MessageCircle,
   MoreHorizontal,
+  Pin,
   Plus,
   Rows3,
   Search,
@@ -147,12 +149,16 @@ export default function CollectionDetail({
   emoji,
   color,
   creator,
+  pinned = false,
+  onTogglePin,
   onBack,
 }: {
   name: string
   emoji?: string
   color?: string
   creator: string
+  pinned?: boolean
+  onTogglePin?: () => void
   onBack: () => void
 }) {
   /* seções começam fechadas */
@@ -226,31 +232,23 @@ export default function CollectionDetail({
                 </span>
               )}
               <h1 className="cd-title">{name}</h1>
+              <button
+                type="button"
+                className={`cd-pin${pinned ? ' is-pinned' : ''}`}
+                aria-label={pinned ? 'Desafixar do histórico da Home' : 'Fixar no histórico da Home'}
+                aria-pressed={pinned}
+                title={pinned ? 'Fixado no histórico da Home' : 'Fixar no histórico da Home'}
+                onClick={onTogglePin}
+              >
+                <Pin size={16} strokeWidth={1.8} fill={pinned ? 'currentColor' : 'none'} />
+              </button>
             </div>
             <p className="cd-creator">Criado por {creator}</p>
           </div>
-          <div className="cd-novo">
-            <button
-              type="button"
-              className={`cd-novo-btn${novoOpen ? ' is-open' : ''}`}
-              aria-haspopup="menu"
-              aria-expanded={novoOpen}
-              onClick={() => setNovoOpen((o) => !o)}
-            >
-              <Plus size={16} strokeWidth={2.2} />
-              Novo
-            </button>
-            {novoOpen && (
-              <div className="cd-novo-menu" role="menu">
-                {NOVO_OPTIONS.map((o) => (
-                  <button key={o.id} type="button" className="cd-novo-item" role="menuitem">
-                    {o.icon}
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <button type="button" className="cd-chat-btn">
+            <MessageCircle size={17} strokeWidth={1.9} />
+            Chat com Projeto
+          </button>
         </div>
 
         <div className="cd-search-row">
@@ -258,23 +256,47 @@ export default function CollectionDetail({
             <Search size={15} strokeWidth={1.9} />
             <input
               type="text"
-              placeholder="Buscar nesta coleção"
+              placeholder="Buscar neste projeto"
               spellCheck={false}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <button className="cd-search-filter" type="button" aria-label="Filtrar">
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-              <path
-                d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
-                stroke="#3D3D3D"
-                strokeWidth="1.125"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
+          <div className="cd-search-tools">
+            <button className="cd-search-filter" type="button" aria-label="Filtrar">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path
+                  d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
+                  stroke="#3D3D3D"
+                  strokeWidth="1.125"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+            <div className="cd-novo">
+              <button
+                type="button"
+                className={`cd-novo-btn${novoOpen ? ' is-open' : ''}`}
+                aria-haspopup="menu"
+                aria-expanded={novoOpen}
+                onClick={() => setNovoOpen((o) => !o)}
+              >
+                <Plus size={16} strokeWidth={2.2} />
+                Novo
+              </button>
+              {novoOpen && (
+                <div className="cd-novo-menu" role="menu">
+                  {NOVO_OPTIONS.map((o) => (
+                    <button key={o.id} type="button" className="cd-novo-item" role="menuitem">
+                      {o.icon}
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="cd-list">
