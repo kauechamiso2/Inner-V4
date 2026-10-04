@@ -127,6 +127,15 @@
   background: var(--hover-06);
 }
 
+/* variante "fantasma": sem fundo, só no hover (ex.: botão de filtrar) */
+.lib-new.is-ghost {
+  background: transparent;
+}
+
+.lib-new.is-ghost:hover {
+  background: var(--hover-06);
+}
+
 .lib-new img {
   width: 16px;
   height: 16px;

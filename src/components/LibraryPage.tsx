@@ -133,7 +133,7 @@ export default function LibraryPage() {
           <div className="lib-section-head">
             <h2 className="lib-files-title">Arquivos</h2>
             <div className="lib-files-actions">
-              <button className="lib-new" type="button" aria-label="Filtrar">
+              <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
                 <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                   <path
                     d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"

@@ -3,12 +3,8 @@ import type { CSSProperties } from 'react'
 import './library-page.css'
 import './tasks-page.css'
 import searchIcon from '../assets/library/search.svg'
-import {
-  IconAirplane,
-  IconEnvelope,
-  IconChartBar,
-  IconTag,
-} from './CollectionIcons'
+import { MoreHorizontal, Pencil, Pause, Play, Repeat, Trash2 } from 'lucide-react'
+import { IconAirplane, IconEnvelope, IconChartBar, IconTag } from './CollectionIcons'
 
 type Task = {
   id: string
@@ -64,53 +60,6 @@ const INACTIVE: Task[] = [
   },
 ]
 
-/* ícones pequenos (meta e menu) */
-const RepeatIco = () => (
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M3.3 5.6A5 5 0 0 1 12 4.3l1.5 1.5" />
-    <path d="M13.5 2.6V6H10" />
-    <path d="M12.7 10.4A5 5 0 0 1 4 11.7l-1.5-1.5" />
-    <path d="M2.5 13.4V10H6" />
-  </svg>
-)
-
-const DotsIco = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
-    <circle cx="4.5" cy="9" r="1.35" />
-    <circle cx="9" cy="9" r="1.35" />
-    <circle cx="13.5" cy="9" r="1.35" />
-  </svg>
-)
-
-const PencilIco = () => (
-  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M11.4 2.6 13.4 4.6 6 12l-2.7.7L4 10z" />
-    <path d="m10.4 3.6 2 2" />
-  </svg>
-)
-
-const PauseIco = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-    <rect x="4.6" y="3.6" width="2.3" height="8.8" rx="1" />
-    <rect x="9.1" y="3.6" width="2.3" height="8.8" rx="1" />
-  </svg>
-)
-
-const PlayIco = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-    <path d="M5 3.9c0-.6.6-1 1.1-.7l6 3.8c.5.3.5 1 0 1.3l-6 3.8c-.5.3-1.1 0-1.1-.7z" />
-  </svg>
-)
-
-const TrashIco = () => (
-  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M2.8 4.5h10.4" />
-    <path d="M6.2 4.5V3.3a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v1.2" />
-    <path d="m12 4.5-.5 8a1.2 1.2 0 0 1-1.2 1.1H5.7a1.2 1.2 0 0 1-1.2-1.1L4 4.5" />
-    <path d="M6.7 7v4M9.3 7v4" />
-  </svg>
-)
-
 function TaskCard({
   task,
   i,
@@ -125,6 +74,13 @@ function TaskCard({
   onToggle: () => void
 }) {
   const Icon = task.Icon
+  const iconStyle: CSSProperties = inactive
+    ? { background: 'var(--lib-tile-neutral)', color: 'var(--text-faint)' }
+    : {
+        background: `color-mix(in srgb, ${task.color} 16%, var(--card-surface))`,
+        color: task.color,
+      }
+
   return (
     <div className={`task-card${inactive ? ' is-inactive' : ''}`} style={{ '--i': i } as CSSProperties}>
       <button
@@ -138,48 +94,42 @@ function TaskCard({
           onToggle()
         }}
       >
-        <DotsIco />
+        <MoreHorizontal size={18} strokeWidth={2} />
       </button>
 
       {open && (
         <div className="task-menu" role="menu">
           <button type="button" className="task-menu-item" role="menuitem">
-            <PencilIco />
+            <Pencil size={15} strokeWidth={1.9} />
             Editar tarefa
           </button>
           <button type="button" className="task-menu-item" role="menuitem">
-            {inactive ? <PlayIco /> : <PauseIco />}
+            {inactive ? <Play size={15} strokeWidth={1.9} /> : <Pause size={15} strokeWidth={1.9} />}
             {inactive ? 'Retomar' : 'Pausar'}
           </button>
           <div className="task-menu-sep" />
           <button type="button" className="task-menu-item is-danger" role="menuitem">
-            <TrashIco />
+            <Trash2 size={15} strokeWidth={1.9} />
             Excluir
           </button>
         </div>
       )}
 
-      <span
-        className="task-icon"
-        style={{
-          background: `color-mix(in srgb, ${task.color} 16%, var(--pop-surface))`,
-          color: task.color,
-        }}
-      >
+      <span className="task-icon" style={iconStyle}>
         <Icon />
       </span>
 
       <div className="task-text">
         <span className="task-name">{task.name}</span>
         {inactive ? (
-          <span className="task-meta task-status">
-            <PauseIco />
+          <span className="task-badge">
+            <Pause size={12} strokeWidth={2.2} />
             {task.status}
           </span>
         ) : task.recurring ? (
           <span className="task-meta task-next">
             <span className="task-rec">
-              <RepeatIco />
+              <Repeat size={13} strokeWidth={2} />
             </span>
             Próxima: {task.next}
           </span>
@@ -231,7 +181,7 @@ export default function TarefasPage() {
               <p>Tarefas em execução ou agendadas</p>
             </div>
             <div className="lib-files-actions">
-              <button className="lib-new" type="button" aria-label="Filtrar">
+              <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
                 <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                   <path
                     d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
@@ -292,18 +242,10 @@ export default function TarefasPage() {
             </div>
           </div>
 
-          <div className="tasks-panel">
-            <div className="tasks-grid">
-              {ACTIVE.map((t, i) => (
-                <TaskCard
-                  key={t.id}
-                  task={t}
-                  i={i}
-                  open={openMenu === t.id}
-                  onToggle={() => toggle(t.id)}
-                />
-              ))}
-            </div>
+          <div className="tasks-grid">
+            {ACTIVE.map((t, i) => (
+              <TaskCard key={t.id} task={t} i={i} open={openMenu === t.id} onToggle={() => toggle(t.id)} />
+            ))}
           </div>
         </section>
 
@@ -314,19 +256,17 @@ export default function TarefasPage() {
             <p>Pausadas ou já concluídas</p>
           </div>
 
-          <div className="tasks-panel">
-            <div className="tasks-grid">
-              {INACTIVE.map((t, i) => (
-                <TaskCard
-                  key={t.id}
-                  task={t}
-                  i={i}
-                  inactive
-                  open={openMenu === t.id}
-                  onToggle={() => toggle(t.id)}
-                />
-              ))}
-            </div>
+          <div className="tasks-grid">
+            {INACTIVE.map((t, i) => (
+              <TaskCard
+                key={t.id}
+                task={t}
+                i={i}
+                inactive
+                open={openMenu === t.id}
+                onToggle={() => toggle(t.id)}
+              />
+            ))}
           </div>
         </section>
       </div>

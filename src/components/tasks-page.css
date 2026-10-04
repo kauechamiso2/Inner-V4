@@ -11,30 +11,11 @@
   transition: background-color 420ms ease;
 }
 
-/* container cinza que agrupa o grid — mantém a página leve */
-.tasks-panel {
-  background: var(--lib-list-bg);
-  border: 1px solid var(--lib-list-border);
-  border-radius: 16px;
-  padding: 12px;
-}
-
+/* cards soltos (sem container), como no pilar de Imagens — 3 por linha */
 .tasks-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-@media (max-width: 1180px) {
-  .tasks-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 900px) {
-  .tasks-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  grid-template-columns: repeat(auto-fill, minmax(256px, 1fr));
+  gap: 16px;
 }
 
 /* ---------- Card de tarefa ---------- */
@@ -43,11 +24,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 152px;
-  padding: 16px;
+  min-height: 204px;
+  padding: 18px;
   border: 1px solid var(--card-border);
-  border-radius: 13px;
-  background: var(--pop-surface);
+  border-radius: 14px;
+  background: var(--card-surface);
   cursor: pointer;
   text-align: left;
   font-family: inherit;
@@ -65,12 +46,19 @@
   box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.12);
 }
 
+/* inativas: visivelmente "apagadas" em relação às ativas */
 .task-card.is-inactive {
-  background: color-mix(in srgb, var(--pop-surface) 70%, var(--lib-list-bg));
+  background: color-mix(in srgb, var(--card-surface) 50%, var(--main-bg));
+  border-style: dashed;
 }
 
-.task-card.is-inactive .task-icon {
-  opacity: 0.9;
+.task-card.is-inactive .task-name {
+  color: var(--text-soft);
+  font-weight: 500;
+}
+
+.task-card.is-inactive .task-last {
+  color: var(--text-ghost);
 }
 
 .task-icon {
@@ -134,12 +122,23 @@
   display: block;
 }
 
-.task-status {
-  color: var(--text-faint);
+/* badge "Pausada" das inativas */
+.task-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  height: 22px;
+  padding: 0 9px 0 7px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  font-size: 11.5px;
   font-weight: 500;
+  color: var(--chip-fg);
 }
 
-.task-status svg {
+.task-badge svg {
   display: block;
   flex-shrink: 0;
 }
@@ -257,12 +256,6 @@
 
 .task-menu-item.is-danger:hover {
   background: rgba(229, 72, 77, 0.12);
-}
-
-@media (max-width: 720px) {
-  .tasks-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
