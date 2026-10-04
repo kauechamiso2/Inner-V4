@@ -284,7 +284,8 @@
 }
 
 :root[data-dark] svg rect[stroke='#3D3D3D'],
-:root[data-dark] svg path[stroke='#3D3D3D'] {
+:root[data-dark] svg path[stroke='#3D3D3D'],
+:root[data-dark] svg g[stroke='#3D3D3D'] {
   stroke: #c9c9c9;
 }
 
