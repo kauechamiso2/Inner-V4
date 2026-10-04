@@ -51,11 +51,19 @@
   /* Página de ferramentas (cards de pilar) */
   --card-surface: #f6f6f4;
   --card-desc: #8e8e8a;
+  --card-border: #ececea;
+  --card-border-hover: #dcdcd6;
   --pill-active-bg: #f2f2f0;
   --fav-surface: #ffffff;
   --fav-border: #e3e3de;
   --skeleton-base: rgba(0, 0, 0, 0.06);
   --skeleton-sheen: rgba(255, 255, 255, 0.65);
+
+  /* Biblioteca */
+  --lib-tile-neutral: #efefec;
+  --lib-list-bg: #fbfbfa;
+  --lib-list-head: #f4f4f2;
+  --lib-list-border: #efefec;
 
   /* Card do input do chat */
   --input-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.05);
@@ -164,11 +172,19 @@
 
   --card-surface: #2c2c2c;
   --card-desc: #9a9aa0;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-border-hover: rgba(255, 255, 255, 0.16);
   --pill-active-bg: rgba(255, 255, 255, 0.11);
   --fav-surface: #232323;
   --fav-border: #3f3f3f;
   --skeleton-base: rgba(255, 255, 255, 0.07);
   --skeleton-sheen: rgba(255, 255, 255, 0.13);
+
+  /* Biblioteca (dark) */
+  --lib-tile-neutral: rgba(255, 255, 255, 0.09);
+  --lib-list-bg: #262626;
+  --lib-list-head: #2d2d2d;
+  --lib-list-border: rgba(255, 255, 255, 0.07);
 }
 
 /* Dark da Cor 3 — Neutro (Figma 545:1261): canvas com gradiente invertido */

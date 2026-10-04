@@ -4,6 +4,7 @@ import HistoryPanel from './components/HistoryPanel'
 import ChatHome from './components/ChatHome'
 import PageView from './components/PageView'
 import ImagesPage from './components/ImagesPage'
+import LibraryPage from './components/LibraryPage'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import { PILLAR_BY_ID } from './components/pillars'
 import type { AppView, PanelView, PillarId, SidebarLayout } from './components/pillars'
@@ -83,6 +84,8 @@ export default function App() {
         <ChatHome />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
+      ) : view === 'library' ? (
+        <LibraryPage key="library" />
       ) : (
         <PageView key={view} title={titleFor(view)} />
       )}
