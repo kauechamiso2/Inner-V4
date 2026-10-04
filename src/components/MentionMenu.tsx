@@ -31,6 +31,8 @@ export type MentionItem = {
   img?: string
   /* logos monocromáticos (preto) que precisam inverter no dark */
   mono?: boolean
+  /* ativa uma feature (vira pill ao lado de Ferramentas) — "a partir de Tarefa" */
+  feature?: boolean
 }
 
 type Section = { label: string; items: MentionItem[] }
@@ -41,34 +43,34 @@ const SECTIONS: Section[] = [
     items: [
       { id: 'upload', label: 'Fotos e arquivos', icon: <UploadSimpleIcon /> },
       { id: 'biblioteca', label: 'Arquivos da Biblioteca', icon: <BooksIcon /> },
-      { id: 'tarefa', label: 'Tarefa', icon: <LightningIcon /> },
+      { id: 'tarefa', label: 'Tarefa', icon: <LightningIcon />, feature: true },
     ],
   },
   {
     label: 'Gerar',
     items: [
-      { id: 'imagem', label: 'Imagem', icon: <ImageIcon /> },
-      { id: 'video', label: 'Vídeo', icon: <VideoCameraIcon /> },
-      { id: 'reuniao', label: 'Reunião', icon: <PresentationChartIcon /> },
-      { id: 'audio', label: 'Áudio', icon: <SpeakerHighIcon /> },
-      { id: 'documento', label: 'Documento', icon: <FileTextIcon /> },
-      { id: 'apresentacao', label: 'Apresentação', icon: <SlidesIcon /> },
-      { id: 'site', label: 'Site', icon: <GlobeIcon /> },
+      { id: 'imagem', label: 'Imagem', icon: <ImageIcon />, feature: true },
+      { id: 'video', label: 'Vídeo', icon: <VideoCameraIcon />, feature: true },
+      { id: 'reuniao', label: 'Reunião', icon: <PresentationChartIcon />, feature: true },
+      { id: 'audio', label: 'Áudio', icon: <SpeakerHighIcon />, feature: true },
+      { id: 'documento', label: 'Documento', icon: <FileTextIcon />, feature: true },
+      { id: 'apresentacao', label: 'Apresentação', icon: <SlidesIcon />, feature: true },
+      { id: 'site', label: 'Site', icon: <GlobeIcon />, feature: true },
     ],
   },
   {
     label: 'Integrações',
     items: [
-      { id: 'gmail', label: 'Gmail', img: gmail },
-      { id: 'google-calendar', label: 'Google Calendar', img: googleCalendar },
-      { id: 'google-drive', label: 'Google Drive', img: googleDrive },
-      { id: 'google-sheets', label: 'Google Sheets', img: googleSheets },
-      { id: 'google-slides', label: 'Google Slides', img: googleSlides },
-      { id: 'outlook', label: 'Outlook', img: outlook },
-      { id: 'hubspot', label: 'Hubspot', img: hubspot },
-      { id: 'salesforce', label: 'Salesforce', img: salesforce },
-      { id: 'github', label: 'Github', img: github, mono: true },
-      { id: 'notion', label: 'Notion', img: notion, mono: true },
+      { id: 'gmail', label: 'Gmail', img: gmail, feature: true },
+      { id: 'google-calendar', label: 'Google Calendar', img: googleCalendar, feature: true },
+      { id: 'google-drive', label: 'Google Drive', img: googleDrive, feature: true },
+      { id: 'google-sheets', label: 'Google Sheets', img: googleSheets, feature: true },
+      { id: 'google-slides', label: 'Google Slides', img: googleSlides, feature: true },
+      { id: 'outlook', label: 'Outlook', img: outlook, feature: true },
+      { id: 'hubspot', label: 'Hubspot', img: hubspot, feature: true },
+      { id: 'salesforce', label: 'Salesforce', img: salesforce, feature: true },
+      { id: 'github', label: 'Github', img: github, mono: true, feature: true },
+      { id: 'notion', label: 'Notion', img: notion, mono: true, feature: true },
     ],
   },
 ]
@@ -86,9 +88,11 @@ type Props = {
   query: string
   onSelect: (item: MentionItem) => void
   onClose: () => void
+  /* 'mention' abre abaixo do editor (gatilho @); 'plus' abre acima do botão + */
+  variant?: 'mention' | 'plus'
 }
 
-export default function MentionMenu({ query, onSelect, onClose }: Props) {
+export default function MentionMenu({ query, onSelect, onClose, variant = 'mention' }: Props) {
   const sections = useMemo(() => {
     const q = normalize(query)
     if (!q) return SECTIONS
@@ -125,6 +129,20 @@ export default function MentionMenu({ query, onSelect, onClose }: Props) {
     return () => document.removeEventListener('keydown', onKey, true)
   }, [flat, active, onSelect, onClose])
 
+  // variante "plus": fecha ao clicar fora (o @ já fecha no blur do textarea)
+  useEffect(() => {
+    if (variant !== 'plus') return
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as HTMLElement
+      if (!t.closest('.mention-menu') && !t.closest('.ch-attach')) onClose()
+    }
+    const id = window.setTimeout(() => document.addEventListener('pointerdown', onDown), 0)
+    return () => {
+      window.clearTimeout(id)
+      document.removeEventListener('pointerdown', onDown)
+    }
+  }, [variant, onClose])
+
   // scroll do item ativo à vista
   useEffect(() => {
     document
@@ -133,7 +151,11 @@ export default function MentionMenu({ query, onSelect, onClose }: Props) {
   }, [active])
 
   return (
-    <div className="mention-menu" role="listbox" aria-label="Invocar com @">
+    <div
+      className={`mention-menu${variant === 'plus' ? ' is-plus' : ''}`}
+      role="listbox"
+      aria-label="Invocar ação"
+    >
       {flat.length === 0 ? (
         <div className="mm-empty">Sem resultados</div>
       ) : (

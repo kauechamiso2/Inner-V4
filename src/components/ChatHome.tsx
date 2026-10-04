@@ -35,27 +35,41 @@ export default function ChatHome() {
   const [value, setValue] = useState('')
   const [mode, setMode] = useState<InputMode>('agente')
   const [mention, setMention] = useState<MentionState | null>(null)
+  const [plusOpen, setPlusOpen] = useState(false)
+  const [features, setFeatures] = useState<MentionItem[]>([])
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const canSend = value.trim().length > 0
 
-  const syncMention = (val: string, caret: number) => setMention(findMention(val, caret))
-
-  const pickMention = (item: MentionItem) => {
-    if (!mention) return
-    const end = mention.start + 1 + mention.query.length
-    const next = `${value.slice(0, mention.start)}@${item.label} ${value.slice(end)}`
-    setValue(next)
-    setMention(null)
-    const caret = mention.start + item.label.length + 2
-    requestAnimationFrame(() => {
-      const el = fieldRef.current
-      if (el) {
-        el.focus()
-        el.setSelectionRange(caret, caret)
-      }
-    })
+  const syncMention = (val: string, caret: number) => {
+    const next = findMention(val, caret)
+    setMention(next)
+    if (next) setPlusOpen(false)
   }
+
+  /* seleção vinda de qualquer gatilho (@ ou +): ativa a feature como pill */
+  const applyItem = (item: MentionItem) => {
+    // remove o "@query" que disparou o menu, se veio do @
+    if (mention) {
+      const end = mention.start + 1 + mention.query.length
+      const next = `${value.slice(0, mention.start)}${value.slice(end)}`
+      setValue(next)
+      requestAnimationFrame(() => {
+        const el = fieldRef.current
+        if (el) {
+          el.focus()
+          el.setSelectionRange(mention.start, mention.start)
+        }
+      })
+    }
+    if (item.feature) {
+      setFeatures((f) => (f.some((x) => x.id === item.id) ? f : [...f, item]))
+    }
+    setMention(null)
+    setPlusOpen(false)
+  }
+
+  const removeFeature = (id: string) => setFeatures((f) => f.filter((x) => x.id !== id))
 
   /* segmentos do backdrop: menções em índigo */
   const segments = useMemo(() => {
@@ -158,7 +172,7 @@ export default function ChatHome() {
             {mention && (
               <MentionMenu
                 query={mention.query}
-                onSelect={pickMention}
+                onSelect={applyItem}
                 onClose={() => setMention(null)}
               />
             )}
@@ -179,13 +193,64 @@ export default function ChatHome() {
                   <CaretDownIcon />
                 </button>
               )}
-              <button className="ch-attach" type="button" aria-label="Anexar">
-                <PlusIcon />
-              </button>
+              <span className="ch-attach-wrap">
+                <button
+                  className="ch-attach"
+                  type="button"
+                  aria-label="Adicionar"
+                  aria-haspopup="menu"
+                  aria-expanded={plusOpen}
+                  onClick={() => {
+                    setMention(null)
+                    setPlusOpen((o) => !o)
+                  }}
+                >
+                  <PlusIcon />
+                  <span className="pill-tooltip ch-attach-tip" role="tooltip" aria-hidden="true">
+                    Adicionar
+                  </span>
+                </button>
+                {plusOpen && (
+                  <MentionMenu
+                    query=""
+                    variant="plus"
+                    onSelect={applyItem}
+                    onClose={() => setPlusOpen(false)}
+                  />
+                )}
+              </span>
               <button className="ch-chip" type="button">
                 <img className="is-rotated" src={sliders} alt="" aria-hidden="true" />
                 <span>Ferramentas</span>
               </button>
+              {features.map((f) => (
+                <span className="feature-pill" key={f.id}>
+                  <button
+                    type="button"
+                    className={`fp-remove${f.mono ? ' is-mono' : ''}`}
+                    aria-label={`Remover ${f.label}`}
+                    onClick={() => removeFeature(f.id)}
+                  >
+                    <span className="fp-glyph">
+                      {f.img ? <img src={f.img} alt="" /> : f.icon}
+                    </span>
+                    <span className="fp-x" aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path
+                          d="M3.2 3.2l5.6 5.6M8.8 3.2l-5.6 5.6"
+                          stroke="currentColor"
+                          strokeWidth="1.4"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </span>
+                    <span className="pill-tooltip fp-tip" role="tooltip" aria-hidden="true">
+                      Remover {f.label}
+                    </span>
+                  </button>
+                  <span className="fp-label">{f.label}</span>
+                </span>
+              ))}
             </div>
             <div className="chat-controls-right">
               <button className="chat-mic" type="button" aria-label="Falar">
