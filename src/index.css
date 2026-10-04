@@ -57,6 +57,9 @@
   --skeleton-base: rgba(0, 0, 0, 0.06);
   --skeleton-sheen: rgba(255, 255, 255, 0.65);
 
+  /* Card do input do chat */
+  --input-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.05);
+
   /* Diversos */
   --thumb-ph: #ececec;
   --rl-divider-line: #dedede;
@@ -125,6 +128,8 @@
 
   --tooltip-bg: #ececec;
   --tooltip-fg: #1c1c1c;
+
+  --input-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.35);
 
   /* Figma: botão "Nova conversa" dark = #2d2a47 com texto #a9a1f2 */
   --newbtn-base: #1a1a1e;

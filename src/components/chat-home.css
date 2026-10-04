@@ -1,4 +1,4 @@
-/* ============ Container principal do Chat — Figma node 533:4505 ============ */
+/* ============ Container principal do Chat — coluna central (Figma 526:906) ============ */
 
 .chat-home {
   flex: 1 0 0;
@@ -15,16 +15,31 @@
   transition: background-color 420ms ease;
 }
 
+.chat-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: min(720px, calc(100% - 64px));
+}
+
 /* ---------- Saudação ---------- */
 
 .chat-greeting {
   display: flex;
   align-items: center;
   gap: 24px;
-  /* camada própria: o conjunto (incl. o glow borrado) é rasterizado uma vez
-     e só deslocado enquanto a sidebar anima a largura */
   will-change: transform;
-  animation: greeting-in 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.greeting-text {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  color: var(--text-strong);
+  white-space: nowrap;
+  animation: greeting-in 520ms cubic-bezier(0.22, 1, 0.36, 1) 160ms backwards;
 }
 
 @keyframes greeting-in {
@@ -38,36 +53,285 @@
   }
 }
 
+/* ---------- Esfera do Agent: entrada + pulso contínuo ---------- */
+
 .greeting-orb {
   position: relative;
   width: 26px;
   height: 26px;
+  animation: orb-enter 760ms cubic-bezier(0.26, 1.26, 0.48, 1) backwards;
 }
 
-/* cópia borrada atrás do orbe (glow do Figma: blur 6.275px) */
+@keyframes orb-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.15) rotate(-80deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.14) rotate(8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* núcleo: respiração suave e constante */
+.greeting-orb-core {
+  position: absolute;
+  inset: 0;
+  animation: orb-breathe 3.4s ease-in-out 900ms infinite;
+}
+
+@keyframes orb-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.055);
+  }
+}
+
+/* glow: cópia borrada atrás (blur do Figma: 6.275px), pulsando mais amplo */
 .greeting-orb-glow {
   position: absolute;
   inset: 0;
   filter: blur(6.275px);
+  opacity: 0.85;
+  animation: glow-breathe 3.4s ease-in-out 900ms infinite;
 }
 
-.greeting-text {
-  margin: 0;
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: -0.3px;
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+/* ---------- Card do input ---------- */
+
+.chat-input-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  padding: 18px 14px 14px 18px;
+  background: var(--pop-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: 24px;
+  box-shadow: var(--input-shadow);
+  animation: input-in 560ms cubic-bezier(0.22, 1, 0.36, 1) 240ms backwards;
+  transition: background-color 420ms ease;
+}
+
+@keyframes input-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.chat-input-field {
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: normal;
   color: var(--text-strong);
+}
+
+.chat-input-field::placeholder {
+  color: var(--text-faint);
+}
+
+/* ---------- Controles ---------- */
+
+.chat-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* botão circular de anexar (plus) */
+.ch-attach {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--pop-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  color: var(--text-strong);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.ch-attach:hover {
+  background: var(--hover-04);
+}
+
+.ch-attach:active {
+  transform: scale(0.94);
+}
+
+.ch-attach svg {
+  display: block;
+}
+
+.ch-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  background: var(--pop-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.ch-chip:hover {
+  background: var(--hover-04);
+}
+
+.ch-chip img {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.ch-chip img.is-rotated {
+  transform: rotate(-90deg);
+}
+
+:root[data-dark] .ch-chip img,
+:root[data-dark] .chat-mic img {
+  filter: invert(0.82);
+}
+
+.ch-chip span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-soft);
   white-space: nowrap;
+}
+
+.chat-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-mic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 150ms ease;
+}
+
+.chat-mic:hover {
+  opacity: 0.65;
+}
+
+.chat-mic img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* enviar: cinza enquanto vazio, roxo quando há texto */
+.chat-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  cursor: default;
+  transition:
+    background-color 220ms ease,
+    transform 150ms ease;
+}
+
+.chat-send.is-ready {
+  background: #6e62e5;
+  cursor: pointer;
+}
+
+.chat-send.is-ready:hover {
+  background: #5d50da;
+  transform: scale(1.06);
+}
+
+.chat-send.is-ready:active {
+  transform: scale(0.94);
+}
+
+.chat-send img {
+  width: 15px;
+  height: 15px;
+  display: block;
 }
 
 /* ---------- Responsividade ---------- */
 
 @media (max-width: 640px) {
+  .chat-column {
+    width: calc(100% - 32px);
+    gap: 18px;
+  }
+
   .chat-greeting {
     gap: 16px;
   }
 
   .greeting-text {
     font-size: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .greeting-orb,
+  .greeting-orb-core,
+  .greeting-orb-glow,
+  .greeting-text,
+  .chat-input-card {
+    animation: none !important;
   }
 }
