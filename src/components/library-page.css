@@ -141,7 +141,8 @@
   transform: translateX(-50%) translateY(4px) scale(0.96);
 }
 
-.lib-new:hover .lib-new-tip {
+.lib-new:hover .lib-new-tip,
+.lib-view-opt:hover .lib-new-tip {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0) scale(1);
@@ -200,6 +201,12 @@
   display: block;
 }
 
+.coll-icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
 .coll-text {
   display: flex;
   flex-direction: column;
@@ -234,15 +241,88 @@
   color: var(--text-strong);
 }
 
-/* ações ao lado do título "Arquivos" (filtrar / alternar visualização) */
+/* ações ao lado do título "Arquivos" (filtrar / switcher / novo) */
 .lib-files-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .lib-files-actions .lib-new svg {
   display: block;
+}
+
+/* switcher grade / lista */
+.lib-view-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.lib-view-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.lib-view-opt svg {
+  display: block;
+}
+
+.lib-view-opt:hover {
+  color: var(--text-soft);
+  background: var(--hover-04);
+}
+
+.lib-view-opt.is-active {
+  background: var(--pill-active-bg);
+  color: var(--text-strong);
+}
+
+.lib-view-opt.is-active:hover {
+  background: var(--pill-active-bg);
+}
+
+/* CTA "Novo" (preto no claro / claro no escuro) */
+.lib-new-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 15px 0 12px;
+  margin-left: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+.lib-new-cta svg {
+  display: block;
+}
+
+.lib-new-cta:hover {
+  opacity: 0.88;
+}
+
+.lib-new-cta:active {
+  transform: scale(0.97);
 }
 
 .lib-filters {

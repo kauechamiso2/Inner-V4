@@ -3,18 +3,21 @@ import type { CSSProperties } from 'react'
 import './library-page.css'
 import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
-import icClock from '../assets/library/clock.svg'
-import icFolder from '../assets/library/folder.svg'
-import icSun from '../assets/library/sun.svg'
-import icCalendar from '../assets/library/calendar-dots.svg'
-import icAirplane from '../assets/library/airplane.svg'
-import icEnvelope from '../assets/library/envelope.svg'
-import icLightning from '../assets/library/lightning-c.svg'
-import icScales from '../assets/library/scales.svg'
-import icGlobe from '../assets/library/globe.svg'
-import icImage from '../assets/library/image-c.svg'
-import icDots from '../assets/library/dots-three.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
+import {
+  IconClock,
+  IconFolder,
+  IconSliders,
+  IconSun,
+  IconCalendar,
+  IconPin,
+  IconEnvelope,
+  IconBolt,
+  IconColumns,
+  IconGlobe,
+  IconPhoto,
+  IconEllipsis,
+} from './CollectionIcons'
 import fPdf from '../assets/library/file-pdf.svg'
 import fImage from '../assets/library/file-image.svg'
 import fText from '../assets/library/file-text.svg'
@@ -25,22 +28,24 @@ import fWave from '../assets/library/waveform.svg'
 import fGlobe from '../assets/library/globe-file.svg'
 import fZip from '../assets/library/filezip.svg'
 
-type TileStyle = 'solid' | 'tint' | 'neutral'
-type Collection = { name: string; count: string; icon: string; color: string; style: TileStyle }
+type CollIcon = () => JSX.Element
+type Collection = { name: string; count: string; Icon: CollIcon; color: string; neutral?: boolean }
 
+/* cor + ícone são apenas defaults de demonstração — no produto o usuário
+   escolhe ambos na criação da coleção */
 const COLLECTIONS: Collection[] = [
-  { name: 'Recentes', count: '0 arquivos', icon: icClock, color: '#3E63C4', style: 'tint' },
-  { name: 'Não categorizado', count: '16 itens', icon: icFolder, color: '', style: 'neutral' },
-  { name: 'Setup do site', count: '3 itens', icon: icFolder, color: '', style: 'neutral' },
-  { name: 'Morning Briefing', count: '28 arquivos', icon: icSun, color: '#F6C544', style: 'solid' },
-  { name: 'Weekly Briefing', count: '14 arquivos', icon: icCalendar, color: '#F0B429', style: 'solid' },
-  { name: 'Viagem Europa', count: '12 arquivos', icon: icAirplane, color: '#1F5C44', style: 'solid' },
-  { name: 'Morning Email', count: '5 arquivos', icon: icEnvelope, color: '#5B3FA0', style: 'solid' },
-  { name: 'Conteúdo LinkedIn', count: '22 arquivos', icon: icLightning, color: '#C15A2B', style: 'solid' },
-  { name: 'Jurisprudência', count: '9 arquivos', icon: icScales, color: '#2D6A6E', style: 'solid' },
-  { name: 'Pesquisa de site', count: '7 arquivos', icon: icGlobe, color: '#2563B8', style: 'solid' },
-  { name: 'Materiais da marca', count: '18 arquivos', icon: icImage, color: '#B0472F', style: 'solid' },
-  { name: 'Ver 3 mais', count: '34 no total', icon: icDots, color: '', style: 'neutral' },
+  { name: 'Recentes', count: '0 arquivos', Icon: IconClock, color: '#3E63C4' },
+  { name: 'Não categorizado', count: '16 itens', Icon: IconFolder, color: '', neutral: true },
+  { name: 'Setup do site', count: '3 itens', Icon: IconSliders, color: '', neutral: true },
+  { name: 'Morning Briefing', count: '28 arquivos', Icon: IconSun, color: '#CC8A04' },
+  { name: 'Weekly Briefing', count: '14 arquivos', Icon: IconCalendar, color: '#CC8A04' },
+  { name: 'Viagem Europa', count: '12 arquivos', Icon: IconPin, color: '#1F7A4D' },
+  { name: 'Morning Email', count: '5 arquivos', Icon: IconEnvelope, color: '#6B46C1' },
+  { name: 'Conteúdo LinkedIn', count: '22 arquivos', Icon: IconBolt, color: '#C15A2B' },
+  { name: 'Jurisprudência', count: '9 arquivos', Icon: IconColumns, color: '#2D6A6E' },
+  { name: 'Pesquisa de site', count: '7 arquivos', Icon: IconGlobe, color: '#2563B8' },
+  { name: 'Materiais da marca', count: '18 arquivos', Icon: IconPhoto, color: '#B0472F' },
+  { name: 'Ver 3 mais', count: '34 no total', Icon: IconEllipsis, color: '', neutral: true },
 ]
 
 const FILE_FILTERS = ['Todos', 'Texto e PDF', 'Slides', 'Planilhas', 'Imagens', 'Vídeos', 'Áudio', 'Outros']
@@ -67,14 +72,18 @@ const FILES: FileRow[] = [
   { name: 'Apresentação para investidores', type: 'Slides', modified: '1 semana atrás', icon: fPpt, color: '#C15A2B' },
 ]
 
-function tileStyle(color: string, style: TileStyle): CSSProperties {
-  if (style === 'solid') return { background: color }
-  if (style === 'tint') return { background: `color-mix(in srgb, ${color} 14%, var(--card-surface))` }
-  return { background: 'var(--lib-tile-neutral)' }
+function tileStyle(c: Collection): CSSProperties {
+  if (c.neutral) return { background: 'var(--lib-tile-neutral)', color: 'var(--text-faint)' }
+  return {
+    background: `color-mix(in srgb, ${c.color} 16%, var(--card-surface))`,
+    color: c.color,
+  }
 }
 
 export default function LibraryPage() {
   const [filter, setFilter] = useState('Todos')
+  /* switcher de visualização — apenas visual (não altera o layout por ora) */
+  const [view, setView] = useState<'grid' | 'list'>('list')
 
   return (
     <main className="library-page">
@@ -102,17 +111,20 @@ export default function LibraryPage() {
           </div>
 
           <div className="lib-collections">
-            {COLLECTIONS.map((c, i) => (
-              <button className="coll-card" type="button" key={c.name} style={{ '--i': i } as CSSProperties}>
-                <span className={`coll-icon${c.style === 'solid' ? ' is-solid' : ''}`} style={tileStyle(c.color, c.style)}>
-                  <img src={c.icon} alt="" />
-                </span>
-                <span className="coll-text">
-                  <span className="coll-name">{c.name}</span>
-                  <span className="coll-count">{c.count}</span>
-                </span>
-              </button>
-            ))}
+            {COLLECTIONS.map((c, i) => {
+              const Icon = c.Icon
+              return (
+                <button className="coll-card" type="button" key={c.name} style={{ '--i': i } as CSSProperties}>
+                  <span className="coll-icon" style={tileStyle(c)}>
+                    <Icon />
+                  </span>
+                  <span className="coll-text">
+                    <span className="coll-name">{c.name}</span>
+                    <span className="coll-count">{c.count}</span>
+                  </span>
+                </button>
+              )
+            })}
           </div>
         </section>
 
@@ -135,16 +147,49 @@ export default function LibraryPage() {
                   Filtrar
                 </span>
               </button>
-              <button className="lib-new" type="button" aria-label="Ver em grade">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <rect x="2.8" y="2.8" width="5" height="5" rx="1.1" stroke="#3D3D3D" strokeWidth="1.125" />
-                  <rect x="10.2" y="2.8" width="5" height="5" rx="1.1" stroke="#3D3D3D" strokeWidth="1.125" />
-                  <rect x="2.8" y="10.2" width="5" height="5" rx="1.1" stroke="#3D3D3D" strokeWidth="1.125" />
-                  <rect x="10.2" y="10.2" width="5" height="5" rx="1.1" stroke="#3D3D3D" strokeWidth="1.125" />
+              <div className="lib-view-switch" role="group" aria-label="Visualização">
+                <button
+                  className={`lib-view-opt${view === 'grid' ? ' is-active' : ''}`}
+                  type="button"
+                  aria-label="Ver em grade"
+                  aria-pressed={view === 'grid'}
+                  onClick={() => setView('grid')}
+                >
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+                    <rect x="2.6" y="2.6" width="5.4" height="5.4" rx="1.5" />
+                    <rect x="10" y="2.6" width="5.4" height="5.4" rx="1.5" />
+                    <rect x="2.6" y="10" width="5.4" height="5.4" rx="1.5" />
+                    <rect x="10" y="10" width="5.4" height="5.4" rx="1.5" />
+                  </svg>
+                  <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                    Ver em grade
+                  </span>
+                </button>
+                <button
+                  className={`lib-view-opt${view === 'list' ? ' is-active' : ''}`}
+                  type="button"
+                  aria-label="Ver em lista"
+                  aria-pressed={view === 'list'}
+                  onClick={() => setView('list')}
+                >
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+                    <rect x="2" y="3.5" width="2.4" height="2.4" rx="0.8" />
+                    <rect x="6.3" y="3.95" width="9.7" height="1.5" rx="0.75" />
+                    <rect x="2" y="7.8" width="2.4" height="2.4" rx="0.8" />
+                    <rect x="6.3" y="8.25" width="9.7" height="1.5" rx="0.75" />
+                    <rect x="2" y="12.1" width="2.4" height="2.4" rx="0.8" />
+                    <rect x="6.3" y="12.55" width="9.7" height="1.5" rx="0.75" />
+                  </svg>
+                  <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                    Ver em lista
+                  </span>
+                </button>
+              </div>
+              <button className="lib-new-cta" type="button">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
-                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                  Ver em grade
-                </span>
+                Novo
               </button>
             </div>
           </div>
