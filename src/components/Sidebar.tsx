@@ -26,6 +26,7 @@ import {
 } from './pillars'
 import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
+import ProjectsMenu from './ProjectsMenu'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
 
@@ -61,7 +62,7 @@ function NavItem({
   item: Item
   index: number
   flipId?: string
-  onSelect?: () => void
+  onSelect?: (rect: DOMRect) => void
 }) {
   return (
     <a
@@ -73,7 +74,7 @@ function NavItem({
         onSelect
           ? (e) => {
               e.preventDefault()
-              onSelect()
+              onSelect(e.currentTarget.getBoundingClientRect())
             }
           : undefined
       }
@@ -106,6 +107,13 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
   const pinned: ModuleId[] = layout === 'b' ? pinnedB : pinnedA
 
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
+  const [projectsAnchor, setProjectsAnchor] = useState<DOMRect | null>(null)
+
+  /* abre o menu de projetos ancorado no item "Projetos" (fecha o de pilares) */
+  const openProjects = (rect: DOMRect) => {
+    setMenuAnchor(null)
+    setProjectsAnchor(rect)
+  }
   const maisRef = useRef<HTMLButtonElement>(null)
   const pilaresRef = useRef<HTMLElement>(null)
   const capturePilares = useFlip(pilaresRef)
@@ -140,6 +148,7 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
   }
 
   const toggleMenu = () => {
+    setProjectsAnchor(null)
     if (menuAnchor) {
       setMenuAnchor(null)
     } else if (maisRef.current) {
@@ -259,7 +268,7 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
     icon: ReactNode
     active?: boolean
     narrow?: boolean
-    onSelect?: () => void
+    onSelect?: (rect: DOMRect) => void
     flipId?: string
   }) => (
     <a
@@ -271,7 +280,7 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
         opts.onSelect
           ? (e) => {
               e.preventDefault()
-              opts.onSelect?.()
+              opts.onSelect?.(e.currentTarget.getBoundingClientRect())
             }
           : undefined
       }
@@ -347,6 +356,8 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
                 id: item.href.slice(1),
                 label: item.label,
                 icon: item.icon,
+                active: item.label === 'Projetos' && !!projectsAnchor,
+                onSelect: item.label === 'Projetos' ? openProjects : undefined,
               }),
             )}
           </nav>
@@ -445,9 +456,18 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
         {divider}
 
         <nav className="sidebar-group" aria-label="Espaços">
-          {ESPACOS.map((item) => (
-            <NavItem key={item.label} item={item} index={itemIndex++} />
-          ))}
+          {ESPACOS.map((item) =>
+            item.label === 'Projetos' ? (
+              <NavItem
+                key={item.label}
+                item={{ ...item, active: !!projectsAnchor }}
+                index={itemIndex++}
+                onSelect={openProjects}
+              />
+            ) : (
+              <NavItem key={item.label} item={item} index={itemIndex++} />
+            ),
+          )}
         </nav>
 
         <div className="sidebar-flex" />
@@ -492,6 +512,10 @@ export default function Sidebar({ activeView, onNavigate, layout, coachOpen, onC
           chatActive={activeView === 'chat'}
           onOpenChat={() => onNavigate('chat')}
         />
+      )}
+
+      {projectsAnchor && (
+        <ProjectsMenu anchor={projectsAnchor} onClose={() => setProjectsAnchor(null)} />
       )}
 
       <LibraryCoachmark
