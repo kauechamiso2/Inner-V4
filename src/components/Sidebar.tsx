@@ -12,7 +12,6 @@ import {
   GraduationCapIcon,
   HomeNavIcon,
   PacksIcon,
-  QuestionIcon,
   SidebarSimpleIcon,
   TicketIcon,
 } from './SidebarIcons'
@@ -41,15 +40,13 @@ type Item = {
   narrowIcon?: boolean
 }
 
-const ESPACOS: Item[] = [
-  { label: 'Projetos', href: '#projetos', icon: <FolderSimpleIcon /> },
+const PROJETOS_ITEM: Item = { label: 'Projetos', href: '#projetos', icon: <FolderSimpleIcon /> }
+
+/* parte de baixo: Indique, Educação e Packs (saíram do meio); Ajuda saiu por ora */
+const BOTTOM_ITEMS: Item[] = [
+  { label: 'Indique e ganhe', href: '#indique', icon: <TicketIcon /> },
   { label: 'Educação', href: '#educacao', icon: <GraduationCapIcon /> },
   { label: 'Packs', href: '#packs', icon: <PacksIcon /> },
-]
-
-const UTILITARIOS: Item[] = [
-  { label: 'Indique e ganhe', href: '#indique', icon: <TicketIcon /> },
-  { label: 'Ajuda', href: '#ajuda', icon: <QuestionIcon /> },
   { label: 'Baixe o app', href: '#app', icon: <DevicesIcon /> },
 ]
 
@@ -110,10 +107,12 @@ export default function Sidebar({
   const [scrollAnimating, setScrollAnimating] = useState(false)
   const cooldownRef = useRef(false)
 
-  /* A/B/D compartilham o pool de pilares; C ("tudo fixável") inclui Library/Tarefas */
+  /* A (principal) e C ("tudo fixável") reordenam tudo a partir de Biblioteca;
+     B/D mantêm Library/Tarefas fixos e só os pilares no pool */
+  const fullPool = layout === 'a' || layout === 'c'
   const [pinnedA, setPinnedA] = useState<PillarId[]>(DEFAULT_PINNED)
   const [pinnedB, setPinnedB] = useState<ModuleId[]>(DEFAULT_PINNED_B)
-  const pinned: ModuleId[] = layout === 'c' ? pinnedB : pinnedA
+  const pinned: ModuleId[] = fullPool ? pinnedB : pinnedA
 
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
   const [projectsAnchor, setProjectsAnchor] = useState<DOMRect | null>(null)
@@ -162,7 +161,7 @@ export default function Sidebar({
 
   const handleTogglePin = (id: ModuleId) => {
     capturePilares()
-    if (layout === 'c') {
+    if (fullPool) {
       setPinnedB((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
     } else {
       const pid = id as PillarId
@@ -172,15 +171,15 @@ export default function Sidebar({
 
   const handleReorder = (order: ModuleId[]) => {
     capturePilares()
-    if (layout === 'c') setPinnedB(order)
+    if (fullPool) setPinnedB(order)
     else setPinnedA(order as PillarId[])
   }
 
   /* módulos disponíveis no menu "Mais" conforme a diagramação */
-  const menuModules = layout === 'c' ? MODULE_DEFS : MODULE_DEFS.filter((m) => m.id in PILLAR_BY)
+  const menuModules = fullPool ? MODULE_DEFS : MODULE_DEFS.filter((m) => m.id in PILLAR_BY)
   const activeModule = (activeView !== 'chat' && activeView !== 'library' && activeView !== 'tarefas'
     ? activeView
-    : layout === 'c' && (activeView === 'library' || activeView === 'tarefas')
+    : fullPool && (activeView === 'library' || activeView === 'tarefas')
       ? activeView
       : null) as ModuleId | null
   const maisActive = activeModule !== null && !pinned.includes(activeModule)
@@ -236,6 +235,15 @@ export default function Sidebar({
       />
     )
   }
+
+  const projetosNav = (index: number) => (
+    <NavItem
+      key="projetos"
+      item={{ ...PROJETOS_ITEM, active: !!projectsAnchor }}
+      index={index}
+      onSelect={openProjects}
+    />
+  )
 
   const maisButton = (index: number) => (
     <button
@@ -354,16 +362,14 @@ export default function Sidebar({
             <span />
           </div>
 
-          <nav className="rl-group" aria-label="Espaços">
-            {ESPACOS.map((item) =>
-              rlItem({
-                id: item.href.slice(1),
-                label: item.label,
-                icon: item.icon,
-                active: item.label === 'Projetos' && !!projectsAnchor,
-                onSelect: item.label === 'Projetos' ? openProjects : undefined,
-              }),
-            )}
+          <nav className="rl-group" aria-label="Projetos">
+            {rlItem({
+              id: 'projetos',
+              label: 'Projetos',
+              icon: PROJETOS_ITEM.icon,
+              active: !!projectsAnchor,
+              onSelect: openProjects,
+            })}
           </nav>
 
           <div className="rl-flex" />
@@ -375,9 +381,15 @@ export default function Sidebar({
             </span>
           </button>
           <button className="rl-util" type="button">
-            <QuestionIcon />
+            <GraduationCapIcon />
             <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Ajuda
+              Educação
+            </span>
+          </button>
+          <button className="rl-util" type="button">
+            <PacksIcon />
+            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+              Packs
             </span>
           </button>
           <button className="rl-util" type="button">
@@ -419,7 +431,16 @@ export default function Sidebar({
       <div className="sidebar-content">
         <div className="sidebar-spacer-top" />
 
-        {(layout === 'a' || layout === 'b') && (
+        {(layout === 'a' || layout === 'c') && (
+          <nav className="sidebar-group" aria-label="Pilares" ref={pilaresRef}>
+            {chatItem}
+            {pinned.map((id) => moduleNav(id, itemIndex++))}
+            {maisButton(itemIndex++)}
+            {projetosNav(itemIndex++)}
+          </nav>
+        )}
+
+        {layout === 'b' && (
           <>
             <nav className="sidebar-group" aria-label="Pilares fixos">
               {chatItem}
@@ -431,15 +452,9 @@ export default function Sidebar({
               {pinned.map((id) => moduleNav(id, itemIndex++))}
               {maisButton(itemIndex++)}
             </nav>
+            {divider}
+            <nav className="sidebar-group" aria-label="Projetos">{projetosNav(itemIndex++)}</nav>
           </>
-        )}
-
-        {layout === 'c' && (
-          <nav className="sidebar-group" aria-label="Pilares" ref={pilaresRef}>
-            {chatItem}
-            {pinned.map((id) => moduleNav(id, itemIndex++))}
-            {maisButton(itemIndex++)}
-          </nav>
         )}
 
         {layout === 'd' && (
@@ -454,30 +469,15 @@ export default function Sidebar({
               {fixedNav('library', itemIndex++)}
               {fixedNav('tarefas', itemIndex++)}
             </nav>
+            {divider}
+            <nav className="sidebar-group" aria-label="Projetos">{projetosNav(itemIndex++)}</nav>
           </>
         )}
-
-        {divider}
-
-        <nav className="sidebar-group" aria-label="Espaços">
-          {ESPACOS.map((item) =>
-            item.label === 'Projetos' ? (
-              <NavItem
-                key={item.label}
-                item={{ ...item, active: !!projectsAnchor }}
-                index={itemIndex++}
-                onSelect={openProjects}
-              />
-            ) : (
-              <NavItem key={item.label} item={item} index={itemIndex++} />
-            ),
-          )}
-        </nav>
 
         <div className="sidebar-flex" />
 
         <nav className="sidebar-group is-utilities" aria-label="Utilitários">
-          {UTILITARIOS.map((item) => (
+          {BOTTOM_ITEMS.map((item) => (
             <NavItem key={item.label} item={item} index={itemIndex++} />
           ))}
         </nav>
@@ -512,7 +512,7 @@ export default function Sidebar({
           onReorder={handleReorder}
           onOpenPillar={(id) => onNavigate(id)}
           onClose={() => setMenuAnchor(null)}
-          showChat={layout !== 'a'}
+          showChat={layout !== 'b'}
           chatActive={activeView === 'chat'}
           onOpenChat={() => onNavigate('chat')}
         />

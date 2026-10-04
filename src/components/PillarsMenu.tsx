@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './pillars-menu.css'
-import { DotsSixIcon, PushPinFillIcon, PushPinIcon } from './SidebarIcons'
-import { ChatTeardropIcon } from './SidebarIcons'
+import { DotsSixIcon, HomeNavIcon, PushPinFillIcon, PushPinIcon } from './SidebarIcons'
 import { MODULE_BY_ID, isNavModule } from './pillars'
 import type { ModuleDef, ModuleId, NavModuleId } from './pillars'
 import { useFlip } from './useFlip'
@@ -166,9 +165,9 @@ export default function PillarsMenu({
           >
             <span className="pm-handle is-empty" />
             <span className="pm-icon">
-              <ChatTeardropIcon />
+              <HomeNavIcon size={17} />
             </span>
-            <span className="pm-label">Chat</span>
+            <span className="pm-label">Home</span>
           </div>
         </div>
       )}

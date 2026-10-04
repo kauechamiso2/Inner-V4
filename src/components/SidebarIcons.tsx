@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import { Bot, Brackets, CalendarClock, House } from 'lucide-react'
+import { Bot, CalendarClock, House } from 'lucide-react'
 
 /* Ícones de navegação via Lucide (currentColor = --text-mid, casa com a
    família de ícones do sidebar em claro/escuro). */
@@ -13,7 +13,24 @@ export function AgendadoIcon({ size = 18 }: NavIconProps) {
   return <CalendarClock size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
 }
 export function PromptsPillarIcon({ size = 18 }: NavIconProps) {
-  return <Brackets size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={navStyle}
+      aria-hidden="true"
+    >
+      <path d="M8.5 4.5H6.8A1.8 1.8 0 0 0 5 6.3v11.4a1.8 1.8 0 0 0 1.8 1.8h1.7" />
+      <path d="M15.5 4.5h1.7A1.8 1.8 0 0 1 19 6.3v11.4a1.8 1.8 0 0 1-1.8 1.8h-1.7" />
+      <path d="M12 8c0-1.1.9-2 2-2M12 8c0-1.1-.9-2-2-2M12 16c0 1.1.9 2 2 2M12 16c0 1.1-.9 2-2 2M12 8v8" />
+    </svg>
+  )
 }
 export function AssistentesIcon({ size = 18 }: NavIconProps) {
   return <Bot size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
