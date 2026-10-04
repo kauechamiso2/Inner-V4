@@ -6,8 +6,16 @@ import sliders from '../assets/sliders.svg'
 import microphone from '../assets/microphone.svg'
 import arrowUp from '../assets/arrow-up.svg'
 
+type InputMode = 'agente' | 'chat'
+
+const PLACEHOLDERS: Record<InputMode, string> = {
+  agente: 'Pergunte ou crie qualquer coisa',
+  chat: 'Pergunte-me qualquer coisa',
+}
+
 export default function ChatHome() {
   const [value, setValue] = useState('')
+  const [mode, setMode] = useState<InputMode>('agente')
   const canSend = value.trim().length > 0
 
   return (
@@ -25,10 +33,45 @@ export default function ChatHome() {
           <h1 className="greeting-text">Me dê uma tarefa...</h1>
         </div>
 
-        <div className="chat-input-card">
+        <div className="chat-input-wrap">
+          <div className="chat-tabs" role="tablist" aria-label="Modo do input">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'agente'}
+              className={`chat-tab${mode === 'agente' ? ' is-active' : ''}`}
+              onClick={() => setMode('agente')}
+            >
+              <AgentOrb size={14} />
+              Agente
+              {mode === 'agente' && (
+                <>
+                  <span className="tab-foot tab-foot-l" aria-hidden="true" />
+                  <span className="tab-foot tab-foot-r" aria-hidden="true" />
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'chat'}
+              className={`chat-tab${mode === 'chat' ? ' is-active' : ''}`}
+              onClick={() => setMode('chat')}
+            >
+              Chat
+              {mode === 'chat' && (
+                <>
+                  <span className="tab-foot tab-foot-l" aria-hidden="true" />
+                  <span className="tab-foot tab-foot-r" aria-hidden="true" />
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="chat-input-card">
           <textarea
             className="chat-input-field"
-            placeholder="Pergunte ou crie qualquer coisa"
+            placeholder={PLACEHOLDERS[mode]}
             rows={1}
             spellCheck={false}
             value={value}
@@ -57,6 +100,7 @@ export default function ChatHome() {
                 <img src={arrowUp} alt="" aria-hidden="true" />
               </button>
             </div>
+          </div>
           </div>
         </div>
       </div>
