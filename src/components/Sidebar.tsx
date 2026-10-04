@@ -6,9 +6,7 @@ import ultra from '../assets/ultra.svg'
 import avatar from '../assets/avatar.png'
 import {
   CaretRightIcon,
-  DevicesIcon,
   DotsThreeIcon,
-  FolderSimpleIcon,
   GraduationCapIcon,
   HomeNavIcon,
   PacksIcon,
@@ -25,7 +23,6 @@ import {
 } from './pillars'
 import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
-import ProjectsMenu from './ProjectsMenu'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
 
@@ -40,14 +37,11 @@ type Item = {
   narrowIcon?: boolean
 }
 
-const PROJETOS_ITEM: Item = { label: 'Projetos', href: '#projetos', icon: <FolderSimpleIcon /> }
-
-/* parte de baixo: Indique, Educação e Packs (saíram do meio); Ajuda saiu por ora */
+/* parte de baixo: Indique, Packs e Educação (Ajuda e Baixe o app saíram) */
 const BOTTOM_ITEMS: Item[] = [
   { label: 'Indique e ganhe', href: '#indique', icon: <TicketIcon /> },
-  { label: 'Educação', href: '#educacao', icon: <GraduationCapIcon /> },
   { label: 'Packs', href: '#packs', icon: <PacksIcon /> },
-  { label: 'Baixe o app', href: '#app', icon: <DevicesIcon /> },
+  { label: 'Educação', href: '#educacao', icon: <GraduationCapIcon /> },
 ]
 
 function NavItem({
@@ -115,13 +109,6 @@ export default function Sidebar({
   const pinned: ModuleId[] = fullPool ? pinnedB : pinnedA
 
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
-  const [projectsAnchor, setProjectsAnchor] = useState<DOMRect | null>(null)
-
-  /* abre o menu de projetos ancorado no item "Projetos" (fecha o de pilares) */
-  const openProjects = (rect: DOMRect) => {
-    setMenuAnchor(null)
-    setProjectsAnchor(rect)
-  }
   const maisRef = useRef<HTMLButtonElement>(null)
   const pilaresRef = useRef<HTMLElement>(null)
   const capturePilares = useFlip(pilaresRef)
@@ -151,7 +138,6 @@ export default function Sidebar({
   }
 
   const toggleMenu = () => {
-    setProjectsAnchor(null)
     if (menuAnchor) {
       setMenuAnchor(null)
     } else if (maisRef.current) {
@@ -176,12 +162,14 @@ export default function Sidebar({
   }
 
   /* módulos disponíveis no menu "Mais" conforme a diagramação */
-  const menuModules = fullPool ? MODULE_DEFS : MODULE_DEFS.filter((m) => m.id in PILLAR_BY)
-  const activeModule = (activeView !== 'chat' && activeView !== 'library' && activeView !== 'tarefas'
+  /* A/C: Home e Biblioteca são fixos → ficam fora do menu; o resto reordena.
+     B/D: menu só com pilares (Library/Tarefas fixos) */
+  const menuModules = fullPool
+    ? MODULE_DEFS.filter((m) => m.id !== 'library')
+    : MODULE_DEFS.filter((m) => m.id in PILLAR_BY)
+  const activeModule = (menuModules.some((m) => m.id === activeView)
     ? activeView
-    : fullPool && (activeView === 'library' || activeView === 'tarefas')
-      ? activeView
-      : null) as ModuleId | null
+    : null) as ModuleId | null
   const maisActive = activeModule !== null && !pinned.includes(activeModule)
   const menuActiveId = activeModule && menuModules.some((m) => m.id === activeModule) ? activeModule : null
 
@@ -235,15 +223,6 @@ export default function Sidebar({
       />
     )
   }
-
-  const projetosNav = (index: number) => (
-    <NavItem
-      key="projetos"
-      item={{ ...PROJETOS_ITEM, active: !!projectsAnchor }}
-      index={index}
-      onSelect={openProjects}
-    />
-  )
 
   const maisButton = (index: number) => (
     <button
@@ -358,20 +337,6 @@ export default function Sidebar({
             </button>
           </nav>
 
-          <div className="rl-divider">
-            <span />
-          </div>
-
-          <nav className="rl-group" aria-label="Projetos">
-            {rlItem({
-              id: 'projetos',
-              label: 'Projetos',
-              icon: PROJETOS_ITEM.icon,
-              active: !!projectsAnchor,
-              onSelect: openProjects,
-            })}
-          </nav>
-
           <div className="rl-flex" />
 
           <button className="rl-util" type="button">
@@ -381,21 +346,15 @@ export default function Sidebar({
             </span>
           </button>
           <button className="rl-util" type="button">
-            <GraduationCapIcon />
-            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Educação
-            </span>
-          </button>
-          <button className="rl-util" type="button">
             <PacksIcon />
             <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
               Packs
             </span>
           </button>
           <button className="rl-util" type="button">
-            <DevicesIcon />
+            <GraduationCapIcon />
             <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Baixe o app
+              Educação
             </span>
           </button>
 
@@ -434,9 +393,9 @@ export default function Sidebar({
         {(layout === 'a' || layout === 'c') && (
           <nav className="sidebar-group" aria-label="Pilares" ref={pilaresRef}>
             {chatItem}
+            {fixedNav('library', itemIndex++)}
             {pinned.map((id) => moduleNav(id, itemIndex++))}
             {maisButton(itemIndex++)}
-            {projetosNav(itemIndex++)}
           </nav>
         )}
 
@@ -452,8 +411,6 @@ export default function Sidebar({
               {pinned.map((id) => moduleNav(id, itemIndex++))}
               {maisButton(itemIndex++)}
             </nav>
-            {divider}
-            <nav className="sidebar-group" aria-label="Projetos">{projetosNav(itemIndex++)}</nav>
           </>
         )}
 
@@ -469,8 +426,6 @@ export default function Sidebar({
               {fixedNav('library', itemIndex++)}
               {fixedNav('tarefas', itemIndex++)}
             </nav>
-            {divider}
-            <nav className="sidebar-group" aria-label="Projetos">{projetosNav(itemIndex++)}</nav>
           </>
         )}
 
@@ -516,10 +471,6 @@ export default function Sidebar({
           chatActive={activeView === 'chat'}
           onOpenChat={() => onNavigate('chat')}
         />
-      )}
-
-      {projectsAnchor && (
-        <ProjectsMenu anchor={projectsAnchor} onClose={() => setProjectsAnchor(null)} />
       )}
 
       <LibraryCoachmark

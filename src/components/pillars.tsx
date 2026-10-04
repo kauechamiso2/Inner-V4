@@ -4,6 +4,7 @@ import {
   AssistentesIcon,
   BooksIcon,
   FileTextIcon,
+  FolderSimpleIcon,
   GlobeIcon,
   HomeNavIcon,
   ImageIcon,
@@ -14,12 +15,15 @@ import {
   VideoCameraIcon,
 } from './SidebarIcons'
 
-/* Pilares com fluxo de geração prototipado (Sites/Prompts/Assistentes ficam
-   de fora — abrem página placeholder, sem painel de histórico) */
-export type GenPillarId = Exclude<PillarId, 'sites' | 'prompts' | 'assistentes'>
+/* Pilares com fluxo de geração prototipado (Sites/Prompts/Assistentes/Projetos
+   ficam de fora — abrem página placeholder, sem painel de histórico) */
+export type GenPillarId = Exclude<
+  PillarId,
+  'sites' | 'prompts' | 'assistentes' | 'projetos'
+>
 
 export const isGenPillar = (id: PillarId): id is GenPillarId =>
-  id !== 'sites' && id !== 'prompts' && id !== 'assistentes'
+  id !== 'sites' && id !== 'prompts' && id !== 'assistentes' && id !== 'projetos'
 
 /* Views navegáveis da aplicação */
 export type AppView =
@@ -29,6 +33,7 @@ export type AppView =
   | 'sites'
   | 'prompts'
   | 'assistentes'
+  | 'projetos'
   | GenPillarId
 
 /* Views que abrem o painel de histórico (chat + pilares de geração) */
@@ -70,6 +75,7 @@ export type PillarId =
   | 'sites'
   | 'prompts'
   | 'assistentes'
+  | 'projetos'
 
 export type PillarDef = {
   id: PillarId
@@ -136,6 +142,12 @@ export const PILLAR_DEFS: PillarDef[] = [
     icon: <PromptsPillarIcon />,
     menuIcon: <PromptsPillarIcon size={17} />,
   },
+  {
+    id: 'projetos',
+    label: 'Projetos',
+    icon: <FolderSimpleIcon />,
+    menuIcon: <FolderSimpleIcon />,
+  },
 ]
 
 export const PILLAR_BY_ID = Object.fromEntries(PILLAR_DEFS.map((p) => [p.id, p])) as Record<
@@ -143,7 +155,7 @@ export const PILLAR_BY_ID = Object.fromEntries(PILLAR_DEFS.map((p) => [p.id, p])
   PillarDef
 >
 
-export const DEFAULT_PINNED: PillarId[] = ['assistentes', 'prompts', 'sites']
+export const DEFAULT_PINNED: PillarId[] = ['assistentes', 'prompts', 'sites', 'projetos']
 
 /* ============ Diagramações da sidebar ============ */
 
@@ -182,4 +194,5 @@ export const MODULE_BY_ID = Object.fromEntries(MODULE_DEFS.map((m) => [m.id, m])
   ModuleDef
 >
 
-export const DEFAULT_PINNED_B: ModuleId[] = ['library', 'tarefas', ...DEFAULT_PINNED]
+/* Pool da diagramação A/C: Home e Biblioteca ficam fixos; o resto reordena */
+export const DEFAULT_PINNED_B: ModuleId[] = ['tarefas', ...DEFAULT_PINNED]

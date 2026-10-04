@@ -28,11 +28,11 @@ function readSavedLayout(): SidebarLayout {
   return 'a'
 }
 
-const GRID_VIEWS = ['library', 'tarefas', 'sites', 'prompts', 'assistentes'] as const
+const GRID_VIEWS = ['library', 'tarefas', 'sites', 'prompts', 'assistentes', 'projetos'] as const
 
 function isGridView(
   view: AppView,
-): view is 'library' | 'tarefas' | 'sites' | 'prompts' | 'assistentes' {
+): view is 'library' | 'tarefas' | 'sites' | 'prompts' | 'assistentes' | 'projetos' {
   return (GRID_VIEWS as readonly string[]).includes(view)
 }
 

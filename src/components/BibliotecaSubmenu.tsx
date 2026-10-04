@@ -18,19 +18,15 @@ type Entry = {
   img: string
   sub: string
   color?: string
+  /* coleção com emoji nativo no lugar do ícone de pasta */
+  emoji?: string
   /* arquivo do tipo imagem mostra thumb no lugar do ícone */
   thumb?: string
   size?: string
 }
 
 const COLLECTIONS: Entry[] = [
-  { id: 'col-morning', label: 'Morning Briefing', img: folder, sub: '28 arquivos' },
-  { id: 'col-weekly', label: 'Weekly Briefing', img: folder, sub: '14 arquivos' },
-  { id: 'col-europa', label: 'Viagem Europa', img: folder, sub: '12 arquivos' },
-  { id: 'col-linkedin', label: 'Conteúdo LinkedIn', img: folder, sub: '22 arquivos' },
-  { id: 'col-marca', label: 'Materiais da marca', img: folder, sub: '18 arquivos' },
-  { id: 'col-juris', label: 'Jurisprudência', img: folder, sub: '9 arquivos' },
-  { id: 'col-site', label: 'Pesquisa de site', img: folder, sub: '7 arquivos' },
+  { id: 'col-hr', label: 'HR Stuff', img: folder, sub: '54 arquivos', emoji: '🧑‍💼' },
 ]
 
 const FILES: Entry[] = [
@@ -118,9 +114,13 @@ export default function BibliotecaSubmenu({ onSelect }: Props) {
                   pick(c, true)
                 }}
               >
-                <span className="bib-icon is-folder">
-                  <img src={c.img} alt="" />
-                </span>
+                {c.emoji ? (
+                  <span className="bib-icon is-emoji">{c.emoji}</span>
+                ) : (
+                  <span className="bib-icon is-folder">
+                    <img src={c.img} alt="" />
+                  </span>
+                )}
                 <span className="bib-text">
                   <span className="bib-label">{c.label}</span>
                   <span className="bib-sub">{c.sub}</span>

@@ -23,8 +23,9 @@ import type { GenPillarId, PanelView } from './pillars'
 
 /* ---------- Mock: histórico do Chat ---------- */
 
-type ChatSource = 'agent' | 'blue' | 'avatar' | 'dark' | 'spiral'
-type Chat = { title: string; source: ChatSource }
+type ChatSource = 'agent' | 'blue' | 'avatar' | 'dark' | 'spiral' | 'task'
+/* chats vindos de Tarefas usam o nome e o emoji (iOS) da tarefa */
+type Chat = { title: string; source: ChatSource; taskEmoji?: string }
 type ChatGroup = { label: string; chats: Chat[] }
 
 const CHAT_GROUPS: ChatGroup[] = [
@@ -32,6 +33,7 @@ const CHAT_GROUPS: ChatGroup[] = [
     label: 'Hoje',
     chats: [
       { title: 'Direção de arte da campanha', source: 'agent' },
+      { title: 'Monitoramento de voo LH441', source: 'task', taskEmoji: '✈️' },
       { title: 'Roteiro do vídeo de onboarding', source: 'agent' },
       { title: 'Copy do e-mail de outubro', source: 'blue' },
       { title: 'Análise do churn de setembro', source: 'agent' },
@@ -42,8 +44,10 @@ const CHAT_GROUPS: ChatGroup[] = [
     label: 'Esta semana',
     chats: [
       { title: 'Ajustes no pitch do Squad', source: 'dark' },
+      { title: 'Monitoramento de e-mails importantes', source: 'task', taskEmoji: '✉️' },
       { title: 'Resumo da call com investidores', source: 'agent' },
       { title: 'Plano de conteúdo de novembro', source: 'agent' },
+      { title: 'Relatório de vendas Q4', source: 'task', taskEmoji: '📊' },
       { title: 'Tradução do contrato pra inglês', source: 'spiral' },
       { title: 'Benchmark de concorrentes', source: 'agent' },
       { title: 'Nomes pro novo produto', source: 'blue' },
@@ -55,6 +59,7 @@ const CHAT_GROUPS: ChatGroup[] = [
     chats: [
       { title: 'Checklist de QA do app', source: 'agent' },
       { title: 'Post de aniversário da empresa', source: 'spiral' },
+      { title: 'Monitoramento de preços', source: 'task', taskEmoji: '🏷️' },
       { title: 'Brainstorm de features do V4', source: 'agent' },
       { title: 'Relatório mensal pro board', source: 'dark' },
       { title: 'FAQ da central de ajuda', source: 'agent' },
@@ -189,7 +194,7 @@ const PILLAR_ROW_ICONS: Partial<Record<GenPillarId, (color: string) => ReactNode
 
 /* ---------- Ícones de modelo (chat) ---------- */
 
-function ModelIcon({ source }: { source: Exclude<ChatSource, 'agent'> }) {
+function ModelIcon({ source }: { source: Exclude<ChatSource, 'agent' | 'task'> }) {
   return (
     <span className="model-icon" aria-hidden="true">
       {source === 'blue' && (
@@ -255,7 +260,15 @@ function ChatRow({
   return (
     <a className="chat-row" href="#conversa">
       <span className="chat-row-main">
-        {isAgent ? <AgentOrb /> : <ModelIcon source={chat.source as Exclude<ChatSource, 'agent'>} />}
+        {isAgent ? (
+          <AgentOrb />
+        ) : chat.source === 'task' ? (
+          <span className="chat-task-emoji" aria-hidden="true">
+            {chat.taskEmoji}
+          </span>
+        ) : (
+          <ModelIcon source={chat.source as Exclude<ChatSource, 'agent' | 'task'>} />
+        )}
         <span className={`chat-row-title${isAgent ? '' : ' is-model'}`}>{chat.title}</span>
       </span>
       {isAgent && !pinned && <span className="chat-chip">Agent</span>}
@@ -347,8 +360,12 @@ function PinPicker({
                 >
                   {isAgent ? (
                     <AgentOrb />
+                  ) : c.source === 'task' ? (
+                    <span className="chat-task-emoji" aria-hidden="true">
+                      {c.taskEmoji}
+                    </span>
                   ) : (
-                    <ModelIcon source={c.source as Exclude<ChatSource, 'agent'>} />
+                    <ModelIcon source={c.source as Exclude<ChatSource, 'agent' | 'task'>} />
                   )}
                   <span className="pin-pick-title">{c.title}</span>
                   <span className={`chat-pin is-static${isPinned('chat', c.title) ? ' is-pinned' : ''}`}>

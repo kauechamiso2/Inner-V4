@@ -4,7 +4,6 @@ import AgentOrb from './AgentOrb'
 import { CaretDownIcon, PlusIcon, VoiceWaveIcon } from './SidebarIcons'
 import MentionMenu, { MENTION_LABELS } from './MentionMenu'
 import type { Attachment, MentionItem } from './MentionMenu'
-import sliders from '../assets/sliders.svg'
 import microphone from '../assets/microphone.svg'
 import arrowUp from '../assets/arrow-up.svg'
 
@@ -394,10 +393,6 @@ export default function ChatHome({
                   />
                 )}
               </span>
-              <button className="ch-chip" type="button">
-                <img className="is-rotated" src={sliders} alt="" aria-hidden="true" />
-                <span>Ferramentas</span>
-              </button>
               {feature && (
                 <span className="feature-pill" key={feature.id}>
                   <button

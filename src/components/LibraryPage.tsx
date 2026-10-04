@@ -27,18 +27,7 @@ type Collection = {
 /* cor + emoji são apenas defaults de demonstração — no produto o usuário
    escolhe ambos na criação da coleção */
 const COLLECTIONS: Collection[] = [
-  { name: 'Recentes', count: '0 arquivos', emoji: '🕐', color: '#3E63C4' },
-  { name: 'Não categorizado', count: '16 itens', emoji: '📁', color: '', neutral: true },
-  { name: 'Setup do site', count: '3 itens', emoji: '⚙️', color: '', neutral: true },
-  { name: 'Morning Briefing', count: '28 arquivos', emoji: '☀️', color: '#CC8A04' },
-  { name: 'Weekly Briefing', count: '14 arquivos', emoji: '🗓️', color: '#CC8A04' },
-  { name: 'Viagem Europa', count: '12 arquivos', emoji: '✈️', color: '#1F7A4D' },
-  { name: 'Morning Email', count: '5 arquivos', emoji: '✉️', color: '#6B46C1' },
-  { name: 'Conteúdo LinkedIn', count: '22 arquivos', emoji: '💼', color: '#C15A2B' },
-  { name: 'Jurisprudência', count: '9 arquivos', emoji: '⚖️', color: '#2D6A6E' },
-  { name: 'Pesquisa de site', count: '7 arquivos', emoji: '🌐', color: '#2563B8' },
-  { name: 'Materiais da marca', count: '18 arquivos', emoji: '🎨', color: '#B0472F' },
-  { name: 'Ver 3 mais', count: '34 no total', more: true, color: '', neutral: true },
+  { name: 'HR Stuff', count: '54 arquivos', emoji: '🧑‍💼', color: '#3E63C4' },
 ]
 
 const FILE_FILTERS = ['Todos', 'Texto e PDF', 'Slides', 'Planilhas', 'Imagens', 'Vídeos', 'Áudio', 'Outros']
