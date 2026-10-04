@@ -348,6 +348,17 @@
   display: block;
 }
 
+.file-icon.is-thumb {
+  overflow: hidden;
+  background: var(--thumb-ph);
+}
+
+.file-icon.is-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .file-name {
   font-size: 14px;
   font-weight: 400;

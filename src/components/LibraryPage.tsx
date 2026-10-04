@@ -45,20 +45,22 @@ const COLLECTIONS: Collection[] = [
 
 const FILE_FILTERS = ['Todos', 'Texto e PDF', 'Slides', 'Planilhas', 'Imagens', 'Vídeos', 'Áudio', 'Outros']
 
-type FileRow = { name: string; type: string; modified: string; icon: string; color: string }
+type FileRow = { name: string; type: string; modified: string; icon: string; color: string; thumb?: string }
+
+const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/80/80`
 
 const FILES: FileRow[] = [
   { name: 'Guia de marca Inner 2026', type: 'PDF', modified: 'há 2 horas', icon: fPdf, color: '#C0392B' },
-  { name: 'Hero 3D do site novo', type: 'Imagem', modified: 'há 3 horas', icon: fImage, color: '#7C4DC0' },
+  { name: 'Hero 3D do site novo', type: 'Imagem', modified: 'há 3 horas', icon: fImage, color: '#7C4DC0', thumb: thumb('lib-hero') },
   { name: 'Roteiro — vídeo institucional', type: 'Documento', modified: 'há 5 horas', icon: fText, color: '#3E63C4' },
   { name: 'Deck de vendas Q4', type: 'Slides', modified: 'ontem', icon: fPpt, color: '#C15A2B' },
   { name: 'Planilha de criativos — outubro', type: 'Planilha', modified: 'ontem', icon: fExcel, color: '#1F7A4D' },
-  { name: 'Banner da Black Friday', type: 'Imagem', modified: 'ontem', icon: fImage, color: '#7C4DC0' },
+  { name: 'Banner da Black Friday', type: 'Imagem', modified: 'ontem', icon: fImage, color: '#7C4DC0', thumb: thumb('lib-banner') },
   { name: 'Teaser do lançamento V4.mp4', type: 'Vídeo', modified: '2 dias atrás', icon: fVideo, color: '#4C52C4' },
   { name: 'Jingle da campanha de verão', type: 'Áudio', modified: '2 dias atrás', icon: fWave, color: '#C98A2D' },
   { name: 'Pesquisa de concorrentes', type: 'Website', modified: '3 dias atrás', icon: fGlobe, color: '#2563B8' },
   { name: 'Contrato de parceria.pdf', type: 'PDF', modified: '3 dias atrás', icon: fPdf, color: '#C0392B' },
-  { name: 'Fotos do ensaio de produto', type: 'Imagem', modified: '4 dias atrás', icon: fImage, color: '#7C4DC0' },
+  { name: 'Fotos do ensaio de produto', type: 'Imagem', modified: '4 dias atrás', icon: fImage, color: '#7C4DC0', thumb: thumb('lib-ensaio') },
   { name: 'Export de assets — marca.zip', type: 'Arquivo', modified: '4 dias atrás', icon: fZip, color: '#8A8A82' },
   { name: 'Narração do onboarding', type: 'Áudio', modified: '5 dias atrás', icon: fWave, color: '#C98A2D' },
   { name: 'Relatório de métricas — setembro', type: 'Planilha', modified: '5 dias atrás', icon: fExcel, color: '#1F7A4D' },
@@ -140,12 +142,18 @@ export default function LibraryPage() {
             </div>
             {FILES.map((file) => (
               <div className="file-row" key={file.name}>
-                <span
-                  className="file-icon"
-                  style={{ background: `color-mix(in srgb, ${file.color} 14%, var(--card-surface))` }}
-                >
-                  <img src={file.icon} alt="" />
-                </span>
+                {file.thumb ? (
+                  <span className="file-icon is-thumb">
+                    <img src={file.thumb} alt="" loading="lazy" />
+                  </span>
+                ) : (
+                  <span
+                    className="file-icon"
+                    style={{ background: `color-mix(in srgb, ${file.color} 14%, var(--card-surface))` }}
+                  >
+                    <img src={file.icon} alt="" />
+                  </span>
+                )}
                 <span className="col-name file-name">{file.name}</span>
                 <span className="col-type file-type">{file.type}</span>
                 <span className="col-mod file-mod">{file.modified}</span>

@@ -41,6 +41,18 @@ export type MentionItem = {
   agentOnly?: boolean
   /* abre o submenu da Biblioteca (busca + coleções + arquivos) em cascata */
   submenu?: boolean
+  /* quando selecionado, entra como anexo (acima do input), não como pill */
+  attachment?: Attachment
+}
+
+export type Attachment = {
+  kind: 'image' | 'file' | 'collection'
+  name: string
+  fileType?: string
+  size?: string
+  thumb?: string
+  color?: string
+  img?: string
 }
 
 type Section = { label: string; items: MentionItem[] }
@@ -289,13 +301,17 @@ export default function MentionMenu({
     return () => document.removeEventListener('keydown', onKey, true)
   }, [flat, active, onSelect, onClose])
 
-  // variante "plus": fecha ao clicar fora (o @ já fecha no blur do textarea)
+  // fecha ao clicar fora — para ambas as variantes.
+  // (antes o @ fechava no blur do textarea, o que o derrubava ao passar o
+  //  mouse sobre o menu; agora só fecha em clique externo, nunca no hover)
   useEffect(() => {
-    if (variant !== 'plus') return
     const onDown = (e: PointerEvent) => {
       const t = e.target as HTMLElement
-      if (!t.closest('.mention-menu') && !t.closest('.mm-sub-panel') && !t.closest('.ch-attach'))
-        onClose()
+      const inside =
+        t.closest('.mention-menu') ||
+        t.closest('.mm-sub-panel') ||
+        (variant === 'plus' ? t.closest('.ch-attach') : t.closest('.chat-input-editor'))
+      if (!inside) onClose()
     }
     const id = window.setTimeout(() => document.addEventListener('pointerdown', onDown), 0)
     return () => {

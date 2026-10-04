@@ -3,7 +3,7 @@ import './chat-home.css'
 import AgentOrb from './AgentOrb'
 import { CaretDownIcon, PlusIcon, VoiceWaveIcon } from './SidebarIcons'
 import MentionMenu, { MENTION_LABELS } from './MentionMenu'
-import type { MentionItem } from './MentionMenu'
+import type { Attachment, MentionItem } from './MentionMenu'
 import sliders from '../assets/sliders.svg'
 import microphone from '../assets/microphone.svg'
 import arrowUp from '../assets/arrow-up.svg'
@@ -38,6 +38,8 @@ export default function ChatHome() {
   const [plusOpen, setPlusOpen] = useState(false)
   /* apenas uma tool ativa por vez: ativar outra substitui a atual */
   const [feature, setFeature] = useState<MentionItem | null>(null)
+  /* anexos (arquivos/imagens) — vários permitidos, acima do input */
+  const [attachments, setAttachments] = useState<(Attachment & { uid: string })[]>([])
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const canSend = value.trim().length > 0
@@ -63,12 +65,32 @@ export default function ChatHome() {
         }
       })
     }
-    // itens agentOnly puxam o input para o modo Agente
-    if (item.agentOnly && mode === 'chat') setMode('agente')
-    if (item.feature) setFeature(item)
+    const addAttachment = (a: Attachment) =>
+      setAttachments((list) => [...list, { ...a, uid: `att-${Date.now()}-${Math.random()}` }])
+
+    if (item.attachment) {
+      // seleção da Biblioteca (arquivo/imagem/coleção) entra como anexo
+      addAttachment(item.attachment)
+    } else if (item.id === 'upload') {
+      // "Fotos e arquivos": mock de uma imagem anexada (thumb aleatória)
+      const seed = Math.floor(Math.random() * 10000)
+      addAttachment({
+        kind: 'image',
+        name: `Foto ${seed}.png`,
+        fileType: 'Imagem',
+        thumb: `https://picsum.photos/seed/up${seed}/120/120`,
+      })
+    } else {
+      // itens agentOnly puxam o input para o modo Agente
+      if (item.agentOnly && mode === 'chat') setMode('agente')
+      if (item.feature) setFeature(item)
+    }
     setMention(null)
     setPlusOpen(false)
   }
+
+  const removeAttachment = (uid: string) =>
+    setAttachments((list) => list.filter((a) => a.uid !== uid))
 
   /* segmentos do backdrop: menções em índigo */
   const segments = useMemo(() => {
@@ -141,6 +163,57 @@ export default function ChatHome() {
           </div>
 
           <div className="chat-input-card">
+          {attachments.length > 0 && (
+            <div className="chat-attachments">
+              {attachments.map((a) =>
+                a.kind === 'image' ? (
+                  <span className="att att-image" key={a.uid}>
+                    <img src={a.thumb} alt={a.name} loading="lazy" />
+                    <button
+                      type="button"
+                      className="att-remove"
+                      aria-label={`Remover ${a.name}`}
+                      onClick={() => removeAttachment(a.uid)}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3.2 3.2l5.6 5.6M8.8 3.2l-5.6 5.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  </span>
+                ) : (
+                  <span className="att att-file" key={a.uid}>
+                    <span
+                      className="att-file-icon"
+                      style={
+                        a.color
+                          ? { background: `color-mix(in srgb, ${a.color} 14%, var(--pop-surface))` }
+                          : { background: 'var(--lib-tile-neutral)' }
+                      }
+                    >
+                      <img src={a.img} alt="" />
+                    </span>
+                    <span className="att-file-text">
+                      <span className="att-file-name">{a.name}</span>
+                      <span className="att-file-sub">
+                        {a.fileType}
+                        {a.size ? ` · ${a.size}` : ''}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      className="att-remove att-remove-file"
+                      aria-label={`Remover ${a.name}`}
+                      onClick={() => removeAttachment(a.uid)}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3.2 3.2l5.6 5.6M8.8 3.2l-5.6 5.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  </span>
+                ),
+              )}
+            </div>
+          )}
           <div className="chat-input-editor">
             <div className="chat-input-backdrop" ref={backdropRef} aria-hidden="true">
               {segments.map((seg, i) => (
@@ -163,7 +236,6 @@ export default function ChatHome() {
               }}
               onKeyUp={(e) => syncMention(value, e.currentTarget.selectionStart ?? 0)}
               onClick={(e) => syncMention(value, e.currentTarget.selectionStart ?? 0)}
-              onBlur={() => setMention(null)}
               onScroll={(e) => {
                 if (backdropRef.current) backdropRef.current.scrollTop = e.currentTarget.scrollTop
               }}

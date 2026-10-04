@@ -10,7 +10,18 @@ import fVideo from '../assets/library/video.svg'
 import fWave from '../assets/library/waveform.svg'
 import type { MentionItem } from './MentionMenu'
 
-type Entry = { id: string; label: string; img: string; sub: string; color?: string }
+const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/120/120`
+
+type Entry = {
+  id: string
+  label: string
+  img: string
+  sub: string
+  color?: string
+  /* arquivo do tipo imagem mostra thumb no lugar do ícone */
+  thumb?: string
+  size?: string
+}
 
 const COLLECTIONS: Entry[] = [
   { id: 'col-morning', label: 'Morning Briefing', img: folder, sub: '28 arquivos' },
@@ -23,13 +34,14 @@ const COLLECTIONS: Entry[] = [
 ]
 
 const FILES: Entry[] = [
-  { id: 'f-marca', label: 'Guia de marca Inner 2026', img: fPdf, sub: 'PDF', color: '#C0392B' },
-  { id: 'f-hero', label: 'Hero 3D do site novo', img: fImage, sub: 'Imagem', color: '#7C4DC0' },
-  { id: 'f-roteiro', label: 'Roteiro — vídeo institucional', img: fText, sub: 'Documento', color: '#3E63C4' },
-  { id: 'f-deck', label: 'Deck de vendas Q4', img: fPpt, sub: 'Slides', color: '#C15A2B' },
-  { id: 'f-planilha', label: 'Planilha de criativos', img: fExcel, sub: 'Planilha', color: '#1F7A4D' },
-  { id: 'f-teaser', label: 'Teaser do lançamento V4', img: fVideo, sub: 'Vídeo', color: '#4C52C4' },
-  { id: 'f-jingle', label: 'Jingle da campanha', img: fWave, sub: 'Áudio', color: '#C98A2D' },
+  { id: 'f-marca', label: 'Guia de marca Inner 2026', img: fPdf, sub: 'PDF', color: '#C0392B', size: '2.4 MB' },
+  { id: 'f-hero', label: 'Hero 3D do site novo', img: fImage, sub: 'Imagem', color: '#7C4DC0', thumb: thumb('hero3d'), size: '1.8 MB' },
+  { id: 'f-roteiro', label: 'Roteiro — vídeo institucional', img: fText, sub: 'Documento', color: '#3E63C4', size: '48 KB' },
+  { id: 'f-deck', label: 'Deck de vendas Q4', img: fPpt, sub: 'Slides', color: '#C15A2B', size: '6.1 MB' },
+  { id: 'f-planilha', label: 'Planilha de criativos', img: fExcel, sub: 'Planilha', color: '#1F7A4D', size: '320 KB' },
+  { id: 'f-banner', label: 'Banner da Black Friday', img: fImage, sub: 'Imagem', color: '#7C4DC0', thumb: thumb('blackfriday'), size: '2.2 MB' },
+  { id: 'f-teaser', label: 'Teaser do lançamento V4', img: fVideo, sub: 'Vídeo', color: '#4C52C4', size: '58 MB' },
+  { id: 'f-jingle', label: 'Jingle da campanha', img: fWave, sub: 'Áudio', color: '#C98A2D', size: '3.4 MB' },
 ]
 
 const COLL_LIMIT = 4
@@ -65,9 +77,17 @@ export default function BibliotecaSubmenu({ onSelect }: Props) {
     onSelect({
       id: e.id,
       label: e.label,
-      img: collection ? undefined : e.img,
-      icon: collection ? <img src={folder} alt="" /> : undefined,
-      feature: true,
+      attachment: collection
+        ? { kind: 'collection', name: e.label, fileType: e.sub, img: folder }
+        : {
+            kind: e.sub === 'Imagem' ? 'image' : 'file',
+            name: e.label,
+            fileType: e.sub,
+            size: e.size,
+            thumb: e.thumb,
+            color: e.color,
+            img: e.img,
+          },
     })
 
   return (
@@ -135,12 +155,18 @@ export default function BibliotecaSubmenu({ onSelect }: Props) {
                   pick(f, false)
                 }}
               >
-                <span
-                  className="bib-icon"
-                  style={{ background: `color-mix(in srgb, ${f.color} 14%, var(--pop-surface))` }}
-                >
-                  <img src={f.img} alt="" />
-                </span>
+                {f.thumb ? (
+                  <span className="bib-icon is-thumb">
+                    <img src={f.thumb} alt="" loading="lazy" />
+                  </span>
+                ) : (
+                  <span
+                    className="bib-icon"
+                    style={{ background: `color-mix(in srgb, ${f.color} 14%, var(--pop-surface))` }}
+                  >
+                    <img src={f.img} alt="" />
+                  </span>
+                )}
                 <span className="bib-text">
                   <span className="bib-label">{f.label}</span>
                   <span className="bib-sub">{f.sub}</span>

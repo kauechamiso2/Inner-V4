@@ -205,11 +205,11 @@
 .bib-search {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 10px;
+  gap: 9px;
+  height: 42px;
+  padding: 0 12px;
   margin-bottom: 4px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--hover-04);
 }
 
@@ -294,6 +294,17 @@
   height: 15px;
   display: block;
   object-fit: contain;
+}
+
+.bib-icon.is-thumb {
+  overflow: hidden;
+  background: var(--thumb-ph);
+}
+
+.bib-icon.is-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .bib-text {

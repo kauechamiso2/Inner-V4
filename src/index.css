@@ -48,22 +48,22 @@
   --newbtn-mix-active: 23%;
   --newbtn-fg-mix: 100%;
 
-  /* Página de ferramentas (cards de pilar) */
-  --card-surface: #f6f6f4;
-  --card-desc: #8e8e8a;
-  --card-border: #ececea;
-  --card-border-hover: #dcdcd6;
-  --pill-active-bg: #f2f2f0;
+  /* Página de ferramentas (cards) — mesma família neutra do sidebar */
+  --card-surface: #f3f3f3;
+  --card-desc: #8e8e8e;
+  --card-border: var(--sb-border);
+  --card-border-hover: #d8d8d8;
+  --pill-active-bg: #eaeaea;
   --fav-surface: #ffffff;
-  --fav-border: #e3e3de;
+  --fav-border: var(--sb-border);
   --skeleton-base: rgba(0, 0, 0, 0.06);
   --skeleton-sheen: rgba(255, 255, 255, 0.65);
 
   /* Biblioteca */
-  --lib-tile-neutral: #efefec;
-  --lib-list-bg: #fbfbfa;
-  --lib-list-head: #f4f4f2;
-  --lib-list-border: #efefec;
+  --lib-tile-neutral: #e7e7e7;
+  --lib-list-bg: #f6f6f6;
+  --lib-list-head: #f0f0f0;
+  --lib-list-border: #ececec;
 
   /* Card do input do chat */
   --input-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.05);
@@ -78,7 +78,7 @@
   --feature-remove-hover: rgba(26, 115, 232, 0.16);
 
   /* Diversos */
-  --thumb-ph: #ececec;
+  --thumb-ph: #e7e7e7;
   --rl-divider-line: #dedede;
   --chip-bg: #e6e8ee;
   --chip-border: #d9dde6;
@@ -95,10 +95,16 @@
   --main-bg: #ffffff;
   --main-bg-image: none;
 
-  --card-surface: #f4f6f9;
+  --card-surface: #eef2f8;
   --card-desc: #8d939d;
-  --pill-active-bg: #eef0f4;
+  --card-border-hover: #d4dae4;
+  --pill-active-bg: #e7ebf2;
   --fav-border: #e2e5eb;
+  --lib-tile-neutral: #e4e9f0;
+  --lib-list-bg: #f4f7fb;
+  --lib-list-head: #edf0f5;
+  --lib-list-border: #e4e8ef;
+  --thumb-ph: #e4e9f0;
 }
 
 :root[data-theme='neutro'] {
@@ -110,6 +116,16 @@
   --panel-border: #e8e8e8;
   --main-bg: #efefef;
   --main-bg-image: linear-gradient(180deg, #fdfdfd 0%, #efefef 100%);
+
+  --card-surface: #f7f7f7;
+  --card-border: #e4e4e4;
+  --card-border-hover: #d6d6d6;
+  --pill-active-bg: #e9e9e9;
+  --lib-tile-neutral: #e7e7e7;
+  --lib-list-bg: #f4f4f4;
+  --lib-list-head: #eeeeee;
+  --lib-list-border: #e6e6e6;
+  --thumb-ph: #e7e7e7;
 }
 
 /* ============ Modo escuro ============ */
