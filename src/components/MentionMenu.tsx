@@ -33,6 +33,10 @@ export type MentionItem = {
   mono?: boolean
   /* ativa uma feature (vira pill ao lado de Ferramentas) — "a partir de Tarefa" */
   feature?: boolean
+  /* placeholder que o input assume enquanto a feature está ativa */
+  placeholder?: string
+  /* só funciona no modo Agente: em Chat, mostra badge e troca de modo ao clicar */
+  agentOnly?: boolean
 }
 
 type Section = { label: string; items: MentionItem[] }
@@ -43,34 +47,158 @@ const SECTIONS: Section[] = [
     items: [
       { id: 'upload', label: 'Fotos e arquivos', icon: <UploadSimpleIcon /> },
       { id: 'biblioteca', label: 'Arquivos da Biblioteca', icon: <BooksIcon /> },
-      { id: 'tarefa', label: 'Tarefa', icon: <LightningIcon />, feature: true },
+      {
+        id: 'tarefa',
+        label: 'Tarefa',
+        icon: <LightningIcon />,
+        feature: true,
+        placeholder: 'Descreva a tarefa que você quer adicionar',
+      },
+      {
+        id: 'web-search',
+        label: 'Pesquisa na web',
+        icon: <GlobeIcon />,
+        feature: true,
+        placeholder: 'O que você quer pesquisar na web?',
+      },
     ],
   },
   {
     label: 'Gerar',
     items: [
-      { id: 'imagem', label: 'Imagem', icon: <ImageIcon />, feature: true },
-      { id: 'video', label: 'Vídeo', icon: <VideoCameraIcon />, feature: true },
-      { id: 'reuniao', label: 'Reunião', icon: <PresentationChartIcon />, feature: true },
-      { id: 'audio', label: 'Áudio', icon: <SpeakerHighIcon />, feature: true },
-      { id: 'documento', label: 'Documento', icon: <FileTextIcon />, feature: true },
-      { id: 'apresentacao', label: 'Apresentação', icon: <SlidesIcon />, feature: true },
-      { id: 'site', label: 'Site', icon: <GlobeIcon />, feature: true },
+      {
+        id: 'imagem',
+        label: 'Imagem',
+        icon: <ImageIcon />,
+        feature: true,
+        placeholder: 'Descreva a imagem que você quer criar...',
+      },
+      {
+        id: 'video',
+        label: 'Vídeo',
+        icon: <VideoCameraIcon />,
+        feature: true,
+        placeholder: 'Descreva o vídeo que você quer criar...',
+      },
+      {
+        id: 'reuniao',
+        label: 'Reunião',
+        icon: <PresentationChartIcon />,
+        feature: true,
+        placeholder: 'Sobre o que será a reunião?',
+      },
+      {
+        id: 'audio',
+        label: 'Áudio',
+        icon: <SpeakerHighIcon />,
+        feature: true,
+        placeholder: 'Descreva o áudio que você quer gerar...',
+      },
+      {
+        id: 'documento',
+        label: 'Documento',
+        icon: <FileTextIcon />,
+        feature: true,
+        placeholder: 'Sobre o que será o documento?',
+      },
+      {
+        id: 'apresentacao',
+        label: 'Apresentação',
+        icon: <SlidesIcon />,
+        feature: true,
+        placeholder: 'Sobre o que será a apresentação?',
+      },
+      {
+        id: 'site',
+        label: 'Site',
+        icon: <GlobeIcon />,
+        feature: true,
+        placeholder: 'Descreva o site que você quer criar...',
+      },
     ],
   },
   {
     label: 'Integrações',
     items: [
-      { id: 'gmail', label: 'Gmail', img: gmail, feature: true },
-      { id: 'google-calendar', label: 'Google Calendar', img: googleCalendar, feature: true },
-      { id: 'google-drive', label: 'Google Drive', img: googleDrive, feature: true },
-      { id: 'google-sheets', label: 'Google Sheets', img: googleSheets, feature: true },
-      { id: 'google-slides', label: 'Google Slides', img: googleSlides, feature: true },
-      { id: 'outlook', label: 'Outlook', img: outlook, feature: true },
-      { id: 'hubspot', label: 'Hubspot', img: hubspot, feature: true },
-      { id: 'salesforce', label: 'Salesforce', img: salesforce, feature: true },
-      { id: 'github', label: 'Github', img: github, mono: true, feature: true },
-      { id: 'notion', label: 'Notion', img: notion, mono: true, feature: true },
+      {
+        id: 'gmail',
+        label: 'Gmail',
+        img: gmail,
+        feature: true,
+        placeholder: 'O que você quer fazer no Gmail?',
+      },
+      {
+        id: 'google-calendar',
+        label: 'Google Calendar',
+        img: googleCalendar,
+        feature: true,
+        placeholder: 'O que você quer fazer no Google Calendar?',
+      },
+      {
+        id: 'google-drive',
+        label: 'Google Drive',
+        img: googleDrive,
+        feature: true,
+        agentOnly: true,
+        placeholder: 'O que você quer buscar no Google Drive?',
+      },
+      {
+        id: 'google-sheets',
+        label: 'Google Sheets',
+        img: googleSheets,
+        feature: true,
+        agentOnly: true,
+        placeholder: 'O que você quer fazer no Google Sheets?',
+      },
+      {
+        id: 'google-slides',
+        label: 'Google Slides',
+        img: googleSlides,
+        feature: true,
+        agentOnly: true,
+        placeholder: 'O que você quer fazer no Google Slides?',
+      },
+      {
+        id: 'outlook',
+        label: 'Outlook',
+        img: outlook,
+        feature: true,
+        placeholder: 'O que você quer fazer no Outlook?',
+      },
+      {
+        id: 'hubspot',
+        label: 'Hubspot',
+        img: hubspot,
+        feature: true,
+        agentOnly: true,
+        placeholder: 'O que você quer fazer no Hubspot?',
+      },
+      {
+        id: 'salesforce',
+        label: 'Salesforce',
+        img: salesforce,
+        feature: true,
+        agentOnly: true,
+        placeholder: 'O que você quer fazer no Salesforce?',
+      },
+      {
+        id: 'github',
+        label: 'Github',
+        img: github,
+        mono: true,
+        feature: true,
+        agentOnly: true,
+        placeholder: 'O que você quer fazer no Github?',
+      },
+      {
+        id: 'notion',
+        label: 'Notion',
+        img: notion,
+        mono: true,
+        feature: true,
+        agentOnly: true,
+        placeholder: 'O que você quer fazer no Notion?',
+      },
     ],
   },
 ]
@@ -90,9 +218,17 @@ type Props = {
   onClose: () => void
   /* 'mention' abre abaixo do editor (gatilho @); 'plus' abre acima do botão + */
   variant?: 'mention' | 'plus'
+  /* modo atual do input — em 'chat', itens agentOnly ganham badge "Agent" */
+  mode?: 'agente' | 'chat'
 }
 
-export default function MentionMenu({ query, onSelect, onClose, variant = 'mention' }: Props) {
+export default function MentionMenu({
+  query,
+  onSelect,
+  onClose,
+  variant = 'mention',
+  mode = 'agente',
+}: Props) {
   const sections = useMemo(() => {
     const q = normalize(query)
     if (!q) return SECTIONS
@@ -182,6 +318,7 @@ export default function MentionMenu({ query, onSelect, onClose, variant = 'menti
                     {item.img ? <img src={item.img} alt="" loading="lazy" /> : item.icon}
                   </span>
                   <span className="mm-label">{item.label}</span>
+                  {mode === 'chat' && item.agentOnly && <span className="mm-agent">Agent</span>}
                 </button>
               )
             })}

@@ -63,6 +63,8 @@ export default function ChatHome() {
         }
       })
     }
+    // itens agentOnly puxam o input para o modo Agente
+    if (item.agentOnly && mode === 'chat') setMode('agente')
     if (item.feature) setFeature(item)
     setMention(null)
     setPlusOpen(false)
@@ -151,7 +153,7 @@ export default function ChatHome() {
             <textarea
               ref={fieldRef}
               className="chat-input-field"
-              placeholder={PLACEHOLDERS[mode]}
+              placeholder={feature?.placeholder ?? PLACEHOLDERS[mode]}
               rows={1}
               spellCheck={false}
               value={value}
@@ -169,6 +171,7 @@ export default function ChatHome() {
             {mention && (
               <MentionMenu
                 query={mention.query}
+                mode={mode}
                 onSelect={applyItem}
                 onClose={() => setMention(null)}
               />
@@ -211,6 +214,7 @@ export default function ChatHome() {
                   <MentionMenu
                     query=""
                     variant="plus"
+                    mode={mode}
                     onSelect={applyItem}
                     onClose={() => setPlusOpen(false)}
                   />
