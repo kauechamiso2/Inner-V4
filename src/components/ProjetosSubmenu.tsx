@@ -62,7 +62,6 @@ export default function ProjetosSubmenu({ onSelect }: Props) {
                 </span>
                 <span className="bib-text">
                   <span className="bib-label">{p.name}</span>
-                  <span className="bib-sub">{p.sub}</span>
                 </span>
               </button>
             ))}
