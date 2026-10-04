@@ -17,6 +17,7 @@ import {
   UploadSimpleIcon,
   VideoCameraIcon,
 } from './SidebarIcons'
+import { COLLECTIONS, FILES, entryAttachment } from './libraryEntries'
 import gmail from '../assets/integrations/gmail.svg'
 import googleCalendar from '../assets/integrations/google-calendar.svg'
 import googleDrive from '../assets/integrations/google-drive.svg'
@@ -253,10 +254,29 @@ export default function MentionMenu({
   const sections = useMemo(() => {
     const q = normalize(query)
     if (!q) return SECTIONS
-    return SECTIONS.map((s) => ({
+    const base = SECTIONS.map((s) => ({
       ...s,
       items: s.items.filter((i) => normalize(i.label).includes(q)),
     })).filter((s) => s.items.length > 0)
+
+    /* busca também dentro da Biblioteca (coleções e arquivos) */
+    const libItems: MentionItem[] = [
+      ...COLLECTIONS.filter((c) => normalize(c.label).includes(q)).map((c) => ({
+        id: c.id,
+        label: c.label,
+        icon: c.emoji ? <span className="mm-emoji">{c.emoji}</span> : undefined,
+        img: c.emoji ? undefined : c.img,
+        attachment: entryAttachment(c, true),
+      })),
+      ...FILES.filter((f) => normalize(f.label).includes(q)).map((f) => ({
+        id: f.id,
+        label: f.label,
+        img: f.thumb ?? f.img,
+        attachment: entryAttachment(f, false),
+      })),
+    ]
+    if (libItems.length > 0) base.push({ label: 'Biblioteca', items: libItems })
+    return base
   }, [query])
 
   const flat = useMemo(() => sections.flatMap((s) => s.items), [sections])

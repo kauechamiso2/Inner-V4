@@ -19,10 +19,10 @@ import {
   MODULE_BY_ID,
   MODULE_DEFS,
   PILLAR_DEFS,
-  isNavModule,
 } from './pillars'
 import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
+import ProjectsMenu from './ProjectsMenu'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
 
@@ -109,6 +109,14 @@ export default function Sidebar({
   const pinned: ModuleId[] = fullPool ? pinnedB : pinnedA
 
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
+  const [projectsAnchor, setProjectsAnchor] = useState<DOMRect | null>(null)
+
+  /* Projetos é um pilar do pool, mas o clique abre o popover de projetos
+     (ancorado no item), em vez de navegar */
+  const openProjects = (rect: DOMRect) => {
+    setMenuAnchor(null)
+    setProjectsAnchor(rect)
+  }
   const maisRef = useRef<HTMLButtonElement>(null)
   const pilaresRef = useRef<HTMLElement>(null)
   const capturePilares = useFlip(pilaresRef)
@@ -138,6 +146,7 @@ export default function Sidebar({
   }
 
   const toggleMenu = () => {
+    setProjectsAnchor(null)
     if (menuAnchor) {
       setMenuAnchor(null)
     } else if (maisRef.current) {
@@ -189,17 +198,19 @@ export default function Sidebar({
 
   const moduleNav = (id: ModuleId, index: number) => {
     const def = MODULE_BY_ID[id]
+    /* Projetos abre o popover de projetos; os demais navegam */
+    const isProjetos = id === 'projetos'
     return (
       <NavItem
         key={id}
         flipId={id}
         index={index}
-        onSelect={isNavModule(id) ? () => onNavigate(id) : undefined}
+        onSelect={isProjetos ? openProjects : () => onNavigate(id)}
         item={{
           label: def.label,
           href: `#${id}`,
           icon: def.icon,
-          active: activeView === id,
+          active: isProjetos ? !!projectsAnchor : activeView === id,
           narrowIcon: def.narrowIcon,
         }}
       />
@@ -315,9 +326,9 @@ export default function Sidebar({
                 id,
                 label: MODULE_BY_ID[id].label,
                 icon: MODULE_BY_ID[id].icon,
-                active: activeView === id,
+                active: id === 'projetos' ? !!projectsAnchor : activeView === id,
                 narrow: MODULE_BY_ID[id].narrowIcon,
-                onSelect: isNavModule(id) ? () => onNavigate(id) : undefined,
+                onSelect: id === 'projetos' ? openProjects : () => onNavigate(id),
                 flipId: id,
               }),
             )}
@@ -471,6 +482,10 @@ export default function Sidebar({
           chatActive={activeView === 'chat'}
           onOpenChat={() => onNavigate('chat')}
         />
+      )}
+
+      {projectsAnchor && (
+        <ProjectsMenu anchor={projectsAnchor} onClose={() => setProjectsAnchor(null)} />
       )}
 
       <LibraryCoachmark

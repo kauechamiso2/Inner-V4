@@ -361,3 +361,14 @@
   font-size: 16px;
   line-height: 1;
 }
+
+/* emoji de coleção nos resultados de Biblioteca do menu de @ */
+.mm-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  font-size: 15px;
+  line-height: 1;
+}
