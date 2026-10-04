@@ -118,7 +118,36 @@ export default function LibraryPage() {
 
         {/* Arquivos */}
         <section className="lib-section">
-          <h2 className="lib-files-title">Arquivos</h2>
+          <div className="lib-section-head">
+            <h2 className="lib-files-title">Arquivos</h2>
+            <div className="lib-files-actions">
+              <button className="lib-new" type="button" aria-label="Filtrar">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                  <path
+                    d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
+                    stroke="#3D3D3D"
+                    strokeWidth="1.125"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                  Filtrar
+                </span>
+              </button>
+              <button className="lib-new" type="button" aria-label="Ver em grade">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                  <rect x="2.8" y="2.8" width="5" height="5" rx="1.1" stroke="#3D3D3D" strokeWidth="1.125" />
+                  <rect x="10.2" y="2.8" width="5" height="5" rx="1.1" stroke="#3D3D3D" strokeWidth="1.125" />
+                  <rect x="2.8" y="10.2" width="5" height="5" rx="1.1" stroke="#3D3D3D" strokeWidth="1.125" />
+                  <rect x="10.2" y="10.2" width="5" height="5" rx="1.1" stroke="#3D3D3D" strokeWidth="1.125" />
+                </svg>
+                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                  Ver em grade
+                </span>
+              </button>
+            </div>
+          </div>
 
           <div className="lib-filters">
             {FILE_FILTERS.map((f) => (

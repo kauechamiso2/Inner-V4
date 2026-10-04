@@ -234,6 +234,17 @@
   color: var(--text-strong);
 }
 
+/* ações ao lado do título "Arquivos" (filtrar / alternar visualização) */
+.lib-files-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lib-files-actions .lib-new svg {
+  display: block;
+}
+
 .lib-filters {
   display: flex;
   align-items: center;
