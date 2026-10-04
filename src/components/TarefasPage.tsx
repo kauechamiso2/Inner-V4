@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import './library-page.css'
 import './tasks-page.css'
 import searchIcon from '../assets/library/search.svg'
-import { MoreHorizontal, Pencil, Pause, Play, Repeat, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Pause, Play, Repeat, Trash2, Zap } from 'lucide-react'
 
 type Task = {
   id: string
@@ -94,6 +94,10 @@ function TaskCard({
 
       {open && (
         <div className="task-menu" role="menu">
+          <button type="button" className="task-menu-item" role="menuitem">
+            <Zap size={15} strokeWidth={1.9} />
+            Executar agora
+          </button>
           <button type="button" className="task-menu-item" role="menuitem">
             <Pencil size={15} strokeWidth={1.9} />
             Editar tarefa
