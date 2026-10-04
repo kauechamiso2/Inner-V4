@@ -77,6 +77,17 @@
   height: 22px;
 }
 
+.task-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* inativas: emoji dessaturado reforça o estado "apagado" */
+.task-card.is-inactive .task-emoji {
+  filter: grayscale(1);
+  opacity: 0.75;
+}
+
 .task-text {
   margin-top: auto;
   display: flex;

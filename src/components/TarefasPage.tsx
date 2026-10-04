@@ -4,12 +4,11 @@ import './library-page.css'
 import './tasks-page.css'
 import searchIcon from '../assets/library/search.svg'
 import { MoreHorizontal, Pencil, Pause, Play, Repeat, Trash2 } from 'lucide-react'
-import { IconAirplane, IconEnvelope, IconChartBar, IconTag } from './CollectionIcons'
 
 type Task = {
   id: string
   name: string
-  Icon: () => JSX.Element
+  emoji: string
   color: string
   recurring: boolean
   next: string | null
@@ -21,7 +20,7 @@ const ACTIVE: Task[] = [
   {
     id: 'voo',
     name: 'Monitoramento de voo LH441',
-    Icon: IconAirplane,
+    emoji: '✈️',
     color: '#2563B8',
     recurring: true,
     next: 'Hoje, 18:45',
@@ -30,7 +29,7 @@ const ACTIVE: Task[] = [
   {
     id: 'email',
     name: 'Monitoramento de e-mails importantes',
-    Icon: IconEnvelope,
+    emoji: '✉️',
     color: '#6B46C1',
     recurring: true,
     next: 'Hoje, 15:00',
@@ -39,7 +38,7 @@ const ACTIVE: Task[] = [
   {
     id: 'vendas',
     name: 'Relatório de vendas Q4',
-    Icon: IconChartBar,
+    emoji: '📊',
     color: '#1F7A4D',
     recurring: false,
     next: '20 out, 09:00',
@@ -51,7 +50,7 @@ const INACTIVE: Task[] = [
   {
     id: 'precos',
     name: 'Monitoramento de preços',
-    Icon: IconTag,
+    emoji: '🏷️',
     color: '#C15A2B',
     recurring: true,
     next: null,
@@ -73,13 +72,9 @@ function TaskCard({
   open: boolean
   onToggle: () => void
 }) {
-  const Icon = task.Icon
   const iconStyle: CSSProperties = inactive
-    ? { background: 'var(--lib-tile-neutral)', color: 'var(--text-faint)' }
-    : {
-        background: `color-mix(in srgb, ${task.color} 16%, var(--card-surface))`,
-        color: task.color,
-      }
+    ? { background: 'var(--lib-tile-neutral)' }
+    : { background: `color-mix(in srgb, ${task.color} 16%, var(--card-surface))` }
 
   return (
     <div className={`task-card${inactive ? ' is-inactive' : ''}`} style={{ '--i': i } as CSSProperties}>
@@ -116,7 +111,7 @@ function TaskCard({
       )}
 
       <span className="task-icon" style={iconStyle}>
-        <Icon />
+        <span className="task-emoji">{task.emoji}</span>
       </span>
 
       <div className="task-text">

@@ -216,6 +216,11 @@
   height: 22px;
 }
 
+.coll-emoji {
+  font-size: 21px;
+  line-height: 1;
+}
+
 .coll-text {
   display: flex;
   flex-direction: column;

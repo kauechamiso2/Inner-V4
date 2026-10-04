@@ -4,20 +4,7 @@ import './library-page.css'
 import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
-import {
-  IconClock,
-  IconFolder,
-  IconSliders,
-  IconSun,
-  IconCalendar,
-  IconPin,
-  IconEnvelope,
-  IconBolt,
-  IconColumns,
-  IconGlobe,
-  IconPhoto,
-  IconEllipsis,
-} from './CollectionIcons'
+import { MoreHorizontal } from 'lucide-react'
 import fPdf from '../assets/library/file-pdf.svg'
 import fImage from '../assets/library/file-image.svg'
 import fText from '../assets/library/file-text.svg'
@@ -28,24 +15,30 @@ import fWave from '../assets/library/waveform.svg'
 import fGlobe from '../assets/library/globe-file.svg'
 import fZip from '../assets/library/filezip.svg'
 
-type CollIcon = () => JSX.Element
-type Collection = { name: string; count: string; Icon: CollIcon; color: string; neutral?: boolean }
+type Collection = {
+  name: string
+  count: string
+  emoji?: string
+  more?: boolean
+  color: string
+  neutral?: boolean
+}
 
-/* cor + ícone são apenas defaults de demonstração — no produto o usuário
+/* cor + emoji são apenas defaults de demonstração — no produto o usuário
    escolhe ambos na criação da coleção */
 const COLLECTIONS: Collection[] = [
-  { name: 'Recentes', count: '0 arquivos', Icon: IconClock, color: '#3E63C4' },
-  { name: 'Não categorizado', count: '16 itens', Icon: IconFolder, color: '', neutral: true },
-  { name: 'Setup do site', count: '3 itens', Icon: IconSliders, color: '', neutral: true },
-  { name: 'Morning Briefing', count: '28 arquivos', Icon: IconSun, color: '#CC8A04' },
-  { name: 'Weekly Briefing', count: '14 arquivos', Icon: IconCalendar, color: '#CC8A04' },
-  { name: 'Viagem Europa', count: '12 arquivos', Icon: IconPin, color: '#1F7A4D' },
-  { name: 'Morning Email', count: '5 arquivos', Icon: IconEnvelope, color: '#6B46C1' },
-  { name: 'Conteúdo LinkedIn', count: '22 arquivos', Icon: IconBolt, color: '#C15A2B' },
-  { name: 'Jurisprudência', count: '9 arquivos', Icon: IconColumns, color: '#2D6A6E' },
-  { name: 'Pesquisa de site', count: '7 arquivos', Icon: IconGlobe, color: '#2563B8' },
-  { name: 'Materiais da marca', count: '18 arquivos', Icon: IconPhoto, color: '#B0472F' },
-  { name: 'Ver 3 mais', count: '34 no total', Icon: IconEllipsis, color: '', neutral: true },
+  { name: 'Recentes', count: '0 arquivos', emoji: '🕐', color: '#3E63C4' },
+  { name: 'Não categorizado', count: '16 itens', emoji: '📁', color: '', neutral: true },
+  { name: 'Setup do site', count: '3 itens', emoji: '⚙️', color: '', neutral: true },
+  { name: 'Morning Briefing', count: '28 arquivos', emoji: '☀️', color: '#CC8A04' },
+  { name: 'Weekly Briefing', count: '14 arquivos', emoji: '🗓️', color: '#CC8A04' },
+  { name: 'Viagem Europa', count: '12 arquivos', emoji: '✈️', color: '#1F7A4D' },
+  { name: 'Morning Email', count: '5 arquivos', emoji: '✉️', color: '#6B46C1' },
+  { name: 'Conteúdo LinkedIn', count: '22 arquivos', emoji: '💼', color: '#C15A2B' },
+  { name: 'Jurisprudência', count: '9 arquivos', emoji: '⚖️', color: '#2D6A6E' },
+  { name: 'Pesquisa de site', count: '7 arquivos', emoji: '🌐', color: '#2563B8' },
+  { name: 'Materiais da marca', count: '18 arquivos', emoji: '🎨', color: '#B0472F' },
+  { name: 'Ver 3 mais', count: '34 no total', more: true, color: '', neutral: true },
 ]
 
 const FILE_FILTERS = ['Todos', 'Texto e PDF', 'Slides', 'Planilhas', 'Imagens', 'Vídeos', 'Áudio', 'Outros']
@@ -74,10 +67,7 @@ const FILES: FileRow[] = [
 
 function tileStyle(c: Collection): CSSProperties {
   if (c.neutral) return { background: 'var(--lib-tile-neutral)', color: 'var(--text-faint)' }
-  return {
-    background: `color-mix(in srgb, ${c.color} 16%, var(--card-surface))`,
-    color: c.color,
-  }
+  return { background: `color-mix(in srgb, ${c.color} 16%, var(--card-surface))` }
 }
 
 export default function LibraryPage() {
@@ -111,20 +101,21 @@ export default function LibraryPage() {
           </div>
 
           <div className="lib-collections">
-            {COLLECTIONS.map((c, i) => {
-              const Icon = c.Icon
-              return (
-                <button className="coll-card" type="button" key={c.name} style={{ '--i': i } as CSSProperties}>
-                  <span className="coll-icon" style={tileStyle(c)}>
-                    <Icon />
-                  </span>
-                  <span className="coll-text">
-                    <span className="coll-name">{c.name}</span>
-                    <span className="coll-count">{c.count}</span>
-                  </span>
-                </button>
-              )
-            })}
+            {COLLECTIONS.map((c, i) => (
+              <button className="coll-card" type="button" key={c.name} style={{ '--i': i } as CSSProperties}>
+                <span className="coll-icon" style={tileStyle(c)}>
+                  {c.more ? (
+                    <MoreHorizontal size={22} strokeWidth={1.8} />
+                  ) : (
+                    <span className="coll-emoji">{c.emoji}</span>
+                  )}
+                </span>
+                <span className="coll-text">
+                  <span className="coll-name">{c.name}</span>
+                  <span className="coll-count">{c.count}</span>
+                </span>
+              </button>
+            ))}
           </div>
         </section>
 
