@@ -18,7 +18,7 @@ export type GenPillarId = Exclude<PillarId, 'sites'>
 export const isGenPillar = (id: PillarId): id is GenPillarId => id !== 'sites'
 
 /* Views navegáveis da aplicação */
-export type AppView = 'chat' | 'library' | 'tarefas' | GenPillarId
+export type AppView = 'chat' | 'library' | 'tarefas' | 'sites' | GenPillarId
 
 /* Views que abrem o painel de histórico (chat + pilares de geração) */
 export type PanelView = 'chat' | GenPillarId
@@ -128,10 +128,10 @@ export type SidebarLayout = 'a' | 'b' | 'c' | 'd'
    Library e Tarefas também entram no jogo de fixar/arrastar) */
 export type ModuleId = 'library' | 'tarefas' | PillarId
 
-/* Módulos com navegação prototipada (Sites fica de fora) */
-export type NavModuleId = Exclude<ModuleId, 'sites'>
+/* Todos os módulos têm navegação prototipada (Sites incluído) */
+export type NavModuleId = ModuleId
 
-export const isNavModule = (id: ModuleId): id is NavModuleId => id !== 'sites'
+export const isNavModule = (_id: ModuleId): _id is NavModuleId => true
 
 export type ModuleDef = {
   id: ModuleId

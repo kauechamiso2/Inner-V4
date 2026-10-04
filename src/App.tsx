@@ -6,6 +6,7 @@ import PageView from './components/PageView'
 import ImagesPage from './components/ImagesPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
+import SitesPage from './components/SitesPage'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import { PILLAR_BY_ID } from './components/pillars'
 import type { AppView, PanelView, PillarId, SidebarLayout } from './components/pillars'
@@ -23,15 +24,16 @@ function readSavedLayout(): SidebarLayout {
   return 'a'
 }
 
-const GRID_VIEWS = ['library', 'tarefas'] as const
+const GRID_VIEWS = ['library', 'tarefas', 'sites'] as const
 
-function isGridView(view: AppView): view is 'library' | 'tarefas' {
+function isGridView(view: AppView): view is 'library' | 'tarefas' | 'sites' {
   return (GRID_VIEWS as readonly string[]).includes(view)
 }
 
 function titleFor(view: Exclude<AppView, 'chat'>): string {
   if (view === 'library') return 'Biblioteca'
   if (view === 'tarefas') return 'Tarefas'
+  if (view === 'sites') return 'Sites'
   return PILLAR_BY_ID[view as PillarId].label
 }
 
@@ -89,6 +91,8 @@ export default function App() {
         <LibraryPage key="library" />
       ) : view === 'tarefas' ? (
         <TarefasPage key="tarefas" />
+      ) : view === 'sites' ? (
+        <SitesPage key="sites" />
       ) : (
         <PageView key={view} title={titleFor(view)} />
       )}
