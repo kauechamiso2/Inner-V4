@@ -19,8 +19,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  width: min(720px, calc(100% - 64px));
+  gap: 40px;
+  width: min(820px, calc(100% - 64px));
 }
 
 /* ---------- Saudação ---------- */
@@ -77,20 +77,20 @@
   }
 }
 
-/* núcleo: respiração suave e constante */
+/* núcleo: flutua subindo e descendo, bem suave */
 .greeting-orb-core {
   position: absolute;
   inset: 0;
-  animation: orb-breathe 3.4s ease-in-out 900ms infinite;
+  animation: orb-float 3.6s ease-in-out 900ms infinite;
 }
 
-@keyframes orb-breathe {
+@keyframes orb-float {
   0%,
   100% {
-    transform: scale(1);
+    transform: translateY(1.5px);
   }
   50% {
-    transform: scale(1.055);
+    transform: translateY(-3.5px);
   }
 }
 
@@ -100,18 +100,19 @@
   inset: 0;
   filter: blur(6.275px);
   opacity: 0.85;
-  animation: glow-breathe 3.4s ease-in-out 900ms infinite;
+  animation: glow-float 3.6s ease-in-out 900ms infinite;
 }
 
-@keyframes glow-breathe {
+/* o glow acompanha a flutuação e acende no topo do movimento */
+@keyframes glow-float {
   0%,
   100% {
-    opacity: 0.6;
-    transform: scale(1);
+    opacity: 0.55;
+    transform: translateY(1.5px) scale(1);
   }
   50% {
     opacity: 1;
-    transform: scale(1.3);
+    transform: translateY(-3.5px) scale(1.22);
   }
 }
 
@@ -182,8 +183,8 @@
   width: 32px;
   height: 32px;
   padding: 0;
-  background: var(--pop-surface);
-  border: 1px solid var(--sb-border);
+  background: var(--ctl-bg);
+  border: 1px solid var(--ctl-border);
   border-radius: 999px;
   color: var(--text-strong);
   cursor: pointer;
@@ -193,7 +194,7 @@
 }
 
 .ch-attach:hover {
-  background: var(--hover-04);
+  background: var(--ctl-bg-hover);
 }
 
 .ch-attach:active {
@@ -210,8 +211,8 @@
   gap: 7px;
   height: 32px;
   padding: 0 12px;
-  background: var(--pop-surface);
-  border: 1px solid var(--sb-border);
+  background: var(--ctl-bg);
+  border: 1px solid var(--ctl-border);
   border-radius: 999px;
   font-family: inherit;
   cursor: pointer;
@@ -219,7 +220,7 @@
 }
 
 .ch-chip:hover {
-  background: var(--hover-04);
+  background: var(--ctl-bg-hover);
 }
 
 .ch-chip img {
@@ -234,7 +235,7 @@
 
 :root[data-dark] .ch-chip img,
 :root[data-dark] .chat-mic img {
-  filter: invert(0.82);
+  filter: invert(0.92);
 }
 
 .ch-chip span {
@@ -282,7 +283,7 @@
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: var(--chip-bg);
+  background: var(--send-idle);
   cursor: default;
   transition:
     background-color 220ms ease,

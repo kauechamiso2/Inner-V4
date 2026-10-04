@@ -59,6 +59,10 @@
 
   /* Card do input do chat */
   --input-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.05);
+  --ctl-bg: #ffffff;
+  --ctl-bg-hover: #f5f5f5;
+  --ctl-border: var(--sb-border);
+  --send-idle: #e6e8ee;
 
   /* Diversos */
   --thumb-ph: #ececec;
@@ -130,6 +134,10 @@
   --tooltip-fg: #1c1c1c;
 
   --input-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.35);
+  --ctl-bg: rgba(255, 255, 255, 0.07);
+  --ctl-bg-hover: rgba(255, 255, 255, 0.12);
+  --ctl-border: rgba(255, 255, 255, 0.14);
+  --send-idle: rgba(255, 255, 255, 0.16);
 
   /* Figma: botão "Nova conversa" dark = #2d2a47 com texto #a9a1f2 */
   --newbtn-base: #1a1a1e;
