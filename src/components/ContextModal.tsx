@@ -36,7 +36,7 @@ export default function ContextModal({
   return createPortal(
     <div className="ctx-overlay" onClick={onClose}>
       <div
-        className="ctx-modal"
+        className="ctx-modal ctx-modal--context"
         role="dialog"
         aria-modal="true"
         aria-label="Contexto do projeto"

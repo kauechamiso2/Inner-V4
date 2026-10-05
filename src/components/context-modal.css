@@ -25,6 +25,33 @@
   animation: ctx-pop 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Modal de Contexto: maior e mais espaçado (largura e altura) */
+.ctx-modal--context {
+  width: min(880px, 100%);
+  max-height: min(90vh, 920px);
+}
+
+.ctx-modal--context .ctx-modal-head {
+  padding: 28px 32px 20px;
+}
+
+.ctx-modal--context .ctx-modal-body {
+  padding: 0 32px;
+  min-height: 420px;
+}
+
+.ctx-modal--context .ctx-modal-body .cd-search-row {
+  margin: 24px 0 20px;
+}
+
+.ctx-modal--context .ctx-modal-body .cd-list {
+  padding-bottom: 28px;
+}
+
+.ctx-modal--context .ctx-modal-foot {
+  padding: 20px 32px 26px;
+}
+
 @keyframes ctx-fade {
   from {
     opacity: 0;
