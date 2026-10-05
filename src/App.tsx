@@ -5,6 +5,7 @@ import ChatHome from './components/ChatHome'
 import PageView from './components/PageView'
 import ImagesPage from './components/ImagesPage'
 import VideosPage from './components/VideosPage'
+import AudioPage from './components/AudioPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
 import SitesPage from './components/SitesPage'
@@ -40,11 +41,11 @@ function readSavedLayout(): SidebarLayout {
   return 'a'
 }
 
-const GRID_VIEWS = ['library', 'tarefas', 'sites', 'prompts', 'assistentes', 'projetos'] as const
+const GRID_VIEWS = ['library', 'tarefas', 'sites', 'prompts', 'assistentes', 'audio', 'projetos'] as const
 
 function isGridView(
   view: AppView,
-): view is 'library' | 'tarefas' | 'sites' | 'prompts' | 'assistentes' | 'projetos' {
+): view is 'library' | 'tarefas' | 'sites' | 'prompts' | 'assistentes' | 'audio' | 'projetos' {
   return (GRID_VIEWS as readonly string[]).includes(view)
 }
 
@@ -170,6 +171,8 @@ export default function App() {
         <ImagesPage key="imagens" />
       ) : view === 'videos' ? (
         <VideosPage key="videos" />
+      ) : view === 'audio' ? (
+        <AudioPage key="audio" />
       ) : view === 'library' ? (
         <LibraryPage key="library" isPinned={isPinned} togglePin={togglePin} />
       ) : view === 'tarefas' ? (
