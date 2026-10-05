@@ -122,11 +122,10 @@ export default function PromptsPage() {
                 const created = CREATED[p.id]
                 return (
                   <article className="prompt-card" key={p.id} style={{ '--i': i } as CSSProperties}>
-                    <span className="prompt-icon" aria-hidden="true">
-                      <PromptsPillarIcon size={20} color="var(--prompt-accent)" />
-                    </span>
-                    <h3 className="prompt-name">{p.name}</h3>
-                    <div className="prompt-meta">
+                    <span className="prompt-icon-wrap">
+                      <span className="prompt-icon" aria-hidden="true">
+                        <PromptsPillarIcon size={20} color="var(--prompt-accent)" />
+                      </span>
                       {created && (
                         <span className="prompt-creator" tabIndex={0} aria-label={`Criado por ${created.name}`}>
                           <img src={created.avatar} alt="" loading="lazy" />
@@ -135,6 +134,9 @@ export default function PromptsPage() {
                           </span>
                         </span>
                       )}
+                    </span>
+                    <h3 className="prompt-name">{p.name}</h3>
+                    <div className="prompt-meta">
                       <span className="prompt-cat">{p.category}</span>
                       {created && <span className="prompt-org">{created.org}</span>}
                     </div>

@@ -63,7 +63,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 272px;
+  min-height: 232px;
   padding: 20px;
   border-radius: 16px;
   background: var(--card-surface);
@@ -80,46 +80,34 @@
   transform: translateY(-2px);
 }
 
-/* ícone do pilar num círculo com fundo turquesa clarinho */
+/* ícone do pilar num círculo com fundo turquesa clarinho (+ mini avatar do criador) */
+.prompt-icon-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  margin-bottom: 14px;
+}
+
 .prompt-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
-  flex-shrink: 0;
-  margin-bottom: 14px;
   border-radius: 50%;
   background: var(--prompt-accent-soft);
 }
 
-.prompt-name {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--text-strong);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* linha de meta: avatar do criador + categoria + badge da organização */
-.prompt-meta {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  min-width: 0;
-  margin-top: 7px;
-}
-
+/* mini avatar do criador, no canto do ícone de prompts */
 .prompt-creator {
-  position: relative;
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
   width: 18px;
   height: 18px;
-  flex-shrink: 0;
   border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--card-surface);
   cursor: default;
 }
 
@@ -147,9 +135,32 @@
   transition: opacity 140ms ease, transform 140ms ease, visibility 0s;
 }
 
+/* tipografia padronizada com o pilar de Imagens */
+.prompt-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text-strong);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* linha de meta: categoria + badge da organização */
+.prompt-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  margin-top: 4px;
+}
+
 .prompt-cat {
-  font-size: 13px;
-  font-style: italic;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 15px;
   color: var(--text-soft);
   white-space: nowrap;
   overflow: hidden;
@@ -172,9 +183,10 @@
 }
 
 .prompt-desc {
-  margin: 12px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 15px;
   color: var(--card-desc);
   display: -webkit-box;
   -webkit-line-clamp: 3;
