@@ -339,6 +339,95 @@
   transform: scale(0.97);
 }
 
+.lib-new-cta.is-open {
+  opacity: 0.88;
+}
+
+/* ---------- Menu do botão "Novo" (Adicionar / Gerar) ---------- */
+.lib-novo {
+  position: relative;
+  margin-left: 2px;
+}
+
+.lib-novo .lib-new-cta {
+  margin-left: 0;
+}
+
+.lib-novo-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: 248px;
+  padding: 6px;
+  background: var(--pop-surface);
+  border: 1px solid var(--pop-border);
+  border-radius: 14px;
+  box-shadow:
+    0px 2px 8px 0px rgba(0, 0, 0, 0.05),
+    0px 16px 40px -4px rgba(0, 0, 0, 0.1);
+  transform-origin: top right;
+  animation: mm-in 200ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+.lib-novo-section + .lib-novo-section {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--pop-divider);
+}
+
+.lib-novo-label {
+  padding: 8px 10px 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  color: var(--text-faint);
+}
+
+.lib-novo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 120ms ease;
+}
+
+.lib-novo-item:hover {
+  background: var(--hover-05);
+}
+
+.lib-novo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--text-mid);
+}
+
+.lib-novo-icon svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+}
+
+.lib-novo-text {
+  flex: 1 0 0;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
 .lib-filters {
   display: flex;
   align-items: center;

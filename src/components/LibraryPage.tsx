@@ -1,11 +1,21 @@
-import { useState } from 'react'
-import type { CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import './library-page.css'
 import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
 import folder from '../assets/library/folder.svg'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, StickyNote } from 'lucide-react'
+import {
+  FileTextIcon,
+  FolderSimpleIcon,
+  ImageIcon,
+  PresentationChartIcon,
+  SlidesIcon,
+  SpeakerHighIcon,
+  UploadSimpleIcon,
+  VideoCameraIcon,
+} from './SidebarIcons'
 import CollectionDetail from './CollectionDetail'
 import ProjectHome from './ProjectHome'
 import fPdf from '../assets/library/file-pdf.svg'
@@ -44,6 +54,32 @@ const FOLDERS: FolderRow[] = [
   { name: 'Assets de Marca', modified: 'ontem' },
   { name: 'Contratos e Jurídico', modified: '3 dias atrás' },
   { name: 'Referências Visuais', modified: '1 semana atrás' },
+]
+
+/* menu do botão "Novo": Adicionar (upload/pasta/nota) + Gerar (pilares) */
+type NovoItem = { id: string; label: string; icon: ReactNode }
+type NovoSection = { label: string; items: NovoItem[] }
+
+const NOVO_SECTIONS: NovoSection[] = [
+  {
+    label: 'Adicionar',
+    items: [
+      { id: 'upload', label: 'Fazer upload de arquivos', icon: <UploadSimpleIcon /> },
+      { id: 'pasta', label: 'Criar pasta', icon: <FolderSimpleIcon /> },
+      { id: 'nota', label: 'Nota', icon: <StickyNote size={17} strokeWidth={1.7} /> },
+    ],
+  },
+  {
+    label: 'Gerar',
+    items: [
+      { id: 'imagem', label: 'Imagem', icon: <ImageIcon /> },
+      { id: 'video', label: 'Vídeo', icon: <VideoCameraIcon size={17} /> },
+      { id: 'reuniao', label: 'Reunião', icon: <PresentationChartIcon size={17} /> },
+      { id: 'audio', label: 'Áudio', icon: <SpeakerHighIcon size={17} /> },
+      { id: 'documento', label: 'Documento', icon: <FileTextIcon size={17} /> },
+      { id: 'apresentacao', label: 'Apresentação', icon: <SlidesIcon size={17} /> },
+    ],
+  },
 ]
 
 const FILE_FILTERS = ['Todos', 'Texto e PDF', 'Slides', 'Planilhas', 'Imagens', 'Vídeos', 'Áudio', 'Outros']
@@ -87,6 +123,21 @@ export default function LibraryPage({
   const [view, setView] = useState<'grid' | 'list'>('list')
   /* projeto aberto (nível de navegação dentro da Biblioteca) */
   const [openCollection, setOpenCollection] = useState<string | null>(null)
+  /* dropdown do botão "Novo" */
+  const [novoOpen, setNovoOpen] = useState(false)
+
+  useEffect(() => {
+    if (!novoOpen) return
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as HTMLElement
+      if (!t.closest('.lib-novo')) setNovoOpen(false)
+    }
+    const id = window.setTimeout(() => document.addEventListener('pointerdown', onDown), 0)
+    return () => {
+      window.clearTimeout(id)
+      document.removeEventListener('pointerdown', onDown)
+    }
+  }, [novoOpen])
 
   if (openCollection) {
     const coll = COLLECTIONS.find((c) => c.name === openCollection)
@@ -222,12 +273,41 @@ export default function LibraryPage({
                   </span>
                 </button>
               </div>
-              <button className="lib-new-cta" type="button">
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-                Novo
-              </button>
+              <div className="lib-novo">
+                <button
+                  className={`lib-new-cta${novoOpen ? ' is-open' : ''}`}
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={novoOpen}
+                  onClick={() => setNovoOpen((o) => !o)}
+                >
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                  Novo
+                </button>
+                {novoOpen && (
+                  <div className="lib-novo-menu" role="menu">
+                    {NOVO_SECTIONS.map((section) => (
+                      <div className="lib-novo-section" key={section.label}>
+                        <div className="lib-novo-label">{section.label}</div>
+                        {section.items.map((it) => (
+                          <button
+                            key={it.id}
+                            type="button"
+                            className="lib-novo-item"
+                            role="menuitem"
+                            onClick={() => setNovoOpen(false)}
+                          >
+                            <span className="lib-novo-icon">{it.icon}</span>
+                            <span className="lib-novo-text">{it.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
