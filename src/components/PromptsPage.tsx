@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import './images-page.css'
 import './prompts-page.css'
 import searchIcon from '../assets/search-light.svg'
+import { MoreHorizontal } from 'lucide-react'
 import { PromptsPillarIcon } from './SidebarIcons'
 
 const CATEGORIES = [
@@ -122,6 +123,9 @@ export default function PromptsPage() {
                 const created = CREATED[p.id]
                 return (
                   <article className="prompt-card" key={p.id} style={{ '--i': i } as CSSProperties}>
+                    <button type="button" className="prompt-more" aria-label="Ações do prompt">
+                      <MoreHorizontal size={18} strokeWidth={2} />
+                    </button>
                     <span className="prompt-icon-wrap">
                       <span className="prompt-icon" aria-hidden="true">
                         <PromptsPillarIcon size={20} color="var(--prompt-accent)" />
@@ -136,10 +140,11 @@ export default function PromptsPage() {
                       )}
                     </span>
                     <h3 className="prompt-name">{p.name}</h3>
-                    <div className="prompt-meta">
-                      <span className="prompt-cat">{p.category}</span>
-                      {created && <span className="prompt-org">{created.org}</span>}
-                    </div>
+                    {created && (
+                      <div className="prompt-meta">
+                        <span className="prompt-org">{created.org}</span>
+                      </div>
+                    )}
                     <p className="prompt-desc">{p.desc}</p>
                     <div className="prompt-actions">
                       <button type="button" className="prompt-btn is-primary">
