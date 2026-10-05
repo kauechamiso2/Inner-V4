@@ -16,7 +16,6 @@ import {
   UploadSimpleIcon,
   VideoCameraIcon,
 } from './SidebarIcons'
-import CollectionDetail from './CollectionDetail'
 import ProjectHome from './ProjectHome'
 import fPdf from '../assets/library/file-pdf.svg'
 import fImage from '../assets/library/file-image.svg'
@@ -35,8 +34,6 @@ type Collection = {
   createdAt: string
   emoji?: string
   color: string
-  /* 'files' abre a coleção de arquivos; 'chat' abre o workspace de conversas */
-  kind?: 'files' | 'chat'
 }
 
 /* cor + emoji são apenas defaults de demonstração — no produto o usuário
@@ -49,7 +46,6 @@ const COLLECTIONS: Collection[] = [
     createdAt: 'Criado em 27 mai',
     emoji: '🧑‍💼',
     color: '#3E63C4',
-    kind: 'files',
   },
   {
     id: 'col-mkt',
@@ -58,7 +54,6 @@ const COLLECTIONS: Collection[] = [
     createdAt: 'Criado em 15 set',
     emoji: '📣',
     color: '#F0603A',
-    kind: 'chat',
   },
 ]
 
@@ -152,24 +147,12 @@ export default function LibraryPage({
   if (openCollection) {
     const coll = COLLECTIONS.find((c) => c.name === openCollection)
     const projectId = coll?.id ?? openCollection
-    if (coll?.kind === 'chat') {
-      return (
-        <ProjectHome
-          name={openCollection}
-          emoji={coll.emoji}
-          color={coll.color}
-          pinned={isPinned('project', projectId)}
-          onTogglePin={() => togglePin('project', projectId)}
-          onBack={() => setOpenCollection(null)}
-        />
-      )
-    }
     return (
-      <CollectionDetail
+      <ProjectHome
         name={openCollection}
         emoji={coll?.emoji}
         color={coll?.color}
-        creator="Kauê Chamiso"
+        projectId={projectId}
         pinned={isPinned('project', projectId)}
         onTogglePin={() => togglePin('project', projectId)}
         onBack={() => setOpenCollection(null)}

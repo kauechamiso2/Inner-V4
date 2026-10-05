@@ -68,7 +68,7 @@ export default function App() {
   /* pins do histórico da Home (chats + projetos) */
   const [pins, setPins] = useState<PinRef[]>([
     { kind: 'chat', id: 'Análise do churn de setembro' },
-    { kind: 'project', id: 'p-rebrand' },
+    { kind: 'project', id: 'col-hr' },
   ])
   const isPinned = (kind: PinKind, id: string) =>
     pins.some((p) => p.kind === kind && p.id === id)

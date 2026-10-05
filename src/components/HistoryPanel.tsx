@@ -4,7 +4,6 @@ import { Pin, Search as SearchIcon } from 'lucide-react'
 import './history.css'
 import magnifyingGlass from '../assets/magnifying-glass.svg'
 import folder from '../assets/library/folder.svg'
-import { PROJECTS } from './projects'
 import { COLLECTIONS as LIB_COLLECTIONS } from './libraryEntries'
 import AgentOrb from './AgentOrb'
 import modelBlue from '../assets/model-blue.svg'
@@ -255,13 +254,13 @@ type PinRef = { kind: 'chat' | 'project'; id: string }
 
 const ALL_CHATS: Chat[] = CHAT_GROUPS.flatMap((g) => g.chats)
 
-/* Projetos fixáveis = coleções da Biblioteca (ex.: HR Stuff, com emoji) +
-   projetos fake de demonstração */
+/* Projetos fixáveis = apenas os projetos existentes na Biblioteca */
 type ProjectEntry = { id: string; name: string; emoji?: string }
-const PROJECT_ENTRIES: ProjectEntry[] = [
-  ...LIB_COLLECTIONS.map((c) => ({ id: c.id, name: c.label, emoji: c.emoji })),
-  ...PROJECTS.map((p) => ({ id: p.id, name: p.name })),
-]
+const PROJECT_ENTRIES: ProjectEntry[] = LIB_COLLECTIONS.map((c) => ({
+  id: c.id,
+  name: c.label,
+  emoji: c.emoji,
+}))
 const findProject = (id: string) => PROJECT_ENTRIES.find((p) => p.id === id) ?? null
 
 function PinButton({ pinned, onToggle }: { pinned: boolean; onToggle: () => void }) {

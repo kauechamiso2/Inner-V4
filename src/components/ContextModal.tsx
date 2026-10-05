@@ -3,14 +3,19 @@ import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import './context-modal.css'
 import ContextFileList from './ContextFileList'
+import type { DetailFile, Section } from './ContextFileList'
 
 export default function ContextModal({
   open,
   onClose,
+  sections,
+  looseFiles,
   usedPct = 57,
 }: {
   open: boolean
   onClose: () => void
+  sections: Section[]
+  looseFiles: DetailFile[]
   usedPct?: number
 }) {
   useEffect(() => {
@@ -48,7 +53,11 @@ export default function ContextModal({
         </header>
 
         <div className="ctx-modal-body">
-          <ContextFileList searchPlaceholder="Buscar no contexto" />
+          <ContextFileList
+            allSections={sections}
+            allLoose={looseFiles}
+            searchPlaceholder="Buscar no contexto"
+          />
         </div>
 
         <footer className="ctx-modal-foot">

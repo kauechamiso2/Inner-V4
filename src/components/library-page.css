@@ -177,7 +177,10 @@
   overflow: hidden;
   border: 1px solid var(--card-border);
   border-radius: 16px;
-  background: var(--card-surface);
+  background: var(--pop-surface);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 6px 20px -10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   text-align: left;
   font-family: inherit;
@@ -192,7 +195,9 @@
 .coll-card:hover {
   border-color: var(--card-border-hover);
   transform: translateY(-2px);
-  box-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 14px 34px -12px rgba(0, 0, 0, 0.18);
 }
 
 /* faixa colorida no topo (cor do projeto) */
@@ -213,9 +218,9 @@
   width: 50px;
   height: 50px;
   border-radius: 15px;
-  background: var(--card-surface);
+  background: var(--pop-surface);
   box-shadow:
-    0 0 0 4px var(--card-surface),
+    0 0 0 4px var(--pop-surface),
     0 3px 10px -2px rgba(0, 0, 0, 0.2);
 }
 

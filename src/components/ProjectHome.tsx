@@ -5,31 +5,18 @@ import { AgendadoIcon } from './SidebarIcons'
 import './project-home.css'
 import ChatComposer from './ChatComposer'
 import ContextModal from './ContextModal'
-
-type Chat = { id: string; title: string; date: string }
-
-/* conversas de demonstração do projeto */
-const PINNED: Chat[] = [{ id: 'p1', title: 'Pilares de conteúdo 2026', date: '15 set' }]
-
-const RECENTS: Chat[] = [
-  { id: 'r1', title: 'Calendário editorial de outubro', date: '2 out' },
-  { id: 'r2', title: 'Legendas do lançamento da coleção', date: '1 out' },
-  { id: 'r3', title: 'Roteiro de Reels — bastidores do ensaio', date: '30 set' },
-  { id: 'r4', title: 'Ideias de carrossel educativo', date: '29 set' },
-  { id: 'r5', title: 'Briefing do ensaio de produto', date: '26 set' },
-  { id: 'r6', title: 'Plano de mídia paga Q4', date: '24 set' },
-  { id: 'r7', title: 'Copy do e-mail de Black Friday', date: '20 set' },
-]
+import { DEFAULT_PROJECT_CONTENT, PROJECT_CONTENT } from './projectContent'
+import type { ProjChat } from './projectContent'
 
 type SideItem = { id: string; icon: ReactNode; label: string; sub?: string; action: string }
 
 const SIDE_ITEMS: SideItem[] = [
   { id: 'instr', icon: <ScrollText size={18} strokeWidth={1.7} />, label: 'Instruções', action: 'Editar' },
-  { id: 'ctx', icon: <Paperclip size={18} strokeWidth={1.7} />, label: 'Contexto', sub: '57%', action: 'Adicionar' },
+  { id: 'ctx', icon: <Paperclip size={18} strokeWidth={1.7} />, label: 'Contexto', action: 'Adicionar' },
   { id: 'tarefas', icon: <AgendadoIcon size={18} />, label: 'Tarefas', action: 'Adicionar' },
 ]
 
-function ChatRow({ chat, pinned = false }: { chat: Chat; pinned?: boolean }) {
+function ChatRow({ chat, pinned = false }: { chat: ProjChat; pinned?: boolean }) {
   return (
     <a className="ph-row" href="#conversa">
       <span className="ph-row-title">{chat.title}</span>
@@ -43,6 +30,7 @@ export default function ProjectHome({
   name,
   emoji,
   color,
+  projectId,
   pinned = false,
   onTogglePin,
   onBack,
@@ -50,10 +38,12 @@ export default function ProjectHome({
   name: string
   emoji?: string
   color?: string
+  projectId: string
   pinned?: boolean
   onTogglePin?: () => void
   onBack: () => void
 }) {
+  const content = PROJECT_CONTENT[projectId] ?? DEFAULT_PROJECT_CONTENT
   const [mode, setMode] = useState<'agente' | 'chat'>('agente')
   const [contextOpen, setContextOpen] = useState(false)
 
@@ -124,19 +114,21 @@ export default function ProjectHome({
           />
 
           <div className="ph-lists">
-            <section className="ph-group">
-              <div className="ph-group-label">Fixados</div>
-              <div className="ph-rows">
-                {PINNED.map((c) => (
-                  <ChatRow key={c.id} chat={c} pinned />
-                ))}
-              </div>
-            </section>
+            {content.pinned.length > 0 && (
+              <section className="ph-group">
+                <div className="ph-group-label">Fixados</div>
+                <div className="ph-rows">
+                  {content.pinned.map((c) => (
+                    <ChatRow key={c.id} chat={c} pinned />
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section className="ph-group">
               <div className="ph-group-label">Recentes</div>
               <div className="ph-rows">
-                {RECENTS.map((c) => (
+                {content.recents.map((c) => (
                   <ChatRow key={c.id} chat={c} />
                 ))}
               </div>
@@ -145,28 +137,36 @@ export default function ProjectHome({
         </div>
 
         <aside className="ph-side" aria-label="Configurações do projeto">
-          {SIDE_ITEMS.map((it) => (
-            <button
-              className="ph-side-item"
-              type="button"
-              key={it.id}
-              onClick={it.id === 'ctx' ? () => setContextOpen(true) : undefined}
-            >
-              <span className="ph-side-icon" aria-hidden="true">
-                {it.icon}
-              </span>
-              <span className="ph-side-label">
-                {it.label}
-                {it.sub && <span className="ph-side-sub">{it.sub}</span>}
-              </span>
-              <span className="ph-side-action">{it.action}</span>
-            </button>
-          ))}
-          <div className="ph-side-foot">Privado</div>
+          {SIDE_ITEMS.map((it) => {
+            const sub = it.id === 'ctx' ? `${content.contextPct}%` : it.sub
+            return (
+              <button
+                className="ph-side-item"
+                type="button"
+                key={it.id}
+                onClick={it.id === 'ctx' ? () => setContextOpen(true) : undefined}
+              >
+                <span className="ph-side-icon" aria-hidden="true">
+                  {it.icon}
+                </span>
+                <span className="ph-side-label">
+                  {it.label}
+                  {sub && <span className="ph-side-sub">{sub}</span>}
+                </span>
+                <span className="ph-side-action">{it.action}</span>
+              </button>
+            )
+          })}
         </aside>
       </div>
 
-      <ContextModal open={contextOpen} onClose={() => setContextOpen(false)} usedPct={57} />
+      <ContextModal
+        open={contextOpen}
+        onClose={() => setContextOpen(false)}
+        sections={content.contextSections}
+        looseFiles={content.contextLoose}
+        usedPct={content.contextPct}
+      />
     </main>
   )
 }
