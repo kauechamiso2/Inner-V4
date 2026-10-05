@@ -8,6 +8,7 @@
   background-color: var(--main-bg);
   background-image: var(--main-bg-image);
   contain: layout paint;
+  container-type: inline-size;
   transition: background-color 420ms ease;
 }
 
@@ -19,7 +20,7 @@
 }
 
 .ph-container {
-  max-width: 1160px;
+  max-width: 1220px;
   margin: 0 auto;
   padding: 22px 36px 56px;
   display: flex;
@@ -160,10 +161,30 @@
   transition: opacity 140ms ease, transform 140ms ease, visibility 0s;
 }
 
-.ph-creator {
-  margin: 4px 0 0;
+/* link de configurações do projeto (abaixo do nome) */
+.ph-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 5px 0 0 -6px;
+  padding: 3px 8px 3px 6px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  font-family: inherit;
   font-size: 13px;
   color: var(--text-faint);
+  cursor: pointer;
+  transition: background-color 130ms ease, color 130ms ease;
+}
+
+.ph-settings:hover {
+  background: var(--hover-06);
+  color: var(--text-soft);
+}
+
+.ph-settings svg {
+  display: block;
 }
 
 /* ---------- Composer (abas Agente/Chat + input) ---------- */
@@ -232,7 +253,7 @@
 
 /* ---------- Painel lateral ---------- */
 .ph-side {
-  flex: 0 0 312px;
+  flex: 0 0 360px;
   display: flex;
   flex-direction: column;
   padding-top: 54px;
@@ -308,12 +329,14 @@
   color: var(--text-faint);
 }
 
-/* ---------- Responsivo ---------- */
-@media (max-width: 960px) {
+/* ---------- Responsivo ----------
+   container query: empilha quando a ÁREA do projeto (não a janela) fica
+   estreita — assim a sidebar aberta não espreme o conteúdo */
+@container (max-width: 1000px) {
   .ph-container {
     flex-direction: column;
     gap: 8px;
-    padding: 32px 20px 48px;
+    padding: 22px 28px 48px;
   }
   .ph-side {
     width: 100%;

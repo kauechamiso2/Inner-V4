@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Brain, ChevronLeft, Clock, Paperclip, Pin, ScrollText } from 'lucide-react'
+import { ChevronLeft, Paperclip, Pin, ScrollText, Settings2 } from 'lucide-react'
+import { AgendadoIcon } from './SidebarIcons'
 import './project-home.css'
 import ChatComposer from './ChatComposer'
 import ContextModal from './ContextModal'
@@ -24,9 +25,8 @@ type SideItem = { id: string; icon: ReactNode; label: string; sub?: string; acti
 
 const SIDE_ITEMS: SideItem[] = [
   { id: 'instr', icon: <ScrollText size={18} strokeWidth={1.7} />, label: 'Instruções', action: 'Editar' },
-  { id: 'ctx', icon: <Paperclip size={18} strokeWidth={1.7} />, label: 'Contexto', sub: '1 arquivo', action: 'Adicionar' },
-  { id: 'mem', icon: <Brain size={18} strokeWidth={1.7} />, label: 'Memória', action: 'Ver' },
-  { id: 'sched', icon: <Clock size={18} strokeWidth={1.7} />, label: 'Agendado', action: 'Adicionar' },
+  { id: 'ctx', icon: <Paperclip size={18} strokeWidth={1.7} />, label: 'Contexto', sub: '57%', action: 'Adicionar' },
+  { id: 'tarefas', icon: <AgendadoIcon size={18} />, label: 'Tarefas', action: 'Adicionar' },
 ]
 
 function ChatRow({ chat, pinned = false }: { chat: Chat; pinned?: boolean }) {
@@ -43,7 +43,6 @@ export default function ProjectHome({
   name,
   emoji,
   color,
-  creator,
   pinned = false,
   onTogglePin,
   onBack,
@@ -51,7 +50,6 @@ export default function ProjectHome({
   name: string
   emoji?: string
   color?: string
-  creator: string
   pinned?: boolean
   onTogglePin?: () => void
   onBack: () => void
@@ -111,7 +109,10 @@ export default function ProjectHome({
                   </span>
                 </button>
               </div>
-              <p className="ph-creator">Criado por {creator}</p>
+              <button type="button" className="ph-settings">
+                <Settings2 size={14} strokeWidth={1.8} />
+                Configurações do projeto
+              </button>
             </div>
           </header>
 

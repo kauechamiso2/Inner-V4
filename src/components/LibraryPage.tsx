@@ -158,7 +158,6 @@ export default function LibraryPage({
           name={openCollection}
           emoji={coll.emoji}
           color={coll.color}
-          creator="Kauê Chamiso"
           pinned={isPinned('project', projectId)}
           onTogglePin={() => togglePin('project', projectId)}
           onBack={() => setOpenCollection(null)}

@@ -13,6 +13,7 @@ import modelDark from '../assets/model-dark.png'
 import modelSpiral from '../assets/model-spiral.svg'
 import avatarBoy from '../assets/avatar-boy.png'
 import {
+  AgendadoIcon,
   FileTextIcon,
   PlusIcon,
   PresentationChartIcon,
@@ -24,9 +25,9 @@ import type { GenPillarId, PanelView } from './pillars'
 
 /* ---------- Mock: histórico do Chat ---------- */
 
-type ChatSource = 'agent' | 'blue' | 'avatar' | 'dark' | 'spiral' | 'task'
-/* chats vindos de Tarefas usam o nome e o emoji (iOS) da tarefa */
-type Chat = { title: string; source: ChatSource; taskEmoji?: string }
+type ChatSource = 'agent' | 'blue' | 'avatar' | 'dark' | 'spiral' | 'task' | 'project'
+/* 'task' usa o ícone de Tarefas; 'project' usa o emoji do projeto */
+type Chat = { title: string; source: ChatSource; emoji?: string }
 type ChatGroup = { label: string; chats: Chat[] }
 
 const CHAT_GROUPS: ChatGroup[] = [
@@ -34,7 +35,8 @@ const CHAT_GROUPS: ChatGroup[] = [
     label: 'Hoje',
     chats: [
       { title: 'Direção de arte da campanha', source: 'agent' },
-      { title: 'Monitoramento de voo LH441', source: 'task', taskEmoji: '✈️' },
+      { title: 'Monitoramento de voo LH441', source: 'task' },
+      { title: 'Calendário editorial de outubro', source: 'project', emoji: '📣' },
       { title: 'Roteiro do vídeo de onboarding', source: 'agent' },
       { title: 'Copy do e-mail de outubro', source: 'blue' },
       { title: 'Análise do churn de setembro', source: 'agent' },
@@ -45,10 +47,12 @@ const CHAT_GROUPS: ChatGroup[] = [
     label: 'Esta semana',
     chats: [
       { title: 'Ajustes no pitch do Squad', source: 'dark' },
-      { title: 'Monitoramento de e-mails importantes', source: 'task', taskEmoji: '✉️' },
+      { title: 'Monitoramento de e-mails importantes', source: 'task' },
+      { title: 'Roteiro de Reels do lançamento', source: 'project', emoji: '📣' },
       { title: 'Resumo da call com investidores', source: 'agent' },
       { title: 'Plano de conteúdo de novembro', source: 'agent' },
-      { title: 'Relatório de vendas Q4', source: 'task', taskEmoji: '📊' },
+      { title: 'Relatório de vendas Q4', source: 'task' },
+      { title: 'Legendas do lançamento da coleção', source: 'project', emoji: '📣' },
       { title: 'Tradução do contrato pra inglês', source: 'spiral' },
       { title: 'Benchmark de concorrentes', source: 'agent' },
       { title: 'Nomes pro novo produto', source: 'blue' },
@@ -60,7 +64,8 @@ const CHAT_GROUPS: ChatGroup[] = [
     chats: [
       { title: 'Checklist de QA do app', source: 'agent' },
       { title: 'Post de aniversário da empresa', source: 'spiral' },
-      { title: 'Monitoramento de preços', source: 'task', taskEmoji: '🏷️' },
+      { title: 'Monitoramento de preços', source: 'task' },
+      { title: 'Copy da campanha de Black Friday', source: 'project', emoji: '📣' },
       { title: 'Brainstorm de features do V4', source: 'agent' },
       { title: 'Relatório mensal pro board', source: 'dark' },
       { title: 'FAQ da central de ajuda', source: 'agent' },
@@ -195,7 +200,7 @@ const PILLAR_ROW_ICONS: Partial<Record<GenPillarId, (color: string) => ReactNode
 
 /* ---------- Ícones de modelo (chat) ---------- */
 
-function ModelIcon({ source }: { source: Exclude<ChatSource, 'agent' | 'task'> }) {
+function ModelIcon({ source }: { source: Exclude<ChatSource, 'agent' | 'task' | 'project'> }) {
   return (
     <span className="model-icon" aria-hidden="true">
       {source === 'blue' && (
@@ -225,6 +230,25 @@ function ModelIcon({ source }: { source: Exclude<ChatSource, 'agent' | 'task'> }
       )}
     </span>
   )
+}
+
+/* ícone/emoji à esquerda de cada chat: agente → orb, tarefa → ícone de Tarefas,
+   projeto → emoji do projeto, demais → ícone do modelo */
+function ChatAvatar({ source, emoji }: { source: ChatSource; emoji?: string }) {
+  if (source === 'agent') return <AgentOrb />
+  if (source === 'task')
+    return (
+      <span className="chat-task-icon" aria-hidden="true">
+        <AgendadoIcon size={16} />
+      </span>
+    )
+  if (source === 'project')
+    return (
+      <span className="chat-task-emoji" aria-hidden="true">
+        {emoji}
+      </span>
+    )
+  return <ModelIcon source={source} />
 }
 
 type PinRef = { kind: 'chat' | 'project'; id: string }
@@ -270,15 +294,7 @@ function ChatRow({
   return (
     <a className="chat-row" href="#conversa">
       <span className="chat-row-main">
-        {isAgent ? (
-          <AgentOrb />
-        ) : chat.source === 'task' ? (
-          <span className="chat-task-emoji" aria-hidden="true">
-            {chat.taskEmoji}
-          </span>
-        ) : (
-          <ModelIcon source={chat.source as Exclude<ChatSource, 'agent' | 'task'>} />
-        )}
+        <ChatAvatar source={chat.source} emoji={chat.emoji} />
         <span className={`chat-row-title${isAgent ? '' : ' is-model'}`}>{chat.title}</span>
       </span>
       {isAgent && !pinned && <span className="chat-chip">Agent</span>}
@@ -374,7 +390,6 @@ function PinPicker({
           <div className="pin-picker-section">
             <div className="pin-picker-label">Chats</div>
             {chats.map((c) => {
-              const isAgent = c.source === 'agent'
               return (
                 <button
                   key={c.title}
@@ -382,15 +397,7 @@ function PinPicker({
                   className="pin-pick-row"
                   onClick={() => togglePin('chat', c.title)}
                 >
-                  {isAgent ? (
-                    <AgentOrb />
-                  ) : c.source === 'task' ? (
-                    <span className="chat-task-emoji" aria-hidden="true">
-                      {c.taskEmoji}
-                    </span>
-                  ) : (
-                    <ModelIcon source={c.source as Exclude<ChatSource, 'agent' | 'task'>} />
-                  )}
+                  <ChatAvatar source={c.source} emoji={c.emoji} />
                   <span className="pin-pick-title">{c.title}</span>
                   <span className={`chat-pin is-static${isPinned('chat', c.title) ? ' is-pinned' : ''}`}>
                     <Pin size={14} strokeWidth={1.8} fill={isPinned('chat', c.title) ? 'currentColor' : 'none'} />
