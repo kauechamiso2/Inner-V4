@@ -1,21 +1,39 @@
 import './chat-home.css'
 import AgentOrb from './AgentOrb'
 import ChatComposer from './ChatComposer'
+import type { ActiveProject } from '../App'
 
 type InputMode = 'agente' | 'chat'
 
 export default function ChatHome({
   mode,
   onModeChange,
+  project = null,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
+  project?: ActiveProject | null
 }) {
   return (
     <main className="chat-home">
       <div className="chat-column">
-        <div className="chat-greeting" key={mode}>
-          {mode === 'agente' ? (
+        <div className="chat-greeting" key={project ? `proj-${project.id}` : mode}>
+          {project ? (
+            <>
+              <span
+                className="greeting-proj-icon"
+                aria-hidden="true"
+                style={
+                  project.color
+                    ? { background: `color-mix(in srgb, ${project.color} 16%, var(--card-surface))` }
+                    : undefined
+                }
+              >
+                {project.emoji}
+              </span>
+              <h1 className="greeting-text">{project.name}</h1>
+            </>
+          ) : mode === 'agente' ? (
             <>
               <span className="greeting-orb">
                 <span className="greeting-orb-glow">
@@ -32,7 +50,14 @@ export default function ChatHome({
           )}
         </div>
 
-        <ChatComposer mode={mode} onModeChange={onModeChange} />
+        <ChatComposer
+          key={project?.id ?? 'home'}
+          mode={mode}
+          onModeChange={onModeChange}
+          placeholder={project ? `Conversar em ${project.name}` : undefined}
+          excludeProjects={!!project}
+          accentColor={project?.color}
+        />
       </div>
     </main>
   )

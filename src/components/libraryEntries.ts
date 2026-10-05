@@ -27,8 +27,8 @@ export type LibEntry = {
 }
 
 export const COLLECTIONS: LibEntry[] = [
-  { id: 'col-hr', label: 'HR Stuff', img: folder, sub: '54 arquivos', emoji: '🧑‍💼' },
-  { id: 'col-mkt', label: 'Marketing & Conteúdo', img: folder, sub: '18 conversas', emoji: '📣' },
+  { id: 'col-hr', label: 'HR Stuff', img: folder, sub: '54 arquivos', emoji: '🧑‍💼', color: '#3E63C4' },
+  { id: 'col-mkt', label: 'Marketing & Conteúdo', img: folder, sub: '18 conversas', emoji: '📣', color: '#F0603A' },
 ]
 
 export const FILES: LibEntry[] = [

@@ -41,6 +41,7 @@ export default function ChatComposer({
   onModeChange,
   placeholder,
   excludeProjects = false,
+  accentColor,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -48,6 +49,8 @@ export default function ChatComposer({
   placeholder?: string
   /* repassa ao menu de @ — esconde "Projetos" dentro de um projeto */
   excludeProjects?: boolean
+  /* cor do projeto: aplica um gradiente sutil no card do input */
+  accentColor?: string
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
@@ -205,7 +208,16 @@ export default function ChatComposer({
         </button>
       </div>
 
-      <div className="chat-input-card">
+      <div
+        className="chat-input-card"
+        style={
+          accentColor
+            ? {
+                background: `linear-gradient(180deg, color-mix(in srgb, ${accentColor} 13%, var(--pop-surface)), var(--pop-surface) 74%)`,
+              }
+            : undefined
+        }
+      >
         {attachments.length > 0 && (
           <div className="chat-attachments">
             {attachments.map((a) =>

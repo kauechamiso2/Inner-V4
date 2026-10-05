@@ -20,6 +20,10 @@ type Drawer = { kind: 'task'; task: Task; closing?: boolean } | null
 export type PinKind = 'chat' | 'project'
 export type PinRef = { kind: PinKind; id: string }
 
+/* projeto ativo no chat da Home: quando setado, o chat entra no "contexto" do
+   projeto (ícone + nome, gradiente, sem referência a projetos no @) */
+export type ActiveProject = { id: string; name: string; emoji?: string; color?: string }
+
 const LAYOUT_KEY = 'inner-v4-layout-v2'
 const COACH_KEY = 'inner-v4-coach-library'
 
@@ -78,6 +82,14 @@ export default function App() {
         ? prev.filter((p) => !(p.kind === kind && p.id === id))
         : [...prev, { kind, id }],
     )
+  /* projeto ativo no chat da Home (contexto do projeto) */
+  const [activeProject, setActiveProject] = useState<ActiveProject | null>(null)
+  const openProjectChat = (p: ActiveProject) => {
+    setActiveProject(p)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
+  }
   const [coachOpen, setCoachOpen] = useState<boolean>(() => {
     try {
       return sessionStorage.getItem(COACH_KEY) !== 'dismissed'
@@ -145,9 +157,12 @@ export default function App() {
         pins={pins}
         isPinned={isPinned}
         togglePin={togglePin}
+        activeProject={activeProject}
+        onOpenProject={openProjectChat}
+        onNewTask={() => setActiveProject(null)}
       />
       {view === 'chat' ? (
-        <ChatHome mode={chatMode} onModeChange={setChatMode} />
+        <ChatHome mode={chatMode} onModeChange={setChatMode} project={activeProject} />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
       ) : view === 'library' ? (

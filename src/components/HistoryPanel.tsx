@@ -21,6 +21,7 @@ import {
 } from './SidebarIcons'
 import { PILLAR_COLORS } from './pillars'
 import type { GenPillarId, PanelView } from './pillars'
+import type { ActiveProject } from '../App'
 
 /* ---------- Mock: histórico do Chat ---------- */
 
@@ -255,11 +256,12 @@ type PinRef = { kind: 'chat' | 'project'; id: string }
 const ALL_CHATS: Chat[] = CHAT_GROUPS.flatMap((g) => g.chats)
 
 /* Projetos fixáveis = apenas os projetos existentes na Biblioteca */
-type ProjectEntry = { id: string; name: string; emoji?: string }
+type ProjectEntry = { id: string; name: string; emoji?: string; color?: string }
 const PROJECT_ENTRIES: ProjectEntry[] = LIB_COLLECTIONS.map((c) => ({
   id: c.id,
   name: c.label,
   emoji: c.emoji,
+  color: c.color,
 }))
 const findProject = (id: string) => PROJECT_ENTRIES.find((p) => p.id === id) ?? null
 
@@ -306,15 +308,26 @@ function ProjectRow({
   name,
   emoji,
   pinned,
+  selected = false,
+  onOpen,
   onTogglePin,
 }: {
   name: string
   emoji?: string
   pinned: boolean
+  selected?: boolean
+  onOpen?: () => void
   onTogglePin: () => void
 }) {
   return (
-    <a className="chat-row" href="#projeto">
+    <a
+      className={`chat-row${selected ? ' is-selected' : ''}`}
+      href="#projeto"
+      onClick={(e) => {
+        e.preventDefault()
+        onOpen?.()
+      }}
+    >
       <span className="chat-row-main">
         {emoji ? (
           <span className="chat-task-emoji" aria-hidden="true">
@@ -444,6 +457,9 @@ type Props = {
   pins: PinRef[]
   isPinned: (kind: PinRef['kind'], id: string) => boolean
   togglePin: (kind: PinRef['kind'], id: string) => void
+  activeProject?: ActiveProject | null
+  onOpenProject?: (p: ActiveProject) => void
+  onNewTask?: () => void
 }
 
 export default function HistoryPanel({
@@ -453,6 +469,9 @@ export default function HistoryPanel({
   pins,
   isPinned,
   togglePin,
+  activeProject = null,
+  onOpenProject,
+  onNewTask,
 }: Props) {
   const config = PANEL_CONFIG[view]
   const color = PILLAR_COLORS[view]
@@ -493,7 +512,7 @@ export default function HistoryPanel({
 
         <div className="history-content">
           <div className="history-actions">
-            <button className="history-new" type="button">
+            <button className="history-new" type="button" onClick={onNewTask}>
               <PlusIcon />
               <span>{newLabel}</span>
             </button>
@@ -534,6 +553,15 @@ export default function HistoryPanel({
                         name={pr.name}
                         emoji={pr.emoji}
                         pinned
+                        selected={activeProject?.id === pr.id}
+                        onOpen={() =>
+                          onOpenProject?.({
+                            id: pr.id,
+                            name: pr.name,
+                            emoji: pr.emoji,
+                            color: pr.color,
+                          })
+                        }
                         onTogglePin={() => togglePin('project', p.id)}
                       />
                     ) : null

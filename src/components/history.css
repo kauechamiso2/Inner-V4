@@ -272,6 +272,16 @@
   background: var(--hover-07);
 }
 
+/* projeto pinado selecionado (chat no contexto do projeto) */
+.chat-row.is-selected {
+  background: var(--hover-06);
+}
+
+.chat-row.is-selected .chat-row-title {
+  color: var(--text-strong);
+  font-weight: 500;
+}
+
 .chat-row.is-agent {
   justify-content: space-between;
 }
