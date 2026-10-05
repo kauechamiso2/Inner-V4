@@ -101,166 +101,67 @@
   color: var(--text-strong);
 }
 
+.ph-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* pin: fixar o projeto na homepage */
+.ph-pin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.ph-pin:hover {
+  background: var(--hover-06);
+  color: var(--text-mid);
+}
+
+.ph-pin.is-pinned {
+  color: var(--text-strong);
+}
+
+.ph-pin svg {
+  display: block;
+}
+
+/* tooltip abaixo do pin (reaproveita a base .pill-tooltip) */
+.ph-pin-tip {
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-3px) scale(0.96);
+}
+
+.ph-pin:hover .ph-pin-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 0s;
+}
+
 .ph-creator {
   margin: 4px 0 0;
   font-size: 13px;
   color: var(--text-faint);
 }
 
-/* ---------- Input ---------- */
-.ph-input {
-  width: 100%;
-  padding: 16px 14px 12px 18px;
-  background: var(--pop-surface);
-  border: 1px solid var(--sb-border);
-  border-radius: 22px;
-  box-shadow: var(--input-shadow);
-  transition: background-color 420ms ease, border-color 140ms ease;
-}
-
-.ph-input:focus-within {
-  border-color: var(--card-border-hover);
-}
-
-.ph-input-field {
-  display: block;
-  width: 100%;
-  min-height: 28px;
-  max-height: 180px;
-  border: 0;
-  outline: none;
-  resize: none;
-  padding: 0;
-  background: transparent;
-  font-family: inherit;
-  font-size: 16px;
-  line-height: 1.45;
-  color: var(--text-strong);
-}
-
-.ph-input-field::placeholder {
-  color: var(--text-faint);
-}
-
-.ph-input-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 14px;
-}
-
-.ph-ctrl {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 1px solid var(--ctl-border);
-  border-radius: 999px;
-  background: var(--ctl-bg);
-  color: var(--text-strong);
-  cursor: pointer;
-  transition: background-color 150ms ease, transform 150ms ease;
-}
-
-.ph-ctrl:hover {
-  background: var(--ctl-bg-hover);
-}
-
-.ph-ctrl:active {
-  transform: scale(0.94);
-}
-
-.ph-ctrl svg {
-  display: block;
-}
-
-.ph-ctrl-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.ph-mic {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  transition: opacity 150ms ease;
-}
-
-.ph-mic:hover {
-  opacity: 0.65;
-}
-
-.ph-mic img {
-  width: 18px;
-  height: 18px;
-  display: block;
-}
-
-:root[data-dark] .ph-mic img {
-  filter: invert(0.92);
-}
-
-.ph-voice {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: var(--voice-bg);
-  color: var(--voice-fg);
-  cursor: pointer;
-  transition: transform 150ms ease, background-color 420ms ease;
-}
-
-.ph-voice:hover {
-  transform: scale(1.06);
-}
-
-.ph-voice:active {
-  transform: scale(0.94);
-}
-
-.ph-voice svg {
-  display: block;
-}
-
-.ph-send {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: #6e62e5;
-  cursor: pointer;
-  transition: background-color 220ms ease, transform 150ms ease;
-}
-
-.ph-send:hover {
-  background: #5d50da;
-  transform: scale(1.06);
-}
-
-.ph-send:active {
-  transform: scale(0.94);
-}
-
-.ph-send img {
-  width: 15px;
-  height: 15px;
-  display: block;
+/* ---------- Composer (abas Agente/Chat + input) ---------- */
+.ph-main .chat-input-wrap {
+  margin-top: 2px;
 }
 
 /* ---------- Listas de conversas ---------- */

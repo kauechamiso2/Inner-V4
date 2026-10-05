@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import './theme-switcher.css'
 import type { SidebarLayout } from './pillars'
 
-type ThemeId = 'original' | 'frio' | 'neutro'
-
 const LAYOUTS: { id: SidebarLayout; name: string; hint: string }[] = [
   { id: 'a', name: 'Diagramação A', hint: 'Principal (Home)' },
   { id: 'b', name: 'Diagramação B', hint: 'Fixos no topo' },
@@ -11,14 +9,6 @@ const LAYOUTS: { id: SidebarLayout; name: string; hint: string }[] = [
   { id: 'd', name: 'Diagramação D', hint: 'Pilares após o Chat' },
   { id: 'e', name: 'Diagramação E', hint: 'Rail fixo com nomes' },
 ]
-
-const THEMES: { id: ThemeId; name: string; swatches: [string, string, string] }[] = [
-  { id: 'original', name: 'Cor 1 · Atual', swatches: ['#f2f2f2', '#f8f8f8', '#fcfcfc'] },
-  { id: 'frio', name: 'Cor 2 · Frio sutil', swatches: ['#f7f8fa', '#e9ebef', '#ffffff'] },
-  { id: 'neutro', name: 'Cor 3 · Neutro', swatches: ['#f7f7f7', '#e8e8e8', '#efefef'] },
-]
-
-const STORAGE_KEY = 'inner-v4-theme'
 
 function Check() {
   return (
@@ -32,11 +22,6 @@ function Check() {
       />
     </svg>
   )
-}
-
-function applyTheme(id: ThemeId) {
-  if (id === 'original') delete document.documentElement.dataset.theme
-  else document.documentElement.dataset.theme = id
 }
 
 type Props = {
@@ -55,20 +40,16 @@ function applyDark(on: boolean) {
 
 export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoachToggle }: Props) {
   const [open, setOpen] = useState(false)
-  const [theme, setTheme] = useState<ThemeId>('original')
   const [dark, setDark] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    let saved: ThemeId | null = null
+    /* Cor 1 é a única paleta: limpa qualquer variação antiga salva */
+    delete document.documentElement.dataset.theme
     try {
-      saved = localStorage.getItem(STORAGE_KEY) as ThemeId | null
+      localStorage.removeItem('inner-v4-theme')
     } catch {
       /* storage indisponível */
-    }
-    if (saved && THEMES.some((t) => t.id === saved)) {
-      setTheme(saved)
-      applyTheme(saved)
     }
     try {
       if (localStorage.getItem(DARK_KEY) === '1') {
@@ -107,42 +88,11 @@ export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoa
     }
   }, [open])
 
-  const pick = (id: ThemeId) => {
-    setTheme(id)
-    applyTheme(id)
-    try {
-      localStorage.setItem(STORAGE_KEY, id)
-    } catch {
-      /* storage indisponível */
-    }
-  }
-
   return (
     <div className="theme-switcher" ref={rootRef}>
       {open && (
-        <div className="theme-pop" role="menu" aria-label="Variações de cor">
-          <div className="theme-pop-header">Variações de cor</div>
-          {THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={theme === t.id}
-              className={`theme-option${theme === t.id ? ' is-active' : ''}`}
-              onClick={() => pick(t.id)}
-            >
-              <span
-                className="theme-swatch"
-                style={{
-                  background: `linear-gradient(135deg, ${t.swatches[0]} 0 34%, ${t.swatches[1]} 34% 67%, ${t.swatches[2]} 67% 100%)`,
-                }}
-              />
-              <span className="theme-name">{t.name}</span>
-              {theme === t.id && <Check />}
-            </button>
-          ))}
-
-          <div className="theme-pop-header is-section">Diagramação</div>
+        <div className="theme-pop" role="menu" aria-label="Preferências">
+          <div className="theme-pop-header">Diagramação</div>
           {LAYOUTS.map((l) => (
             <button
               key={l.id}

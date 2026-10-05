@@ -5,7 +5,7 @@ import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
 import folder from '../assets/library/folder.svg'
-import { MoreHorizontal, StickyNote } from 'lucide-react'
+import { StickyNote } from 'lucide-react'
 import {
   FileTextIcon,
   FolderSimpleIcon,
@@ -31,11 +31,10 @@ import fZip from '../assets/library/filezip.svg'
 type Collection = {
   id: string
   name: string
-  count: string
+  description: string
+  createdAt: string
   emoji?: string
-  more?: boolean
   color: string
-  neutral?: boolean
   /* 'files' abre a coleção de arquivos; 'chat' abre o workspace de conversas */
   kind?: 'files' | 'chat'
 }
@@ -43,8 +42,24 @@ type Collection = {
 /* cor + emoji são apenas defaults de demonstração — no produto o usuário
    escolhe ambos na criação do projeto */
 const COLLECTIONS: Collection[] = [
-  { id: 'col-hr', name: 'HR Stuff', count: '54 arquivos', emoji: '🧑‍💼', color: '#3E63C4', kind: 'files' },
-  { id: 'col-mkt', name: 'Marketing & Conteúdo', count: '18 conversas', emoji: '📣', color: '#F0603A', kind: 'chat' },
+  {
+    id: 'col-hr',
+    name: 'HR Stuff',
+    description: 'Documentos, políticas e processos de RH da empresa',
+    createdAt: 'Criado em 27 mai',
+    emoji: '🧑‍💼',
+    color: '#3E63C4',
+    kind: 'files',
+  },
+  {
+    id: 'col-mkt',
+    name: 'Marketing & Conteúdo',
+    description: 'Calendário, campanhas e produção de conteúdo da marca',
+    createdAt: 'Criado em 15 set',
+    emoji: '📣',
+    color: '#F0603A',
+    kind: 'chat',
+  },
 ]
 
 /* pastas de arquivos soltas na Biblioteca (nomes de demonstração) */
@@ -106,11 +121,6 @@ const FILES: FileRow[] = [
   { name: 'Apresentação para investidores', type: 'Slides', modified: '1 semana atrás', icon: fPpt, color: '#C15A2B' },
 ]
 
-function tileStyle(c: Collection): CSSProperties {
-  if (c.neutral) return { background: 'var(--lib-tile-neutral)', color: 'var(--text-faint)' }
-  return { background: `color-mix(in srgb, ${c.color} 16%, var(--card-surface))` }
-}
-
 export default function LibraryPage({
   isPinned,
   togglePin,
@@ -149,6 +159,8 @@ export default function LibraryPage({
           emoji={coll.emoji}
           color={coll.color}
           creator="Kauê Chamiso"
+          pinned={isPinned('project', projectId)}
+          onTogglePin={() => togglePin('project', projectId)}
           onBack={() => setOpenCollection(null)}
         />
       )
@@ -198,18 +210,17 @@ export default function LibraryPage({
                 type="button"
                 key={c.name}
                 style={{ '--i': i } as CSSProperties}
-                onClick={() => !c.neutral && !c.more && setOpenCollection(c.name)}
+                onClick={() => setOpenCollection(c.name)}
               >
-                <span className="coll-icon" style={tileStyle(c)}>
-                  {c.more ? (
-                    <MoreHorizontal size={22} strokeWidth={1.8} />
-                  ) : (
+                <span className="coll-card-top" style={{ background: c.color }}>
+                  <span className="coll-card-avatar">
                     <span className="coll-emoji">{c.emoji}</span>
-                  )}
+                  </span>
                 </span>
-                <span className="coll-text">
+                <span className="coll-card-body">
                   <span className="coll-name">{c.name}</span>
-                  <span className="coll-count">{c.count}</span>
+                  <span className="coll-desc">{c.description}</span>
+                  <span className="coll-date">{c.createdAt}</span>
                 </span>
               </button>
             ))}

@@ -242,6 +242,9 @@ type Props = {
   variant?: 'mention' | 'plus'
   /* modo atual do input — em 'chat', itens agentOnly ganham badge "Agent" */
   mode?: 'agente' | 'chat'
+  /* dentro de um projeto, não faz sentido referenciar projetos: esconde o item
+     "Projetos" e as coleções da busca */
+  excludeProjects?: boolean
 }
 
 export default function MentionMenu({
@@ -250,24 +253,32 @@ export default function MentionMenu({
   onClose,
   variant = 'mention',
   mode = 'agente',
+  excludeProjects = false,
 }: Props) {
   const sections = useMemo(() => {
+    const source = excludeProjects
+      ? SECTIONS.map((s) => ({ ...s, items: s.items.filter((i) => i.submenu !== 'projetos') }))
+      : SECTIONS
     const q = normalize(query)
-    if (!q) return SECTIONS
-    const base = SECTIONS.map((s) => ({
-      ...s,
-      items: s.items.filter((i) => normalize(i.label).includes(q)),
-    })).filter((s) => s.items.length > 0)
+    if (!q) return source
+    const base = source
+      .map((s) => ({
+        ...s,
+        items: s.items.filter((i) => normalize(i.label).includes(q)),
+      }))
+      .filter((s) => s.items.length > 0)
 
-    /* busca também dentro da Biblioteca (coleções e arquivos) */
+    /* busca também dentro da Biblioteca (arquivos — e coleções, exceto em projeto) */
     const libItems: MentionItem[] = [
-      ...COLLECTIONS.filter((c) => normalize(c.label).includes(q)).map((c) => ({
-        id: c.id,
-        label: c.label,
-        icon: c.emoji ? <span className="mm-emoji">{c.emoji}</span> : undefined,
-        img: c.emoji ? undefined : c.img,
-        attachment: entryAttachment(c, true),
-      })),
+      ...(excludeProjects
+        ? []
+        : COLLECTIONS.filter((c) => normalize(c.label).includes(q)).map((c) => ({
+            id: c.id,
+            label: c.label,
+            icon: c.emoji ? <span className="mm-emoji">{c.emoji}</span> : undefined,
+            img: c.emoji ? undefined : c.img,
+            attachment: entryAttachment(c, true),
+          }))),
       ...FILES.filter((f) => normalize(f.label).includes(q)).map((f) => ({
         id: f.id,
         label: f.label,
@@ -277,7 +288,7 @@ export default function MentionMenu({
     ]
     if (libItems.length > 0) base.push({ label: 'Biblioteca', items: libItems })
     return base
-  }, [query])
+  }, [query, excludeProjects])
 
   const flat = useMemo(() => sections.flatMap((s) => s.items), [sections])
   const [active, setActive] = useState(0)

@@ -2,9 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Brain, ChevronLeft, Clock, Paperclip, Pin, ScrollText } from 'lucide-react'
 import './project-home.css'
-import { PlusIcon, VoiceWaveIcon } from './SidebarIcons'
-import microphone from '../assets/microphone.svg'
-import arrowUp from '../assets/arrow-up.svg'
+import ChatComposer from './ChatComposer'
 
 type Chat = { id: string; title: string; date: string }
 
@@ -45,16 +43,19 @@ export default function ProjectHome({
   emoji,
   color,
   creator,
+  pinned = false,
+  onTogglePin,
   onBack,
 }: {
   name: string
   emoji?: string
   color?: string
   creator: string
+  pinned?: boolean
+  onTogglePin?: () => void
   onBack: () => void
 }) {
-  const [value, setValue] = useState('')
-  const canSend = value.trim().length > 0
+  const [mode, setMode] = useState<'agente' | 'chat'>('agente')
 
   return (
     <main className="project-home">
@@ -84,40 +85,31 @@ export default function ProjectHome({
               </span>
             )}
             <div className="ph-head-text">
-              <h1 className="ph-title">{name}</h1>
+              <div className="ph-title-row">
+                <h1 className="ph-title">{name}</h1>
+                <button
+                  type="button"
+                  className={`ph-pin${pinned ? ' is-pinned' : ''}`}
+                  aria-label={pinned ? 'Desafixar da homepage' : 'Fixar na homepage'}
+                  aria-pressed={pinned}
+                  onClick={onTogglePin}
+                >
+                  <Pin size={16} strokeWidth={1.8} fill={pinned ? 'currentColor' : 'none'} />
+                  <span className="pill-tooltip ph-pin-tip" role="tooltip" aria-hidden="true">
+                    {pinned ? 'Fixado na homepage' : 'Fixar na homepage'}
+                  </span>
+                </button>
+              </div>
               <p className="ph-creator">Criado por {creator}</p>
             </div>
           </header>
 
-          <div className="ph-input">
-            <textarea
-              className="ph-input-field"
-              rows={1}
-              placeholder={`Conversar em ${name}`}
-              spellCheck={false}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-            />
-            <div className="ph-input-controls">
-              <button className="ph-ctrl" type="button" aria-label="Adicionar">
-                <PlusIcon />
-              </button>
-              <div className="ph-ctrl-right">
-                <button className="ph-mic" type="button" aria-label="Falar">
-                  <img src={microphone} alt="" aria-hidden="true" />
-                </button>
-                {canSend ? (
-                  <button className="ph-send is-ready" type="button" aria-label="Enviar">
-                    <img src={arrowUp} alt="" aria-hidden="true" />
-                  </button>
-                ) : (
-                  <button className="ph-voice" type="button" aria-label="Modo de voz avançado">
-                    <VoiceWaveIcon />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+          <ChatComposer
+            mode={mode}
+            onModeChange={setMode}
+            placeholder={`Conversar em ${name}`}
+            excludeProjects
+          />
 
           <div className="ph-lists">
             <section className="ph-group">
