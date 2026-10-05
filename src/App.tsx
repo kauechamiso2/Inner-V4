@@ -8,6 +8,7 @@ import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
 import SitesPage from './components/SitesPage'
 import AssistentesPage from './components/AssistentesPage'
+import PromptsPage from './components/PromptsPage'
 import TaskDrawer from './components/TaskDrawer'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import { PILLAR_BY_ID } from './components/pillars'
@@ -174,6 +175,8 @@ export default function App() {
         <SitesPage key="sites" />
       ) : view === 'assistentes' ? (
         <AssistentesPage key="assistentes" />
+      ) : view === 'prompts' ? (
+        <PromptsPage key="prompts" />
       ) : (
         <PageView key={view} title={titleFor(view)} />
       )}

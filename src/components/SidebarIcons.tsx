@@ -35,7 +35,7 @@ export function AgendadoIcon({ size = 18 }: NavIconProps) {
     </svg>
   )
 }
-export function PromptsPillarIcon({ size = 18 }: NavIconProps) {
+export function PromptsPillarIcon({ size = 18, color }: NavIconProps & { color?: string }) {
   // vetor exportado do Figma (node 578:1206): colchetes com cursor de texto.
   // Ao passar o mouse o "cursor" central pisca como caret e os colchetes se abrem.
   return (
@@ -45,7 +45,7 @@ export function PromptsPillarIcon({ size = 18 }: NavIconProps) {
       height={size}
       viewBox="0 0 16 16"
       fill="currentColor"
-      style={navStyle}
+      style={color ? { color } : navStyle}
       aria-hidden="true"
     >
       <path className="anim anim-prompt-caret" d="M10.5664 2.10026C10.8794 2.10026 11.1328 2.35371 11.1328 2.66667C11.1328 2.97963 10.8794 3.23307 10.5664 3.23307H9.13281V12.7669H10.5664L10.6243 12.7695C10.9101 12.7985 11.1328 13.0399 11.1328 13.3333C11.1328 13.6463 10.8794 13.8997 10.5664 13.8997H6.56641C6.25344 13.8997 6 13.6463 6 13.3333C6 13.0204 6.25344 12.7669 6.56641 12.7669H8V3.23307H6.56641C6.25344 3.23307 6 2.97963 6 2.66667C6 2.35371 6.25344 2.10026 6.56641 2.10026H10.5664Z" />
