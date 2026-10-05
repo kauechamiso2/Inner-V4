@@ -5,8 +5,11 @@ import { AgendadoIcon } from './SidebarIcons'
 import './project-home.css'
 import ChatComposer from './ChatComposer'
 import ContextModal from './ContextModal'
+import InstructionsModal from './InstructionsModal'
+import TasksModal from './TasksModal'
 import { DEFAULT_PROJECT_CONTENT, PROJECT_CONTENT } from './projectContent'
 import type { ProjChat } from './projectContent'
+import { ACTIVE_TASKS, INACTIVE_TASKS } from './tasks'
 
 type SideItem = { id: string; icon: ReactNode; label: string; sub?: string; action: string }
 
@@ -44,8 +47,13 @@ export default function ProjectHome({
   onBack: () => void
 }) {
   const content = PROJECT_CONTENT[projectId] ?? DEFAULT_PROJECT_CONTENT
+  const projectTasks = [...ACTIVE_TASKS, ...INACTIVE_TASKS].filter(
+    (t) => t.project?.id === projectId,
+  )
   const [mode, setMode] = useState<'agente' | 'chat'>('agente')
   const [contextOpen, setContextOpen] = useState(false)
+  const [instrOpen, setInstrOpen] = useState(false)
+  const [tasksOpen, setTasksOpen] = useState(false)
 
   return (
     <main className="project-home">
@@ -138,14 +146,21 @@ export default function ProjectHome({
 
         <aside className="ph-side" aria-label="Configurações do projeto">
           {SIDE_ITEMS.map((it) => {
-            const sub = it.id === 'ctx' ? `${content.contextPct}%` : it.sub
+            let sub = it.sub
+            let action = it.action
+            let onClick: (() => void) | undefined
+            if (it.id === 'instr') {
+              onClick = () => setInstrOpen(true)
+            } else if (it.id === 'ctx') {
+              sub = `${content.contextPct}%`
+              onClick = () => setContextOpen(true)
+            } else if (it.id === 'tarefas') {
+              sub = projectTasks.length > 0 ? String(projectTasks.length) : undefined
+              action = projectTasks.length > 0 ? 'Visualizar' : 'Adicionar'
+              onClick = () => setTasksOpen(true)
+            }
             return (
-              <button
-                className="ph-side-item"
-                type="button"
-                key={it.id}
-                onClick={it.id === 'ctx' ? () => setContextOpen(true) : undefined}
-              >
+              <button className="ph-side-item" type="button" key={it.id} onClick={onClick}>
                 <span className="ph-side-icon" aria-hidden="true">
                   {it.icon}
                 </span>
@@ -153,7 +168,7 @@ export default function ProjectHome({
                   {it.label}
                   {sub && <span className="ph-side-sub">{sub}</span>}
                 </span>
-                <span className="ph-side-action">{it.action}</span>
+                <span className="ph-side-action">{action}</span>
               </button>
             )
           })}
@@ -167,6 +182,12 @@ export default function ProjectHome({
         looseFiles={content.contextLoose}
         usedPct={content.contextPct}
       />
+      <InstructionsModal
+        open={instrOpen}
+        onClose={() => setInstrOpen(false)}
+        defaultValue={content.instructions}
+      />
+      <TasksModal open={tasksOpen} onClose={() => setTasksOpen(false)} tasks={projectTasks} />
     </main>
   )
 }

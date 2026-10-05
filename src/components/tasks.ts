@@ -13,9 +13,24 @@ export type Task = {
   description: string
   /* presente apenas em tarefas inativas (ex.: "Pausada") */
   status?: string
+  /* quando a tarefa pertence a um projeto da Biblioteca */
+  project?: { id: string; name: string; emoji: string }
 }
 
 export const ACTIVE_TASKS: Task[] = [
+  {
+    id: 'conteudo-semanal',
+    name: 'Resumo semanal de métricas de conteúdo',
+    emoji: '📈',
+    color: '#F0603A',
+    recurring: true,
+    schedule: 'Toda segunda, 09:00',
+    next: 'Seg, 09:00',
+    last: 'há 3 dias',
+    description:
+      'Compila o desempenho dos posts da semana (alcance, engajamento e cliques) e sugere ajustes de pauta para o calendário editorial.',
+    project: { id: 'col-mkt', name: 'Marketing & Conteúdo', emoji: '📣' },
+  },
   {
     id: 'voo',
     name: 'Monitoramento de voo LH441',

@@ -28,7 +28,10 @@
   padding: 18px;
   border: 1px solid var(--card-border);
   border-radius: 14px;
-  background: var(--card-surface);
+  background: var(--pop-surface);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 6px 20px -10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   text-align: left;
   font-family: inherit;
@@ -42,14 +45,20 @@
 
 .task-card:hover {
   border-color: var(--card-border-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 14px 34px -12px rgba(0, 0, 0, 0.18);
 }
 
-/* inativas: visivelmente "apagadas" em relação às ativas */
+/* inativas (pausadas): cinza e sem elevação */
 .task-card.is-inactive {
-  background: color-mix(in srgb, var(--card-surface) 50%, var(--main-bg));
-  border-style: dashed;
+  background: var(--card-surface);
+  box-shadow: none;
+}
+
+.task-card.is-inactive:hover {
+  box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.12);
 }
 
 .task-card.is-inactive .task-name {
@@ -94,6 +103,32 @@
   flex-direction: column;
   gap: 5px;
   padding-top: 16px;
+}
+
+/* chip do projeto ao qual a tarefa pertence */
+.task-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  max-width: 100%;
+  margin-bottom: 3px;
+  padding: 2px 9px 2px 7px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-project-emoji {
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .task-name {

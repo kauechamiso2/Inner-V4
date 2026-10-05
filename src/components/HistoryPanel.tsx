@@ -36,7 +36,6 @@ const CHAT_GROUPS: ChatGroup[] = [
     chats: [
       { title: 'Direção de arte da campanha', source: 'agent' },
       { title: 'Monitoramento de voo LH441', source: 'task' },
-      { title: 'Calendário editorial de outubro', source: 'project', emoji: '📣' },
       { title: 'Roteiro do vídeo de onboarding', source: 'agent' },
       { title: 'Copy do e-mail de outubro', source: 'blue' },
       { title: 'Análise do churn de setembro', source: 'agent' },
@@ -48,11 +47,9 @@ const CHAT_GROUPS: ChatGroup[] = [
     chats: [
       { title: 'Ajustes no pitch do Squad', source: 'dark' },
       { title: 'Monitoramento de e-mails importantes', source: 'task' },
-      { title: 'Roteiro de Reels do lançamento', source: 'project', emoji: '📣' },
       { title: 'Resumo da call com investidores', source: 'agent' },
       { title: 'Plano de conteúdo de novembro', source: 'agent' },
       { title: 'Relatório de vendas Q4', source: 'task' },
-      { title: 'Legendas do lançamento da coleção', source: 'project', emoji: '📣' },
       { title: 'Tradução do contrato pra inglês', source: 'spiral' },
       { title: 'Benchmark de concorrentes', source: 'agent' },
       { title: 'Nomes pro novo produto', source: 'blue' },
@@ -65,7 +62,6 @@ const CHAT_GROUPS: ChatGroup[] = [
       { title: 'Checklist de QA do app', source: 'agent' },
       { title: 'Post de aniversário da empresa', source: 'spiral' },
       { title: 'Monitoramento de preços', source: 'task' },
-      { title: 'Copy da campanha de Black Friday', source: 'project', emoji: '📣' },
       { title: 'Brainstorm de features do V4', source: 'agent' },
       { title: 'Relatório mensal pro board', source: 'dark' },
       { title: 'FAQ da central de ajuda', source: 'agent' },

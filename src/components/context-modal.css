@@ -171,6 +171,83 @@
   color: var(--text-faint);
 }
 
+/* ---------- Instruções (textarea + salvar) ---------- */
+.instr-body {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 22px;
+}
+
+.instr-textarea {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 260px;
+  resize: none;
+  padding: 14px 16px;
+  border: 1px solid var(--sb-border);
+  border-radius: 12px;
+  background: var(--pop-surface);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-strong);
+  transition: border-color 140ms ease;
+}
+
+.instr-textarea:focus {
+  outline: none;
+  border-color: var(--card-border-hover);
+}
+
+.instr-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.instr-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.instr-save {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 120ms ease;
+}
+
+.instr-save:hover {
+  opacity: 0.88;
+}
+
+.instr-save:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Tarefas do projeto (cards no modal) ---------- */
+.tasks-modal-body {
+  padding: 18px 22px 24px;
+}
+
+.tasks-modal-body .tasks-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.tasks-modal-empty {
+  padding: 44px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-faint);
+}
+
 @media (max-width: 640px) {
   .ctx-overlay {
     padding: 0;

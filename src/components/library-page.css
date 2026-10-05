@@ -207,6 +207,21 @@
   flex-shrink: 0;
 }
 
+/* indicador de que o projeto está fixado na Home */
+.coll-card-pin {
+  position: absolute;
+  top: 13px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.coll-card-pin svg {
+  display: block;
+}
+
 /* avatar com emoji, "flutuando" na borda da faixa */
 .coll-card-avatar {
   position: absolute;

@@ -10,6 +10,7 @@ export type ProjectContent = {
   contextSections: Section[]
   contextLoose: DetailFile[]
   contextPct: number
+  instructions: string
 }
 
 const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/120/120`
@@ -70,6 +71,12 @@ const HR_STUFF: ProjectContent = {
     { id: 'l3', name: 'Wiki de RH (Notion)', type: 'url' },
   ],
   contextPct: 42,
+  instructions:
+    'Você é o assistente de RH da empresa. Baseie as respostas nas políticas e documentos deste projeto.\n\n' +
+    '- Use um tom profissional, claro e acolhedor.\n' +
+    '- Ao falar de benefícios, férias ou processos, cite a política correspondente.\n' +
+    '- Nunca compartilhe dados sensíveis de funcionários.\n' +
+    '- Quando não houver informação nos documentos, diga que vai confirmar com o time de RH.',
 }
 
 const MARKETING: ProjectContent = {
@@ -125,6 +132,12 @@ const MARKETING: ProjectContent = {
     { id: 'ml4', name: 'Wiki de Marketing (Notion)', type: 'url' },
   ],
   contextPct: 57,
+  instructions:
+    'Você é o assistente de Marketing & Conteúdo da marca. Siga sempre o tom de voz: próximo, direto e otimista, sem jargão.\n\n' +
+    '- Respeite o calendário editorial e os pilares de conteúdo ao sugerir pautas.\n' +
+    '- Em legendas e posts, use CTAs claros e no máximo 3 hashtags relevantes.\n' +
+    '- Priorize dados de engajamento ao recomendar formatos e horários.\n' +
+    '- Mantenha consistência com a identidade visual e o guia de marca.',
 }
 
 export const PROJECT_CONTENT: Record<string, ProjectContent> = {

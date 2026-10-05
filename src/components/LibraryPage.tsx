@@ -5,7 +5,7 @@ import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
 import folder from '../assets/library/folder.svg'
-import { StickyNote } from 'lucide-react'
+import { Pin, StickyNote } from 'lucide-react'
 import {
   FileTextIcon,
   FolderSimpleIcon,
@@ -195,6 +195,11 @@ export default function LibraryPage({
                 onClick={() => setOpenCollection(c.name)}
               >
                 <span className="coll-card-top" style={{ background: c.color }}>
+                  {isPinned('project', c.id) && (
+                    <span className="coll-card-pin" title="Fixado na Home" aria-label="Fixado na Home">
+                      <Pin size={15} strokeWidth={2} fill="currentColor" />
+                    </span>
+                  )}
                   <span className="coll-card-avatar">
                     <span className="coll-emoji">{c.emoji}</span>
                   </span>
