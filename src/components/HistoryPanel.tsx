@@ -267,7 +267,7 @@ function PinButton({ pinned, onToggle }: { pinned: boolean; onToggle: () => void
     <button
       type="button"
       className={`chat-pin${pinned ? ' is-pinned' : ''}`}
-      aria-label={pinned ? 'Desafixar' : 'Fixar'}
+      aria-label={pinned ? 'Despinar' : 'Pinar'}
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -275,6 +275,9 @@ function PinButton({ pinned, onToggle }: { pinned: boolean; onToggle: () => void
       }}
     >
       <Pin size={14} strokeWidth={1.8} fill={pinned ? 'currentColor' : 'none'} />
+      <span className="pill-tooltip chat-pin-tip" role="tooltip" aria-hidden="true">
+        {pinned ? 'Despinar' : 'Pinar'}
+      </span>
     </button>
   )
 }
@@ -333,42 +336,46 @@ function ProjectRow({
           onOpen?.()
         }}
       >
-        {hasChildren && (
-          <button
-            type="button"
-            className={`chat-proj-caret${expanded ? ' is-open' : ''}`}
-            aria-label={expanded ? 'Recolher projeto' : 'Expandir projeto'}
-            aria-expanded={expanded}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onToggleExpand?.()
-            }}
-          >
-            <ChevronRight size={13} strokeWidth={2.4} />
-          </button>
-        )}
         <span className="chat-row-main">
-          {emoji ? (
-            <span className="chat-task-emoji" aria-hidden="true">
-              {emoji}
-            </span>
-          ) : (
-            <span className="proj-row-icon" aria-hidden="true">
-              <img src={folder} alt="" />
-            </span>
-          )}
+          <span className={`chat-proj-lead${hasChildren ? ' has-caret' : ''}`}>
+            {emoji ? (
+              <span className="chat-task-emoji proj-lead-icon" aria-hidden="true">
+                {emoji}
+              </span>
+            ) : (
+              <span className="proj-row-icon proj-lead-icon" aria-hidden="true">
+                <img src={folder} alt="" />
+              </span>
+            )}
+            {hasChildren && (
+              <button
+                type="button"
+                className={`chat-proj-caret${expanded ? ' is-open' : ''}`}
+                aria-label={expanded ? 'Recolher projeto' : 'Expandir projeto'}
+                aria-expanded={expanded}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onToggleExpand?.()
+                }}
+              >
+                <ChevronRight size={14} strokeWidth={2.4} />
+              </button>
+            )}
+          </span>
           <span className="chat-row-title is-model">{name}</span>
         </span>
         <PinButton pinned={pinned} onToggle={onTogglePin} />
       </a>
-      {expanded && hasChildren && (
-        <div className="chat-proj-children">
-          {childChats.map((t) => (
-            <a className="chat-proj-child" href="#conversa" key={t}>
-              {t}
-            </a>
-          ))}
+      {hasChildren && (
+        <div className={`chat-proj-childwrap${expanded ? ' is-open' : ''}`}>
+          <div className="chat-proj-children">
+            {childChats.map((t) => (
+              <a className="chat-proj-child" href="#conversa" key={t} tabIndex={expanded ? 0 : -1}>
+                {t}
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </div>

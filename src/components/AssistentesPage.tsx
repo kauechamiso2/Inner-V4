@@ -75,6 +75,17 @@ const CREATED: Record<string, CreatorInfo> = {
   a24: { name: 'Gustavo Nunes', avatar: pravatar(68), org: 'Inner AI' },
 }
 
+/* avatares gerados (Higgsfield / Nano Banana Pro), 1 por assistente — a{id}.png */
+const avatarModules = import.meta.glob('../assets/assistants/*.png', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+const ASSISTANT_AVATAR: Record<string, string> = {}
+for (const [path, url] of Object.entries(avatarModules)) {
+  const id = path.match(/\/(a\d+)\.png$/)?.[1]
+  if (id) ASSISTANT_AVATAR[id] = url
+}
+
 const SKELETON_MS = 850
 
 function avatarStyle(segment: string): CSSProperties {
@@ -158,7 +169,11 @@ export default function AssistentesPage() {
                   style={{ '--i': i } as CSSProperties}
                 >
                   <span className="assist-avatar-wrap">
-                    <span className="assist-avatar" style={avatarStyle(a.segment)} aria-hidden="true" />
+                    <span className="assist-avatar" style={avatarStyle(a.segment)} aria-hidden="true">
+                      {ASSISTANT_AVATAR[a.id] && (
+                        <img src={ASSISTANT_AVATAR[a.id]} alt="" loading="lazy" />
+                      )}
+                    </span>
                     {created && (
                       <span
                         className="assist-creator"

@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import { Bot, CalendarClock, House } from 'lucide-react'
+import { House } from 'lucide-react'
 
 /* Ícones de navegação via Lucide (currentColor = --text-mid, casa com a
    família de ícones do sidebar em claro/escuro). */
@@ -9,13 +9,38 @@ const navStyle = { color: 'var(--text-mid)' as const }
 export function HomeNavIcon({ size = 18 }: NavIconProps) {
   return <House size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
 }
+// Tarefas: calendário + relógio (geometria do CalendarClock da Lucide), com o
+// ponteiro do relógio animado — gira ao passar o mouse (tempo correndo).
 export function AgendadoIcon({ size = 18 }: NavIconProps) {
-  return <CalendarClock size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
-}
-export function PromptsPillarIcon({ size = 18 }: NavIconProps) {
-  // vetor exportado do Figma (node 578:1206): colchetes com cursor de texto
   return (
     <svg
+      className="nav-icon"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={navStyle}
+      aria-hidden="true"
+    >
+      <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5" />
+      <path d="M16 2v4" />
+      <path d="M8 2v4" />
+      <path d="M3 10h5" />
+      <circle cx="16" cy="16" r="6" />
+      <path className="anim anim-clock-hand" d="M16 13.5V16l1.5 1.5" />
+    </svg>
+  )
+}
+export function PromptsPillarIcon({ size = 18 }: NavIconProps) {
+  // vetor exportado do Figma (node 578:1206): colchetes com cursor de texto.
+  // Ao passar o mouse o "cursor" central pisca como caret e os colchetes se abrem.
+  return (
+    <svg
+      className="nav-icon"
       width={size}
       height={size}
       viewBox="0 0 16 16"
@@ -23,14 +48,37 @@ export function PromptsPillarIcon({ size = 18 }: NavIconProps) {
       style={navStyle}
       aria-hidden="true"
     >
-      <path d="M10.5664 2.10026C10.8794 2.10026 11.1328 2.35371 11.1328 2.66667C11.1328 2.97963 10.8794 3.23307 10.5664 3.23307H9.13281V12.7669H10.5664L10.6243 12.7695C10.9101 12.7985 11.1328 13.0399 11.1328 13.3333C11.1328 13.6463 10.8794 13.8997 10.5664 13.8997H6.56641C6.25344 13.8997 6 13.6463 6 13.3333C6 13.0204 6.25344 12.7669 6.56641 12.7669H8V3.23307H6.56641C6.25344 3.23307 6 2.97963 6 2.66667C6 2.35371 6.25344 2.10026 6.56641 2.10026H10.5664Z" />
-      <path d="M0.666667 10.6667V5.33333C0.666667 4.65218 1.21859 4.10026 1.89974 4.10026H3.89974C4.2127 4.10026 4.46615 4.35371 4.46615 4.66667C4.46615 4.97963 4.2127 5.23307 3.89974 5.23307H1.89974C1.84451 5.23307 1.79948 5.27811 1.79948 5.33333V10.6667C1.79948 10.7219 1.84451 10.7669 1.89974 10.7669H3.89974L3.95768 10.7695C4.24343 10.7985 4.46615 11.0399 4.46615 11.3333C4.46615 11.6463 4.2127 11.8997 3.89974 11.8997H1.89974C1.21859 11.8997 0.666667 11.3478 0.666667 10.6667Z" />
-      <path d="M15.1328 10.6667V5.33333C15.1328 4.65218 14.5809 4.10026 13.8997 4.10026H11.8997C11.5868 4.10026 11.3333 4.35371 11.3333 4.66667C11.3333 4.97963 11.5868 5.23307 11.8997 5.23307H13.8997C13.955 5.23307 14 5.27811 14 5.33333V10.6667C14 10.7219 13.955 10.7669 13.8997 10.7669H11.8997L11.8418 10.7695C11.5561 10.7985 11.3333 11.0399 11.3333 11.3333C11.3333 11.6463 11.5868 11.8997 11.8997 11.8997H13.8997C14.5809 11.8997 15.1328 11.3478 15.1328 10.6667Z" />
+      <path className="anim anim-prompt-caret" d="M10.5664 2.10026C10.8794 2.10026 11.1328 2.35371 11.1328 2.66667C11.1328 2.97963 10.8794 3.23307 10.5664 3.23307H9.13281V12.7669H10.5664L10.6243 12.7695C10.9101 12.7985 11.1328 13.0399 11.1328 13.3333C11.1328 13.6463 10.8794 13.8997 10.5664 13.8997H6.56641C6.25344 13.8997 6 13.6463 6 13.3333C6 13.0204 6.25344 12.7669 6.56641 12.7669H8V3.23307H6.56641C6.25344 3.23307 6 2.97963 6 2.66667C6 2.35371 6.25344 2.10026 6.56641 2.10026H10.5664Z" />
+      <path className="anim anim-prompt-bkt anim-prompt-bkt-l" d="M0.666667 10.6667V5.33333C0.666667 4.65218 1.21859 4.10026 1.89974 4.10026H3.89974C4.2127 4.10026 4.46615 4.35371 4.46615 4.66667C4.46615 4.97963 4.2127 5.23307 3.89974 5.23307H1.89974C1.84451 5.23307 1.79948 5.27811 1.79948 5.33333V10.6667C1.79948 10.7219 1.84451 10.7669 1.89974 10.7669H3.89974L3.95768 10.7695C4.24343 10.7985 4.46615 11.0399 4.46615 11.3333C4.46615 11.6463 4.2127 11.8997 3.89974 11.8997H1.89974C1.21859 11.8997 0.666667 11.3478 0.666667 10.6667Z" />
+      <path className="anim anim-prompt-bkt anim-prompt-bkt-r" d="M15.1328 10.6667V5.33333C15.1328 4.65218 14.5809 4.10026 13.8997 4.10026H11.8997C11.5868 4.10026 11.3333 4.35371 11.3333 4.66667C11.3333 4.97963 11.5868 5.23307 11.8997 5.23307H13.8997C13.955 5.23307 14 5.27811 14 5.33333V10.6667C14 10.7219 13.955 10.7669 13.8997 10.7669H11.8997L11.8418 10.7695C11.5561 10.7985 11.3333 11.0399 11.3333 11.3333C11.3333 11.6463 11.5868 11.8997 11.8997 11.8997H13.8997C14.5809 11.8997 15.1328 11.3478 15.1328 10.6667Z" />
     </svg>
   )
 }
+// Assistentes: robô (geometria do Bot da Lucide) com os "olhos" piscando e a
+// antena balançando ao passar o mouse.
 export function AssistentesIcon({ size = 18 }: NavIconProps) {
-  return <Bot size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
+  return (
+    <svg
+      className="nav-icon"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={navStyle}
+      aria-hidden="true"
+    >
+      <path className="anim anim-bot-antenna" d="M12 8V4H8" />
+      <rect width="16" height="12" x="4" y="8" rx="2" />
+      <path d="M2 14h2" />
+      <path d="M20 14h2" />
+      <path className="anim anim-bot-eye anim-bot-eye-r" d="M15 13v2" />
+      <path className="anim anim-bot-eye anim-bot-eye-l" d="M9 13v2" />
+    </svg>
+  )
 }
 
 // Ícones do design (Phosphor), inline para permitir animação por sub-forma.

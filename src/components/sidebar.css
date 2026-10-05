@@ -844,6 +844,83 @@
   100% { transform: translateX(0) scaleX(1); }
 }
 
+/* Tarefas: o ponteiro do relógio dá uma volta (tempo correndo) */
+:is(.sidebar-item, .rl-item):hover .anim-clock-hand,
+.icons-animate .anim-clock-hand {
+  transform-box: view-box;
+  transform-origin: 16px 16px;
+  animation: clock-sweep 850ms cubic-bezier(0.5, 0, 0.3, 1);
+}
+
+@keyframes clock-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Assistentes: o robô pisca os olhos e a antena dá uma balançadinha */
+:is(.sidebar-item, .rl-item):hover .anim-bot-eye,
+.icons-animate .anim-bot-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bot-blink 700ms ease-in-out;
+}
+
+:is(.sidebar-item, .rl-item):hover .anim-bot-eye-l,
+.icons-animate .anim-bot-eye-l {
+  animation-delay: 40ms;
+}
+
+:is(.sidebar-item, .rl-item):hover .anim-bot-antenna,
+.icons-animate .anim-bot-antenna {
+  transform-box: fill-box;
+  transform-origin: left bottom;
+  animation: bot-antenna 700ms ease-in-out;
+}
+
+@keyframes bot-blink {
+  0%, 100% { transform: scaleY(1); }
+  18%, 40% { transform: scaleY(0.12); }
+  29% { transform: scaleY(1); }
+}
+
+@keyframes bot-antenna {
+  0%, 100% { transform: rotate(0deg); }
+  35% { transform: rotate(-9deg); }
+  70% { transform: rotate(4deg); }
+}
+
+/* Prompts: o cursor central pisca como um caret e os colchetes se abrem */
+:is(.sidebar-item, .rl-item):hover .anim-prompt-caret,
+.icons-animate .anim-prompt-caret {
+  animation: prompt-caret 750ms steps(1, end);
+}
+
+:is(.sidebar-item, .rl-item):hover .anim-prompt-bkt-l,
+.icons-animate .anim-prompt-bkt-l {
+  animation: prompt-bkt-l 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:is(.sidebar-item, .rl-item):hover .anim-prompt-bkt-r,
+.icons-animate .anim-prompt-bkt-r {
+  animation: prompt-bkt-r 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes prompt-caret {
+  0%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0.15; }
+  50% { opacity: 1; }
+}
+
+@keyframes prompt-bkt-l {
+  0%, 100% { transform: translateX(0); }
+  45% { transform: translateX(-1.3px); }
+}
+
+@keyframes prompt-bkt-r {
+  0%, 100% { transform: translateX(0); }
+  45% { transform: translateX(1.3px); }
+}
+
 /* Usuários que preferem menos movimento */
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
