@@ -57,6 +57,24 @@ const ASSISTANTS: Assistant[] = [
   { id: 'a24', name: 'Priorizador de Backlog', desc: 'Prioriza tarefas pelo impacto e esforço.', segment: 'Produto' },
 ]
 
+/* alguns assistentes foram criados por alguém de uma organização */
+const pravatar = (n: number) => `https://i.pravatar.cc/80?img=${n}`
+type CreatorInfo = { name: string; avatar: string; org: string }
+const CREATED: Record<string, CreatorInfo> = {
+  a1: { name: 'Marina Costa', avatar: pravatar(12), org: 'Inner AI' },
+  a3: { name: 'Rafael Lima', avatar: pravatar(33), org: 'Inner AI' },
+  a5: { name: 'Juliana Alves', avatar: pravatar(45), org: 'Squad' },
+  a7: { name: 'Pedro Santos', avatar: pravatar(15), org: 'Inner AI' },
+  a9: { name: 'Camila Rocha', avatar: pravatar(47), org: 'Acme' },
+  a11: { name: 'Lucas Ferreira', avatar: pravatar(8), org: 'Inner AI' },
+  a13: { name: 'Beatriz Souza', avatar: pravatar(49), org: 'Squad' },
+  a16: { name: 'Thiago Mendes', avatar: pravatar(60), org: 'Inner AI' },
+  a18: { name: 'Ana Martins', avatar: pravatar(31), org: 'Acme' },
+  a20: { name: 'Bruno Carvalho', avatar: pravatar(52), org: 'Inner AI' },
+  a22: { name: 'Letícia Dias', avatar: pravatar(24), org: 'Squad' },
+  a24: { name: 'Gustavo Nunes', avatar: pravatar(68), org: 'Inner AI' },
+}
+
 const SKELETON_MS = 850
 
 function avatarStyle(segment: string): CSSProperties {
@@ -93,16 +111,14 @@ export default function AssistentesPage() {
 
   return (
     <main className="images-page assist-page">
+      <button className="ap-cta" type="button">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+        Novo assistente
+      </button>
       <div className="ip-container ap-container">
-        <div className="ap-head">
-          <h1 className="ip-title">Assistentes</h1>
-          <button className="ap-cta" type="button">
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-            Novo assistente
-          </button>
-        </div>
+        <h1 className="ip-title">Assistentes</h1>
 
         <div className="ip-search">
           <img src={searchIcon} alt="" aria-hidden="true" />
@@ -133,11 +149,30 @@ export default function AssistentesPage() {
                   </div>
                 </div>
               ))
-            : list.map((a, i) => (
+            : list.map((a, i) => {
+              const created = CREATED[a.id]
+              return (
                 <article className="assist-card" key={a.id} style={{ '--i': i } as CSSProperties}>
-                  <span className="assist-avatar" style={avatarStyle(a.segment)} aria-hidden="true" />
+                  <span className="assist-avatar-wrap">
+                    <span className="assist-avatar" style={avatarStyle(a.segment)} aria-hidden="true" />
+                    {created && (
+                      <span
+                        className="assist-creator"
+                        tabIndex={0}
+                        aria-label={`Criado por ${created.name}`}
+                      >
+                        <img src={created.avatar} alt="" loading="lazy" />
+                        <span className="pill-tooltip assist-creator-tip" role="tooltip" aria-hidden="true">
+                          Criado por {created.name}
+                        </span>
+                      </span>
+                    )}
+                  </span>
                   <div className="assist-text">
-                    <h3 className="assist-name">{a.name}</h3>
+                    <div className="assist-name-row">
+                      <h3 className="assist-name">{a.name}</h3>
+                      {created && <span className="assist-org">{created.org}</span>}
+                    </div>
                     <p className="assist-desc">{a.desc}</p>
                   </div>
                   <button
@@ -171,7 +206,8 @@ export default function AssistentesPage() {
                     </div>
                   )}
                 </article>
-              ))}
+              )
+            })}
         </div>
       </div>
     </main>

@@ -1,28 +1,19 @@
 /* ============ Página de Assistentes ============ */
 
+.assist-page {
+  position: relative;
+}
+
 .ap-container {
   max-width: 920px;
 }
 
-/* ---------- Cabeçalho: título centralizado + CTA no canto ---------- */
-.ap-head {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.ap-head .ip-title {
-  margin: 0;
-}
-
+/* ---------- CTA "Novo assistente" no canto superior direito ---------- */
 .ap-cta {
   position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 32px;
+  right: 32px;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -45,7 +36,7 @@
 }
 
 .ap-cta:active {
-  transform: translateY(-50%) scale(0.97);
+  transform: scale(0.97);
 }
 
 .ap-cta svg {
@@ -83,12 +74,56 @@
   transform: translateY(-1px);
 }
 
+/* avatar do assistente (+ mini avatar do criador) */
+.assist-avatar-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
 /* avatar redondo (placeholder até entrarem as fotos) */
 .assist-avatar {
   width: 48px;
   height: 48px;
   flex-shrink: 0;
   border-radius: 50%;
+}
+
+/* mini avatar do criador, no canto do avatar do assistente */
+.assist-creator {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--card-surface);
+  cursor: default;
+}
+
+.assist-creator img {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--lib-tile-neutral);
+}
+
+.assist-creator-tip {
+  left: 50%;
+  top: auto;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(3px) scale(0.96);
+}
+
+.assist-creator:hover .assist-creator-tip,
+.assist-creator:focus-visible .assist-creator-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 0s;
 }
 
 .assist-text {
@@ -99,14 +134,38 @@
   gap: 3px;
 }
 
+.assist-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .assist-name {
   margin: 0;
+  min-width: 0;
   font-size: 15px;
   font-weight: 600;
   color: var(--text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* badge da organização dona do assistente */
+.assist-org {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 19px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-soft);
+  white-space: nowrap;
 }
 
 .assist-desc {
@@ -264,16 +323,12 @@
 
 /* ---------- Responsivo ---------- */
 @media (max-width: 720px) {
-  .ap-head {
-    flex-direction: column;
-    gap: 14px;
-  }
   .ap-cta {
-    position: static;
-    transform: none;
+    top: 18px;
+    right: 18px;
   }
-  .ap-cta:active {
-    transform: scale(0.97);
+  .ap-container {
+    padding-top: 68px;
   }
   .ap-grid {
     grid-template-columns: 1fr;
