@@ -286,6 +286,70 @@
   justify-content: space-between;
 }
 
+/* ---------- Projeto pinado retrátil ---------- */
+.chat-proj {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-proj-caret {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: -4px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.chat-proj-caret:hover {
+  background: var(--hover-06);
+  color: var(--text-mid);
+}
+
+.chat-proj-caret svg {
+  display: block;
+  transition: transform 170ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chat-proj-caret.is-open svg {
+  transform: rotate(90deg);
+}
+
+.chat-proj-children {
+  display: flex;
+  flex-direction: column;
+  margin: 1px 0 4px;
+  padding-left: 30px;
+}
+
+.chat-proj-child {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--text-soft);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 130ms ease, color 130ms ease;
+}
+
+.chat-proj-child:hover {
+  background: var(--hover-04);
+  color: var(--text-strong);
+}
+
 .chat-row-main {
   display: flex;
   align-items: center;

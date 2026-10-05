@@ -152,7 +152,11 @@ export default function AssistentesPage() {
             : list.map((a, i) => {
               const created = CREATED[a.id]
               return (
-                <article className="assist-card" key={a.id} style={{ '--i': i } as CSSProperties}>
+                <article
+                  className={`assist-card${openMenu === a.id ? ' is-menu-open' : ''}`}
+                  key={a.id}
+                  style={{ '--i': i } as CSSProperties}
+                >
                   <span className="assist-avatar-wrap">
                     <span className="assist-avatar" style={avatarStyle(a.segment)} aria-hidden="true" />
                     {created && (

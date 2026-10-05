@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import { Pin, Search as SearchIcon } from 'lucide-react'
+import { ChevronRight, Pin, Search as SearchIcon } from 'lucide-react'
 import './history.css'
 import magnifyingGlass from '../assets/magnifying-glass.svg'
 import folder from '../assets/library/folder.svg'
 import { COLLECTIONS as LIB_COLLECTIONS } from './libraryEntries'
+import { PROJECT_CONTENT } from './projectContent'
 import AgentOrb from './AgentOrb'
 import modelBlue from '../assets/model-blue.svg'
 import modelAvatarRing from '../assets/model-avatar-ring.svg'
@@ -305,6 +306,9 @@ function ProjectRow({
   emoji,
   pinned,
   selected = false,
+  childChats,
+  expanded = false,
+  onToggleExpand,
   onOpen,
   onTogglePin,
 }: {
@@ -312,32 +316,62 @@ function ProjectRow({
   emoji?: string
   pinned: boolean
   selected?: boolean
+  childChats?: string[]
+  expanded?: boolean
+  onToggleExpand?: () => void
   onOpen?: () => void
   onTogglePin: () => void
 }) {
+  const hasChildren = !!childChats && childChats.length > 0
   return (
-    <a
-      className={`chat-row${selected ? ' is-selected' : ''}`}
-      href="#projeto"
-      onClick={(e) => {
-        e.preventDefault()
-        onOpen?.()
-      }}
-    >
-      <span className="chat-row-main">
-        {emoji ? (
-          <span className="chat-task-emoji" aria-hidden="true">
-            {emoji}
-          </span>
-        ) : (
-          <span className="proj-row-icon" aria-hidden="true">
-            <img src={folder} alt="" />
-          </span>
+    <div className="chat-proj">
+      <a
+        className={`chat-row${selected ? ' is-selected' : ''}`}
+        href="#projeto"
+        onClick={(e) => {
+          e.preventDefault()
+          onOpen?.()
+        }}
+      >
+        {hasChildren && (
+          <button
+            type="button"
+            className={`chat-proj-caret${expanded ? ' is-open' : ''}`}
+            aria-label={expanded ? 'Recolher projeto' : 'Expandir projeto'}
+            aria-expanded={expanded}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onToggleExpand?.()
+            }}
+          >
+            <ChevronRight size={13} strokeWidth={2.4} />
+          </button>
         )}
-        <span className="chat-row-title is-model">{name}</span>
-      </span>
-      <PinButton pinned={pinned} onToggle={onTogglePin} />
-    </a>
+        <span className="chat-row-main">
+          {emoji ? (
+            <span className="chat-task-emoji" aria-hidden="true">
+              {emoji}
+            </span>
+          ) : (
+            <span className="proj-row-icon" aria-hidden="true">
+              <img src={folder} alt="" />
+            </span>
+          )}
+          <span className="chat-row-title is-model">{name}</span>
+        </span>
+        <PinButton pinned={pinned} onToggle={onTogglePin} />
+      </a>
+      {expanded && hasChildren && (
+        <div className="chat-proj-children">
+          {childChats.map((t) => (
+            <a className="chat-proj-child" href="#conversa" key={t}>
+              {t}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -475,6 +509,14 @@ export default function HistoryPanel({
   const newLabel = isChat ? (chatMode === 'agente' ? 'Nova tarefa' : 'Novo Chat') : config.newLabel
 
   const [pickerOpen, setPickerOpen] = useState(false)
+  /* projetos pinados expandidos (mostram os chats de dentro) */
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
+  const toggleExpanded = (id: string) =>
+    setExpandedProjects((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
 
   const pinnedChatIds = useMemo(
     () => new Set(pins.filter((p) => p.kind === 'chat').map((p) => p.id)),
@@ -543,13 +585,19 @@ export default function HistoryPanel({
                       ) : null
                     }
                     const pr = findProject(p.id)
-                    return pr ? (
+                    if (!pr) return null
+                    const childChats =
+                      PROJECT_CONTENT[pr.id]?.recents.slice(0, 6).map((c) => c.title) ?? []
+                    return (
                       <ProjectRow
                         key={`pin-${p.id}`}
                         name={pr.name}
                         emoji={pr.emoji}
                         pinned
                         selected={activeProject?.id === pr.id}
+                        childChats={childChats}
+                        expanded={expandedProjects.has(pr.id)}
+                        onToggleExpand={() => toggleExpanded(pr.id)}
                         onOpen={() =>
                           onOpenProject?.({
                             id: pr.id,
@@ -560,7 +608,7 @@ export default function HistoryPanel({
                         }
                         onTogglePin={() => togglePin('project', p.id)}
                       />
-                    ) : null
+                    )
                   })}
                 </div>
               )}
