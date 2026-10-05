@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Brain, ChevronLeft, Clock, Paperclip, Pin, ScrollText } from 'lucide-react'
 import './project-home.css'
 import ChatComposer from './ChatComposer'
+import ContextModal from './ContextModal'
 
 type Chat = { id: string; title: string; date: string }
 
@@ -56,9 +57,19 @@ export default function ProjectHome({
   onBack: () => void
 }) {
   const [mode, setMode] = useState<'agente' | 'chat'>('agente')
+  const [contextOpen, setContextOpen] = useState(false)
 
   return (
     <main className="project-home">
+      {color && (
+        <div
+          className="ph-banner"
+          aria-hidden="true"
+          style={{
+            background: `linear-gradient(180deg, color-mix(in srgb, ${color} 26%, var(--main-bg)), var(--main-bg))`,
+          }}
+        />
+      )}
       <div className="ph-container">
         <div className="ph-main">
           <nav className="ph-breadcrumb" aria-label="Navegação">
@@ -134,7 +145,12 @@ export default function ProjectHome({
 
         <aside className="ph-side" aria-label="Configurações do projeto">
           {SIDE_ITEMS.map((it) => (
-            <div className="ph-side-item" key={it.id}>
+            <button
+              className="ph-side-item"
+              type="button"
+              key={it.id}
+              onClick={it.id === 'ctx' ? () => setContextOpen(true) : undefined}
+            >
               <span className="ph-side-icon" aria-hidden="true">
                 {it.icon}
               </span>
@@ -142,14 +158,14 @@ export default function ProjectHome({
                 {it.label}
                 {it.sub && <span className="ph-side-sub">{it.sub}</span>}
               </span>
-              <button className="ph-side-action" type="button">
-                {it.action}
-              </button>
-            </div>
+              <span className="ph-side-action">{it.action}</span>
+            </button>
           ))}
           <div className="ph-side-foot">Privado</div>
         </aside>
       </div>
+
+      <ContextModal open={contextOpen} onClose={() => setContextOpen(false)} usedPct={57} />
     </main>
   )
 }
