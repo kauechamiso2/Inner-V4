@@ -4,6 +4,7 @@ import HistoryPanel from './components/HistoryPanel'
 import ChatHome from './components/ChatHome'
 import PageView from './components/PageView'
 import ImagesPage from './components/ImagesPage'
+import VideosPage from './components/VideosPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
 import SitesPage from './components/SitesPage'
@@ -167,6 +168,8 @@ export default function App() {
         <ChatHome mode={chatMode} onModeChange={setChatMode} project={activeProject} />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
+      ) : view === 'videos' ? (
+        <VideosPage key="videos" />
       ) : view === 'library' ? (
         <LibraryPage key="library" isPinned={isPinned} togglePin={togglePin} />
       ) : view === 'tarefas' ? (
