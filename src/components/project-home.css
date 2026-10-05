@@ -12,12 +12,12 @@
 }
 
 .ph-container {
-  max-width: 1060px;
+  max-width: 1160px;
   margin: 0 auto;
-  padding: 44px 32px 56px;
+  padding: 44px 36px 56px;
   display: flex;
   align-items: flex-start;
-  gap: 52px;
+  gap: 64px;
   animation: page-in 360ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -324,18 +324,18 @@
 
 /* ---------- Painel lateral ---------- */
 .ph-side {
-  flex: 0 0 236px;
+  flex: 0 0 312px;
   display: flex;
   flex-direction: column;
-  padding-top: 52px;
+  padding-top: 54px;
 }
 
 .ph-side-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 46px;
-  padding: 0 4px;
+  gap: 14px;
+  height: 56px;
+  padding: 0 6px;
 }
 
 .ph-side-item + .ph-side-item {
@@ -360,24 +360,27 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-size: 14.5px;
+  font-size: 15px;
   color: var(--text-strong);
+  white-space: nowrap;
 }
 
 .ph-side-sub {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-faint);
+  white-space: nowrap;
 }
 
 .ph-side-action {
   flex-shrink: 0;
-  padding: 4px 6px;
+  padding: 5px 8px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 7px;
   background: transparent;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--text-soft);
+  white-space: nowrap;
   cursor: pointer;
   transition: background-color 130ms ease, color 130ms ease;
 }
@@ -388,14 +391,14 @@
 }
 
 .ph-side-foot {
-  margin-top: 18px;
-  padding: 0 4px;
+  margin-top: 20px;
+  padding: 0 6px;
   font-size: 13px;
   color: var(--text-faint);
 }
 
 /* ---------- Responsivo ---------- */
-@media (max-width: 880px) {
+@media (max-width: 960px) {
   .ph-container {
     flex-direction: column;
     gap: 8px;
