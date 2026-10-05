@@ -7,6 +7,7 @@ import icDotsActions from '../assets/library/dots-actions.svg'
 import folder from '../assets/library/folder.svg'
 import { MoreHorizontal } from 'lucide-react'
 import CollectionDetail from './CollectionDetail'
+import ProjectHome from './ProjectHome'
 import fPdf from '../assets/library/file-pdf.svg'
 import fImage from '../assets/library/file-image.svg'
 import fText from '../assets/library/file-text.svg'
@@ -25,12 +26,15 @@ type Collection = {
   more?: boolean
   color: string
   neutral?: boolean
+  /* 'files' abre a coleção de arquivos; 'chat' abre o workspace de conversas */
+  kind?: 'files' | 'chat'
 }
 
 /* cor + emoji são apenas defaults de demonstração — no produto o usuário
    escolhe ambos na criação do projeto */
 const COLLECTIONS: Collection[] = [
-  { id: 'col-hr', name: 'HR Stuff', count: '54 arquivos', emoji: '🧑‍💼', color: '#3E63C4' },
+  { id: 'col-hr', name: 'HR Stuff', count: '54 arquivos', emoji: '🧑‍💼', color: '#3E63C4', kind: 'files' },
+  { id: 'col-mkt', name: 'Marketing & Conteúdo', count: '18 conversas', emoji: '📣', color: '#F0603A', kind: 'chat' },
 ]
 
 /* pastas de arquivos soltas na Biblioteca (nomes de demonstração) */
@@ -87,6 +91,17 @@ export default function LibraryPage({
   if (openCollection) {
     const coll = COLLECTIONS.find((c) => c.name === openCollection)
     const projectId = coll?.id ?? openCollection
+    if (coll?.kind === 'chat') {
+      return (
+        <ProjectHome
+          name={openCollection}
+          emoji={coll.emoji}
+          color={coll.color}
+          creator="Kauê Chamiso"
+          onBack={() => setOpenCollection(null)}
+        />
+      )
+    }
     return (
       <CollectionDetail
         name={openCollection}
