@@ -15,7 +15,16 @@ export default function ChatHome({
   project?: ActiveProject | null
 }) {
   return (
-    <main className="chat-home">
+    <main
+      className="chat-home"
+      style={
+        project?.color
+          ? {
+              background: `linear-gradient(180deg, color-mix(in srgb, ${project.color} 20%, var(--main-bg)) 0%, var(--main-bg) 46%)`,
+            }
+          : undefined
+      }
+    >
       <div className="chat-column">
         <div className="chat-greeting" key={project ? `proj-${project.id}` : mode}>
           {project ? (
@@ -56,7 +65,6 @@ export default function ChatHome({
           onModeChange={onModeChange}
           placeholder={project ? `Conversar em ${project.name}` : undefined}
           excludeProjects={!!project}
-          accentColor={project?.color}
         />
       </div>
     </main>

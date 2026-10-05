@@ -175,7 +175,7 @@ export default function LibraryPage({
           <div className="lib-section-head">
             <div className="lib-section-title">
               <h2>Projetos</h2>
-              <p>Arquivos agrupados por projeto para usar como contexto</p>
+              <p>Espaços de trabalho com conversas, arquivos e contexto próprios</p>
             </div>
             <button className="lib-new" type="button" aria-label="Novo projeto">
               <img src={plus} alt="" aria-hidden="true" />

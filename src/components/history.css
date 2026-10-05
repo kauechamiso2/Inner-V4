@@ -472,8 +472,8 @@
   color: var(--text-strong);
 }
 
+/* mesmo fixado, o pin só aparece no hover da linha (indicador limpo) */
 .chat-pin.is-pinned {
-  opacity: 1;
   color: var(--text-mid);
 }
 
