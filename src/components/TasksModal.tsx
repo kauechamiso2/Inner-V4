@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import './context-modal.css'
 import './tasks-page.css'
 import TaskCard from './TaskCard'
@@ -59,9 +59,15 @@ export default function TasksModal({
             <h2 className="ctx-modal-title">Tarefas</h2>
             <p className="ctx-modal-sub">Tarefas automatizadas deste projeto</p>
           </div>
-          <button className="ctx-modal-close" type="button" aria-label="Fechar" onClick={onClose}>
-            <X size={18} strokeWidth={2} />
-          </button>
+          <div className="ctx-modal-head-actions">
+            <button type="button" className="tasks-modal-new">
+              <Plus size={15} strokeWidth={2.2} />
+              Nova tarefa
+            </button>
+            <button className="ctx-modal-close" type="button" aria-label="Fechar" onClick={onClose}>
+              <X size={18} strokeWidth={2} />
+            </button>
+          </div>
         </header>
 
         <div className="ctx-modal-body tasks-modal-body">

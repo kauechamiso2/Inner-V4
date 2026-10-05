@@ -248,6 +248,43 @@
   color: var(--text-faint);
 }
 
+/* ações no cabeçalho do modal (ex.: Nova tarefa + fechar) */
+.ctx-modal-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.tasks-modal-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 15px 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 120ms ease;
+}
+
+.tasks-modal-new:hover {
+  opacity: 0.88;
+}
+
+.tasks-modal-new:active {
+  transform: scale(0.97);
+}
+
+.tasks-modal-new svg {
+  display: block;
+}
+
 @media (max-width: 640px) {
   .ctx-overlay {
     padding: 0;

@@ -186,31 +186,51 @@ export default function LibraryPage({
           </div>
 
           <div className="lib-collections">
-            {COLLECTIONS.map((c, i) => (
-              <button
-                className="coll-card"
-                type="button"
-                key={c.name}
-                style={{ '--i': i } as CSSProperties}
-                onClick={() => setOpenCollection(c.name)}
-              >
-                <span className="coll-card-top" style={{ background: c.color }}>
-                  {isPinned('project', c.id) && (
-                    <span className="coll-card-pin" title="Fixado na Home" aria-label="Fixado na Home">
-                      <Pin size={15} strokeWidth={2} fill="currentColor" />
+            {COLLECTIONS.map((c, i) => {
+              const projPinned = isPinned('project', c.id)
+              return (
+                <div
+                  className="coll-card"
+                  role="button"
+                  tabIndex={0}
+                  key={c.name}
+                  style={{ '--i': i } as CSSProperties}
+                  onClick={() => setOpenCollection(c.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setOpenCollection(c.name)
+                    }
+                  }}
+                >
+                  <span className="coll-card-top" style={{ background: c.color }}>
+                    <button
+                      type="button"
+                      className={`coll-card-pin${projPinned ? ' is-pinned' : ''}`}
+                      aria-label={projPinned ? 'Desafixar da Home' : 'Fixar na Home'}
+                      aria-pressed={projPinned}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        togglePin('project', c.id)
+                      }}
+                    >
+                      <Pin size={15} strokeWidth={2} fill={projPinned ? 'currentColor' : 'none'} />
+                      <span className="pill-tooltip coll-card-pin-tip" role="tooltip" aria-hidden="true">
+                        {projPinned ? 'Desafixar da Home' : 'Fixar na Home'}
+                      </span>
+                    </button>
+                    <span className="coll-card-avatar">
+                      <span className="coll-emoji">{c.emoji}</span>
                     </span>
-                  )}
-                  <span className="coll-card-avatar">
-                    <span className="coll-emoji">{c.emoji}</span>
                   </span>
-                </span>
-                <span className="coll-card-body">
-                  <span className="coll-name">{c.name}</span>
-                  <span className="coll-desc">{c.description}</span>
-                  <span className="coll-date">{c.createdAt}</span>
-                </span>
-              </button>
-            ))}
+                  <span className="coll-card-body">
+                    <span className="coll-name">{c.name}</span>
+                    <span className="coll-desc">{c.description}</span>
+                    <span className="coll-date">{c.createdAt}</span>
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </section>
 

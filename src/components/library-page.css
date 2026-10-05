@@ -207,19 +207,53 @@
   flex-shrink: 0;
 }
 
-/* indicador de que o projeto está fixado na Home */
+/* botão de fixar/desafixar o projeto na Home (no topo colorido do card) */
 .coll-card-pin {
   position: absolute;
-  top: 13px;
-  right: 14px;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.95);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 140ms ease, background-color 140ms ease;
+}
+
+/* visível ao passar o mouse no card, ou sempre quando fixado */
+.coll-card:hover .coll-card-pin,
+.coll-card-pin.is-pinned {
+  opacity: 1;
+}
+
+.coll-card-pin:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .coll-card-pin svg {
   display: block;
+}
+
+.coll-card-pin-tip {
+  left: auto;
+  right: 0;
+  top: calc(100% + 8px);
+  transform: translateX(0) translateY(-3px) scale(0.96);
+}
+
+.coll-card-pin:hover .coll-card-pin-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0) translateY(0) scale(1);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 0s;
 }
 
 /* avatar com emoji, "flutuando" na borda da faixa */
