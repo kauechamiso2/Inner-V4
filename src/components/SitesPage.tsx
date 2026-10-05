@@ -1,7 +1,39 @@
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import './library-page.css'
 import './sites-page.css'
 import searchIcon from '../assets/library/search.svg'
+import { Globe, Lock, MoreHorizontal } from 'lucide-react'
+import portfolioThumb from '../assets/sites/portfolio.png'
+import saasThumb from '../assets/sites/saas.png'
+
+type Site = {
+  id: string
+  title: string
+  url: string
+  visibility: 'private' | 'public'
+  date: string
+  thumb: string
+}
+
+const SITES: Site[] = [
+  {
+    id: 's1',
+    title: 'Kauê Chamiso — UX Design',
+    url: 'kauechamiso.design',
+    visibility: 'private',
+    date: 'Ontem',
+    thumb: portfolioThumb,
+  },
+  {
+    id: 's2',
+    title: 'Smart Analytics — Landing',
+    url: 'smartanalytics.inner.site',
+    visibility: 'public',
+    date: 'há 3 dias',
+    thumb: saasThumb,
+  },
+]
 
 export default function SitesPage() {
   const [view, setView] = useState<'grid' | 'list'>('grid')
@@ -84,10 +116,35 @@ export default function SitesPage() {
             </div>
           </div>
 
-          <div className="sites-empty">
-            <span className="sites-empty-emoji" aria-hidden="true">🌐</span>
-            <p className="sites-empty-title">Nenhum site ainda</p>
-            <p className="sites-empty-sub">Crie seu primeiro site clicando em “Novo Site”.</p>
+          <div className="sites-grid">
+            {SITES.map((s, i) => (
+              <article className="site-card" key={s.id} style={{ '--i': i } as CSSProperties}>
+                <button type="button" className="site-more" aria-label="Ações do site">
+                  <MoreHorizontal size={18} strokeWidth={2} />
+                </button>
+                <div className="site-thumb">
+                  <img src={s.thumb} alt={`Prévia do site ${s.title}`} loading="lazy" />
+                </div>
+                <div className="site-body">
+                  <h3 className="site-title">{s.title}</h3>
+                  <span className="site-url">{s.url}</span>
+                  <div className="site-foot">
+                    <span className={`site-vis${s.visibility === 'public' ? ' is-public' : ''}`}>
+                      {s.visibility === 'private' ? (
+                        <Lock size={13} strokeWidth={2} />
+                      ) : (
+                        <Globe size={13} strokeWidth={2} />
+                      )}
+                      {s.visibility === 'private' ? 'Só você' : 'Publicado'}
+                    </span>
+                    <span className="site-dot" aria-hidden="true">
+                      ·
+                    </span>
+                    <span className="site-date">{s.date}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
       </div>
