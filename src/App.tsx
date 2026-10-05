@@ -7,6 +7,7 @@ import ImagesPage from './components/ImagesPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
 import SitesPage from './components/SitesPage'
+import AssistentesPage from './components/AssistentesPage'
 import TaskDrawer from './components/TaskDrawer'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import { PILLAR_BY_ID } from './components/pillars'
@@ -171,6 +172,8 @@ export default function App() {
         <TarefasPage key="tarefas" onOpenTask={openTaskDrawer} />
       ) : view === 'sites' ? (
         <SitesPage key="sites" />
+      ) : view === 'assistentes' ? (
+        <AssistentesPage key="assistentes" />
       ) : (
         <PageView key={view} title={titleFor(view)} />
       )}
