@@ -6,6 +6,7 @@ import PageView from './components/PageView'
 import ImagesPage from './components/ImagesPage'
 import VideosPage from './components/VideosPage'
 import AudioPage from './components/AudioPage'
+import DocumentsPage from './components/DocumentsPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
 import SitesPage from './components/SitesPage'
@@ -173,6 +174,8 @@ export default function App() {
         <VideosPage key="videos" />
       ) : view === 'audio' ? (
         <AudioPage key="audio" />
+      ) : view === 'documentos' ? (
+        <DocumentsPage key="documentos" />
       ) : view === 'library' ? (
         <LibraryPage key="library" isPinned={isPinned} togglePin={togglePin} />
       ) : view === 'tarefas' ? (
