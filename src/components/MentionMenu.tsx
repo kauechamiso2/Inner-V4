@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import './mention-menu.css'
+import { Brain } from 'lucide-react'
 import BibliotecaSubmenu from './BibliotecaSubmenu'
 import ProjetosSubmenu from './ProjetosSubmenu'
 import {
-  BooksIcon,
   FileTextIcon,
   FolderSimpleIcon,
   GlobeIcon,
@@ -18,6 +18,7 @@ import {
   VideoCameraIcon,
 } from './SidebarIcons'
 import { FILES, entryAttachment } from './libraryEntries'
+import { PROJECTS } from './projects'
 import gmail from '../assets/integrations/gmail.svg'
 import googleCalendar from '../assets/integrations/google-calendar.svg'
 import googleDrive from '../assets/integrations/google-drive.svg'
@@ -70,8 +71,13 @@ const SECTIONS: Section[] = [
     label: 'Adicionar',
     items: [
       { id: 'upload', label: 'Fotos e arquivos', icon: <UploadSimpleIcon /> },
-      { id: 'arquivos', label: 'Arquivos', icon: <FileTextIcon />, submenu: 'arquivos' },
-      { id: 'colecoes', label: 'Coleções', icon: <BooksIcon />, submenu: 'colecoes' },
+      { id: 'arquivos', label: 'Arquivos da Biblioteca', icon: <FileTextIcon />, submenu: 'arquivos' },
+      {
+        id: 'colecoes',
+        label: 'Coleções',
+        icon: <Brain size={18} strokeWidth={1.7} style={{ color: 'var(--text-mid)' }} />,
+        submenu: 'colecoes',
+      },
       { id: 'projetos', label: 'Projetos', icon: <FolderSimpleIcon />, submenu: 'projetos' },
       {
         id: 'tarefa',
@@ -271,6 +277,20 @@ export default function MentionMenu({
         items: s.items.filter((i) => normalize(i.label).includes(q)),
       }))
       .filter((s) => s.items.length > 0)
+
+    /* busca por projetos (citação @Nome + contexto do projeto) */
+    if (!excludeProjects) {
+      const projItems: MentionItem[] = PROJECTS.filter((p) => normalize(p.name).includes(q)).map(
+        (p) => ({
+          id: p.id,
+          label: p.name,
+          icon: <FolderSimpleIcon />,
+          citation: p.name,
+          project: { id: p.id, name: p.name, emoji: p.emoji, color: p.color },
+        }),
+      )
+      if (projItems.length > 0) base.push({ label: 'Projetos', items: projItems })
+    }
 
     /* busca também pelos arquivos da Biblioteca */
     const libItems: MentionItem[] = FILES.filter((f) => normalize(f.label).includes(q)).map((f) => ({

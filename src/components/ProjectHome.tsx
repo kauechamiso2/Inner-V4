@@ -73,7 +73,7 @@ export default function ProjectHome({
               <ChevronLeft size={18} strokeWidth={2} />
             </button>
             <button className="ph-crumb" type="button" onClick={onBack}>
-              Biblioteca
+              Projetos
             </button>
           </nav>
 
