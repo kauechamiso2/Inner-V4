@@ -1,55 +1,167 @@
 /* ============ Página de Projetos ============ */
 
+.projects-page {
+  position: relative;
+}
+
 .pjp-container {
   max-width: 1100px;
 }
 
-.pjp-sub {
-  margin: -8px 0 20px;
-  font-size: 13.5px;
-  color: var(--text-faint);
+/* ---------- CTA "Novo projeto" no canto superior direito ---------- */
+.pjp-cta {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 120ms ease;
+}
+
+.pjp-cta:hover {
+  opacity: 0.88;
+}
+
+.pjp-cta:active {
+  transform: scale(0.97);
+}
+
+.pjp-cta svg {
+  display: block;
 }
 
 .pjp-grid {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
-/* card tracejado "Novo projeto" ao final da grade */
-.pjp-new {
+/* ---------- Visualização em lista ---------- */
+.pjp-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 210px;
-  padding: 24px;
-  border: 1.5px dashed var(--card-border);
-  border-radius: 16px;
-  background: transparent;
-  color: var(--text-soft);
-  cursor: pointer;
-  font-family: inherit;
-  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
+  width: 100%;
 }
 
-.pjp-new:hover {
-  border-color: var(--card-border-hover);
-  color: var(--text-strong);
+.pjp-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  border-bottom: 1px solid var(--lib-list-border);
+  transition: background-color 130ms ease;
+}
+
+.pjp-row:last-child {
+  border-bottom: 0;
+}
+
+.pjp-row:hover {
   background: var(--hover-04);
 }
 
-.pjp-new-plus {
+.pjp-row-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: var(--card-surface);
+  flex-shrink: 0;
+  border-radius: 11px;
+}
+
+.pjp-row-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.pjp-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.pjp-row-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pjp-row-desc {
+  font-size: 12.5px;
+  color: var(--card-desc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pjp-row-date {
+  flex-shrink: 0;
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.pjp-row-pin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 130ms ease, background-color 130ms ease, color 130ms ease;
+}
+
+.pjp-row:hover .pjp-row-pin {
+  opacity: 1;
+}
+
+.pjp-row-pin.is-pinned {
+  opacity: 1;
   color: var(--text-mid);
 }
 
-.pjp-new-text {
-  font-size: 14px;
-  font-weight: 500;
+.pjp-row-pin:hover {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 720px) {
+  .pjp-cta {
+    top: 18px;
+    right: 18px;
+  }
+  .pjp-row-date {
+    display: none;
+  }
 }
