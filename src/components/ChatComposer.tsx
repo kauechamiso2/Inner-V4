@@ -1,9 +1,10 @@
-import { Fragment, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import './chat-home.css'
 import AgentOrb from './AgentOrb'
 import { CaretDownIcon, PlusIcon, VoiceWaveIcon } from './SidebarIcons'
 import MentionMenu, { MENTION_LABELS } from './MentionMenu'
 import type { Attachment, MentionItem } from './MentionMenu'
+import type { ActiveProject } from '../App'
 import microphone from '../assets/microphone.svg'
 import arrowUp from '../assets/arrow-up.svg'
 
@@ -42,6 +43,8 @@ export default function ChatComposer({
   placeholder,
   excludeProjects = false,
   onPickProject,
+  project = null,
+  onClearProject,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -51,6 +54,10 @@ export default function ChatComposer({
   excludeProjects?: boolean
   /* ao citar um projeto pelo @, ativa o contexto do projeto (gradiente etc.) */
   onPickProject?: (p: { id: string; name: string; emoji?: string; color?: string }) => void
+  /* projeto ativo (Home): refletido como citação @Nome no input */
+  project?: ActiveProject | null
+  /* chamado quando a citação do projeto ativo é removida do input */
+  onClearProject?: () => void
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
@@ -82,6 +89,42 @@ export default function ChatComposer({
       next.splice(i, 1)
       return next
     })
+
+  /* Sincroniza a citação @Nome com o projeto ativo (Home):
+     - ativar um projeto por fora do input (clicar num pin) insere @Nome no texto;
+     - trocar de projeto remove a citação do projeto anterior.
+     Quando o projeto é citado pelo próprio @menu a citação já existe, então aqui
+     vira no-op (os guards impedem duplicar). */
+  const syncedProjectRef = useRef<string | null>(null)
+  useEffect(() => {
+    const name = project?.name ?? null
+    const prev = syncedProjectRef.current
+    if (prev === name) return
+    syncedProjectRef.current = name
+
+    if (prev) {
+      setValue((v) => v.replace(new RegExp(`@${escapeRe(prev)} ?`), '').replace(/^\s+/, ''))
+      setCitations((cs) => cs.filter((n) => n !== prev))
+    }
+    if (name) {
+      setCitations((cs) => (cs.includes(name) ? cs : [...cs, name]))
+      if (!value.includes(`@${name}`)) {
+        setValue((v) => `@${name} ${v}`)
+        requestAnimationFrame(() => {
+          const el = fieldRef.current
+          if (!el) return
+          el.focus()
+          const end = el.value.length
+          try {
+            el.setSelectionRange(end, end)
+          } catch {
+            /* noop */
+          }
+        })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project])
 
   /* seleção vinda de qualquer gatilho (@ ou +): ativa a feature como pill */
   const applyItem = (item: MentionItem) => {
@@ -283,6 +326,8 @@ export default function ChatComposer({
               setValue(v)
               // mantém só as citações que ainda existem no texto
               setCitations((cs) => cs.filter((n) => v.includes(`@${n}`)))
+              // citação do projeto ativo removida → volta ao empty state da Home
+              if (project && !v.includes(`@${project.name}`)) onClearProject?.()
               syncMention(v, e.target.selectionStart ?? 0)
             }}
             onKeyDown={(e) => {
@@ -303,6 +348,7 @@ export default function ChatComposer({
                   const next = value.slice(0, from) + value.slice(s)
                   setValue(next)
                   removeCitation(hit.slice(1))
+                  if (project && hit.slice(1) === project.name) onClearProject?.()
                   syncMention(next, from)
                   requestAnimationFrame(() => {
                     el.focus()
@@ -320,6 +366,7 @@ export default function ChatComposer({
                   const next = value.slice(0, s) + value.slice(to)
                   setValue(next)
                   removeCitation(hit.slice(1))
+                  if (project && hit.slice(1) === project.name) onClearProject?.()
                   syncMention(next, s)
                   requestAnimationFrame(() => {
                     el.focus()

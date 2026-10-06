@@ -10,12 +10,15 @@ export default function ChatHome({
   onModeChange,
   project = null,
   onOpenProject,
+  onClearProject,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
   project?: ActiveProject | null
   /* citar um projeto pelo @ ativa o contexto do projeto (gradiente etc.) */
   onOpenProject?: (p: ActiveProject) => void
+  /* remover a citação do projeto no input volta ao empty state da Home */
+  onClearProject?: () => void
 }) {
   return (
     <main
@@ -68,6 +71,8 @@ export default function ChatHome({
           placeholder={project ? `Conversar em ${project.name}` : undefined}
           excludeProjects={!!project}
           onPickProject={onOpenProject}
+          project={project}
+          onClearProject={onClearProject}
         />
       </div>
     </main>

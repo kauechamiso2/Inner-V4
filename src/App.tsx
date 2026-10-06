@@ -173,6 +173,7 @@ export default function App() {
           onModeChange={setChatMode}
           project={activeProject}
           onOpenProject={openProjectChat}
+          onClearProject={() => setActiveProject(null)}
         />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
