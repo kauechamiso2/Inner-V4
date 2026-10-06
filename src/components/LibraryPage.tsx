@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import './library-page.css'
+import KnowledgeBaseDetail from './KnowledgeBaseDetail'
+import { KNOWLEDGE_BASES } from './knowledgeBases'
 import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
@@ -81,6 +83,8 @@ export default function LibraryPage() {
   const [view, setView] = useState<'grid' | 'list'>('list')
   /* dropdown do botão "Novo" */
   const [novoOpen, setNovoOpen] = useState(false)
+  /* base de conhecimento aberta (nível de navegação dentro da Biblioteca) */
+  const [openBase, setOpenBase] = useState<string | null>(null)
 
   useEffect(() => {
     if (!novoOpen) return
@@ -94,6 +98,11 @@ export default function LibraryPage() {
       document.removeEventListener('pointerdown', onDown)
     }
   }, [novoOpen])
+
+  const base = openBase ? KNOWLEDGE_BASES.find((b) => b.id === openBase) : null
+  if (base) {
+    return <KnowledgeBaseDetail base={base} onBack={() => setOpenBase(null)} />
+  }
 
   return (
     <main className="library-page">
@@ -120,12 +129,34 @@ export default function LibraryPage() {
             </button>
           </div>
 
-          <div className="lib-coll-empty">
-            <span className="lib-coll-empty-emoji" aria-hidden="true">🗂️</span>
-            <p className="lib-coll-empty-title">Nenhuma base de conhecimento ainda</p>
-            <p className="lib-coll-empty-sub">
-              Agrupe arquivos em uma base para o assistente usar como conhecimento.
-            </p>
+          <div className="lib-collections">
+            {KNOWLEDGE_BASES.map((kb, i) => (
+              <div
+                className="coll-card"
+                role="button"
+                tabIndex={0}
+                key={kb.id}
+                style={{ '--i': i } as CSSProperties}
+                onClick={() => setOpenBase(kb.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setOpenBase(kb.id)
+                  }
+                }}
+              >
+                <span className="coll-card-top" style={{ background: kb.color }}>
+                  <span className="coll-card-avatar">
+                    <span className="coll-emoji">{kb.emoji}</span>
+                  </span>
+                </span>
+                <span className="coll-card-body">
+                  <span className="coll-name">{kb.name}</span>
+                  <span className="coll-desc">{kb.description}</span>
+                  <span className="coll-date">{kb.createdAt}</span>
+                </span>
+              </div>
+            ))}
           </div>
         </section>
 
