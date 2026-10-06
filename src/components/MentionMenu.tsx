@@ -17,7 +17,7 @@ import {
   UploadSimpleIcon,
   VideoCameraIcon,
 } from './SidebarIcons'
-import { COLLECTIONS, FILES, entryAttachment } from './libraryEntries'
+import { FILES, entryAttachment } from './libraryEntries'
 import gmail from '../assets/integrations/gmail.svg'
 import googleCalendar from '../assets/integrations/google-calendar.svg'
 import googleDrive from '../assets/integrations/google-drive.svg'
@@ -42,8 +42,8 @@ export type MentionItem = {
   placeholder?: string
   /* só funciona no modo Agente: em Chat, mostra badge e troca de modo ao clicar */
   agentOnly?: boolean
-  /* abre um submenu em cascata (busca + lista) — Biblioteca ou Projetos */
-  submenu?: 'biblioteca' | 'projetos'
+  /* abre um submenu em cascata (busca + lista) — Arquivos, Coleções ou Projetos */
+  submenu?: 'arquivos' | 'colecoes' | 'projetos'
   /* quando selecionado, entra como anexo (acima do input), não como pill */
   attachment?: Attachment
   /* projeto: entra como citação inline (@Nome) no texto do input */
@@ -70,7 +70,8 @@ const SECTIONS: Section[] = [
     label: 'Adicionar',
     items: [
       { id: 'upload', label: 'Fotos e arquivos', icon: <UploadSimpleIcon /> },
-      { id: 'biblioteca', label: 'Arquivos da Biblioteca', icon: <BooksIcon />, submenu: 'biblioteca' },
+      { id: 'arquivos', label: 'Arquivos', icon: <FileTextIcon />, submenu: 'arquivos' },
+      { id: 'colecoes', label: 'Coleções', icon: <BooksIcon />, submenu: 'colecoes' },
       { id: 'projetos', label: 'Projetos', icon: <FolderSimpleIcon />, submenu: 'projetos' },
       {
         id: 'tarefa',
@@ -271,25 +272,14 @@ export default function MentionMenu({
       }))
       .filter((s) => s.items.length > 0)
 
-    /* busca também dentro da Biblioteca (arquivos — e coleções, exceto em projeto) */
-    const libItems: MentionItem[] = [
-      ...(excludeProjects
-        ? []
-        : COLLECTIONS.filter((c) => normalize(c.label).includes(q)).map((c) => ({
-            id: c.id,
-            label: c.label,
-            icon: c.emoji ? <span className="mm-emoji">{c.emoji}</span> : undefined,
-            img: c.emoji ? undefined : c.img,
-            attachment: entryAttachment(c, true),
-          }))),
-      ...FILES.filter((f) => normalize(f.label).includes(q)).map((f) => ({
-        id: f.id,
-        label: f.label,
-        img: f.thumb ?? f.img,
-        attachment: entryAttachment(f, false),
-      })),
-    ]
-    if (libItems.length > 0) base.push({ label: 'Biblioteca', items: libItems })
+    /* busca também pelos arquivos da Biblioteca */
+    const libItems: MentionItem[] = FILES.filter((f) => normalize(f.label).includes(q)).map((f) => ({
+      id: f.id,
+      label: f.label,
+      img: f.thumb ?? f.img,
+      attachment: entryAttachment(f, false),
+    }))
+    if (libItems.length > 0) base.push({ label: 'Arquivos', items: libItems })
     return base
   }, [query, excludeProjects])
 
@@ -297,11 +287,11 @@ export default function MentionMenu({
   const [active, setActive] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
   const [submenuPos, setSubmenuPos] = useState<{ left: number; top: number } | null>(null)
-  const [submenuKind, setSubmenuKind] = useState<'biblioteca' | 'projetos'>('biblioteca')
+  const [submenuKind, setSubmenuKind] = useState<'arquivos' | 'colecoes' | 'projetos'>('arquivos')
   const submenuOpen = submenuPos !== null
   const submenuTimer = useRef<number | undefined>(undefined)
 
-  const openSubmenu = (rowEl: HTMLElement, kind: 'biblioteca' | 'projetos') => {
+  const openSubmenu = (rowEl: HTMLElement, kind: 'arquivos' | 'colecoes' | 'projetos') => {
     window.clearTimeout(submenuTimer.current)
     setSubmenuKind(kind)
     /* ancora no rect do menu; cascata à direita, ou à esquerda se não couber */
@@ -456,7 +446,7 @@ export default function MentionMenu({
             {submenuKind === 'projetos' ? (
               <ProjetosSubmenu onSelect={onSelect} />
             ) : (
-              <BibliotecaSubmenu onSelect={onSelect} />
+              <BibliotecaSubmenu kind={submenuKind} onSelect={onSelect} />
             )}
           </div>,
           document.body,

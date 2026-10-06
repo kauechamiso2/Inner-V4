@@ -8,6 +8,11 @@
   max-width: 1100px;
 }
 
+/* mais respiro entre a busca e o conteúdo */
+.projects-page .ip-search {
+  margin-bottom: 40px;
+}
+
 /* ---------- CTA "Novo projeto" no canto superior direito ---------- */
 .pjp-cta {
   position: absolute;

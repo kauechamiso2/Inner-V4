@@ -4,7 +4,6 @@ import './library-page.css'
 import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
-import folder from '../assets/library/folder.svg'
 import { StickyNote } from 'lucide-react'
 import {
   FileTextIcon,
@@ -25,15 +24,6 @@ import fVideo from '../assets/library/video.svg'
 import fWave from '../assets/library/waveform.svg'
 import fGlobe from '../assets/library/globe-file.svg'
 import fZip from '../assets/library/filezip.svg'
-
-/* pastas de arquivos soltas na Biblioteca (nomes de demonstração) */
-type FolderRow = { name: string; modified: string }
-const FOLDERS: FolderRow[] = [
-  { name: 'Campanha de Verão 2026', modified: 'há 2 horas' },
-  { name: 'Assets de Marca', modified: 'ontem' },
-  { name: 'Contratos e Jurídico', modified: '3 dias atrás' },
-  { name: 'Referências Visuais', modified: '1 semana atrás' },
-]
 
 /* menu do botão "Novo": Adicionar (upload/pasta/nota) + Gerar (pilares) */
 type NovoItem = { id: string; label: string; icon: ReactNode }
@@ -254,22 +244,6 @@ export default function LibraryPage() {
               <span className="col-mod">Modificado</span>
               <span className="col-act" />
             </div>
-            {FOLDERS.map((f) => (
-              <div className="file-row is-folder" key={f.name}>
-                <span
-                  className="file-icon is-folder"
-                  style={{ background: 'color-mix(in srgb, #8A8A82 18%, var(--card-surface))' }}
-                >
-                  <img src={folder} alt="" />
-                </span>
-                <span className="col-name file-name">{f.name}</span>
-                <span className="col-type file-type">Pasta</span>
-                <span className="col-mod file-mod">{f.modified}</span>
-                <button className="col-act file-act" type="button" aria-label="Ações">
-                  <img src={icDotsActions} alt="" aria-hidden="true" />
-                </button>
-              </div>
-            ))}
             {FILES.map((file) => (
               <div className="file-row" key={file.name}>
                 {file.thumb ? (

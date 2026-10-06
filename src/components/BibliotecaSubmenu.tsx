@@ -1,42 +1,52 @@
 import { useMemo, useState } from 'react'
 import searchIcon from '../assets/library/search.svg'
-import { COLLECTIONS, FILES, entryAttachment, normalizeLib } from './libraryEntries'
+import { FILES, entryAttachment, normalizeLib } from './libraryEntries'
 import type { LibEntry } from './libraryEntries'
 import type { MentionItem } from './MentionMenu'
 
-const COLL_LIMIT = 4
-const FILE_LIMIT = 5
+const FILE_LIMIT = 7
 
-type Props = { onSelect: (item: MentionItem) => void }
+type Props = {
+  onSelect: (item: MentionItem) => void
+  /* 'arquivos' lista os arquivos da Biblioteca; 'colecoes' fica vazio por hora */
+  kind?: 'arquivos' | 'colecoes'
+}
 
-export default function BibliotecaSubmenu({ onSelect }: Props) {
+export default function BibliotecaSubmenu({ onSelect, kind = 'arquivos' }: Props) {
   const [query, setQuery] = useState('')
-  const [showAllColl, setShowAllColl] = useState(false)
-  const [showAllFiles, setShowAllFiles] = useState(false)
+  const [showAll, setShowAll] = useState(false)
 
   const q = normalizeLib(query)
-  const colls = useMemo(
-    () => (q ? COLLECTIONS.filter((c) => normalizeLib(c.label).includes(q)) : COLLECTIONS),
-    [q],
-  )
   const files = useMemo(
     () => (q ? FILES.filter((f) => normalizeLib(f.label).includes(q)) : FILES),
     [q],
   )
+  const shown = showAll || q ? files : files.slice(0, FILE_LIMIT)
 
-  const shownColls = showAllColl || q ? colls : colls.slice(0, COLL_LIMIT)
-  const shownFiles = showAllFiles || q ? files : files.slice(0, FILE_LIMIT)
+  const pick = (e: LibEntry) =>
+    onSelect({ id: e.id, label: e.label, attachment: entryAttachment(e, false) })
 
-  const pick = (e: LibEntry, collection: boolean) =>
-    onSelect({ id: e.id, label: e.label, attachment: entryAttachment(e, collection) })
+  if (kind === 'colecoes') {
+    return (
+      <div className="biblioteca-submenu" role="listbox" aria-label="Coleções">
+        <div className="bib-search">
+          <img src={searchIcon} alt="" aria-hidden="true" />
+          <input type="text" placeholder="Buscar coleção" spellCheck={false} value="" readOnly />
+        </div>
+        <div className="bib-scroll">
+          <div className="bib-empty">Nenhuma coleção ainda</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="biblioteca-submenu" role="listbox" aria-label="Arquivos da Biblioteca">
+    <div className="biblioteca-submenu" role="listbox" aria-label="Arquivos">
       <div className="bib-search">
         <img src={searchIcon} alt="" aria-hidden="true" />
         <input
           type="text"
-          placeholder="Buscar na Biblioteca"
+          placeholder="Buscar arquivo"
           spellCheck={false}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -45,58 +55,17 @@ export default function BibliotecaSubmenu({ onSelect }: Props) {
       </div>
 
       <div className="bib-scroll">
-        {shownColls.length > 0 && (
-          <div className="bib-section">
-            <div className="bib-header">Coleções</div>
-            {shownColls.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                className="bib-row"
-                onMouseDown={(e) => {
-                  e.preventDefault()
-                  pick(c, true)
-                }}
-              >
-                {c.emoji ? (
-                  <span className="bib-icon is-emoji">{c.emoji}</span>
-                ) : (
-                  <span className="bib-icon is-folder">
-                    <img src={c.img} alt="" />
-                  </span>
-                )}
-                <span className="bib-text">
-                  <span className="bib-label">{c.label}</span>
-                  <span className="bib-sub">{c.sub}</span>
-                </span>
-              </button>
-            ))}
-            {!q && !showAllColl && colls.length > COLL_LIMIT && (
-              <button
-                type="button"
-                className="bib-more"
-                onMouseDown={(e) => {
-                  e.preventDefault()
-                  setShowAllColl(true)
-                }}
-              >
-                Ver mais {colls.length - COLL_LIMIT}
-              </button>
-            )}
-          </div>
-        )}
-
-        {shownFiles.length > 0 && (
+        {shown.length > 0 ? (
           <div className="bib-section">
             <div className="bib-header">Arquivos</div>
-            {shownFiles.map((f) => (
+            {shown.map((f) => (
               <button
                 key={f.id}
                 type="button"
                 className="bib-row"
                 onMouseDown={(e) => {
                   e.preventDefault()
-                  pick(f, false)
+                  pick(f)
                 }}
               >
                 {f.thumb ? (
@@ -117,22 +86,20 @@ export default function BibliotecaSubmenu({ onSelect }: Props) {
                 </span>
               </button>
             ))}
-            {!q && !showAllFiles && files.length > FILE_LIMIT && (
+            {!q && !showAll && files.length > FILE_LIMIT && (
               <button
                 type="button"
                 className="bib-more"
                 onMouseDown={(e) => {
                   e.preventDefault()
-                  setShowAllFiles(true)
+                  setShowAll(true)
                 }}
               >
                 Ver mais {files.length - FILE_LIMIT}
               </button>
             )}
           </div>
-        )}
-
-        {shownColls.length === 0 && shownFiles.length === 0 && (
+        ) : (
           <div className="bib-empty">Sem resultados</div>
         )}
       </div>
