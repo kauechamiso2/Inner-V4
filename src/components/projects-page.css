@@ -52,6 +52,52 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
+/* ======== Card de projeto: wash da cor + ícone inline ======== */
+.coll-card.proj-card {
+  position: relative;
+  padding: 18px;
+}
+
+.proj-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.proj-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 13px;
+}
+
+.proj-ico .coll-emoji {
+  font-size: 23px;
+}
+
+.proj-head .coll-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+}
+
+/* pin no canto do card (sem faixa colorida) */
+.coll-card.proj-card .coll-card-pin {
+  top: 14px;
+  right: 14px;
+  background: var(--hover-06);
+  color: var(--text-faint);
+}
+
+.coll-card.proj-card .coll-card-pin:hover {
+  background: var(--hover-07);
+  color: var(--text-strong);
+}
+
 /* ---------- Visualização em lista ---------- */
 .pjp-list {
   display: flex;
