@@ -238,7 +238,7 @@ export default function ChatComposer({
                         : { background: 'var(--lib-tile-neutral)' }
                     }
                   >
-                    <img src={a.img} alt="" />
+                    {a.emoji ? <span className="att-file-emoji">{a.emoji}</span> : <img src={a.img} alt="" />}
                   </span>
                   <span className="att-file-text">
                     <span className="att-file-name">{a.name}</span>

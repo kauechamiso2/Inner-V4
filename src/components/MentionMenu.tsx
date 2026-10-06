@@ -19,6 +19,7 @@ import {
 } from './SidebarIcons'
 import { FILES, entryAttachment } from './libraryEntries'
 import { PROJECTS } from './projects'
+import { KNOWLEDGE_BASES } from './knowledgeBases'
 import gmail from '../assets/integrations/gmail.svg'
 import googleCalendar from '../assets/integrations/google-calendar.svg'
 import googleDrive from '../assets/integrations/google-drive.svg'
@@ -62,6 +63,8 @@ export type Attachment = {
   thumb?: string
   color?: string
   img?: string
+  /* base de conhecimento: emoji no lugar do ícone de arquivo */
+  emoji?: string
 }
 
 type Section = { label: string; items: MentionItem[] }
@@ -291,6 +294,17 @@ export default function MentionMenu({
       )
       if (projItems.length > 0) base.push({ label: 'Projetos', items: projItems })
     }
+
+    /* busca pelas bases de conhecimento */
+    const kbItems: MentionItem[] = KNOWLEDGE_BASES.filter((b) =>
+      normalize(b.name).includes(q),
+    ).map((b) => ({
+      id: b.id,
+      label: b.name,
+      icon: <span className="mm-emoji">{b.emoji}</span>,
+      attachment: { kind: 'collection', name: b.name, emoji: b.emoji, color: b.color },
+    }))
+    if (kbItems.length > 0) base.push({ label: 'Bases de conhecimento', items: kbItems })
 
     /* busca também pelos arquivos da Biblioteca */
     const libItems: MentionItem[] = FILES.filter((f) => normalize(f.label).includes(q)).map((f) => ({

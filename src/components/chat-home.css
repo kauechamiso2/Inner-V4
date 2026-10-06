@@ -771,6 +771,11 @@
   object-fit: contain;
 }
 
+.att-file-emoji {
+  font-size: 17px;
+  line-height: 1;
+}
+
 .att-file-text {
   display: flex;
   flex-direction: column;
