@@ -41,6 +41,7 @@ export default function ChatComposer({
   onModeChange,
   placeholder,
   excludeProjects = false,
+  onPickProject,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -48,6 +49,8 @@ export default function ChatComposer({
   placeholder?: string
   /* repassa ao menu de @ — esconde "Projetos" dentro de um projeto */
   excludeProjects?: boolean
+  /* ao citar um projeto pelo @, ativa o contexto do projeto (gradiente etc.) */
+  onPickProject?: (p: { id: string; name: string; emoji?: string; color?: string }) => void
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
@@ -85,6 +88,8 @@ export default function ChatComposer({
     // Projeto: entra como citação inline @Nome (não como pill/anexo), podendo
     // conviver com anexos; o usuário continua escrevendo logo após.
     if (item.citation) {
+      // também ativa o contexto do projeto (gradiente, saudação, placeholder)
+      if (item.project) onPickProject?.(item.project)
       const name = item.citation
       const token = `@${name} `
       let start: number

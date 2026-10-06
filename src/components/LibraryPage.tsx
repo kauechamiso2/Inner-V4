@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import './library-page.css'
 import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
 import folder from '../assets/library/folder.svg'
-import { Pin, StickyNote } from 'lucide-react'
+import { StickyNote } from 'lucide-react'
 import {
   FileTextIcon,
   FolderSimpleIcon,
@@ -16,7 +16,6 @@ import {
   UploadSimpleIcon,
   VideoCameraIcon,
 } from './SidebarIcons'
-import ProjectHome from './ProjectHome'
 import fPdf from '../assets/library/file-pdf.svg'
 import fImage from '../assets/library/file-image.svg'
 import fText from '../assets/library/file-text.svg'
@@ -26,36 +25,6 @@ import fVideo from '../assets/library/video.svg'
 import fWave from '../assets/library/waveform.svg'
 import fGlobe from '../assets/library/globe-file.svg'
 import fZip from '../assets/library/filezip.svg'
-
-type Collection = {
-  id: string
-  name: string
-  description: string
-  createdAt: string
-  emoji?: string
-  color: string
-}
-
-/* cor + emoji são apenas defaults de demonstração — no produto o usuário
-   escolhe ambos na criação do projeto */
-const COLLECTIONS: Collection[] = [
-  {
-    id: 'col-hr',
-    name: 'HR Stuff',
-    description: 'Documentos, políticas e processos de RH da empresa',
-    createdAt: 'Criado em 27 mai',
-    emoji: '🧑‍💼',
-    color: '#3E63C4',
-  },
-  {
-    id: 'col-mkt',
-    name: 'Marketing & Conteúdo',
-    description: 'Calendário, campanhas e produção de conteúdo da marca',
-    createdAt: 'Criado em 15 set',
-    emoji: '📣',
-    color: '#F0603A',
-  },
-]
 
 /* pastas de arquivos soltas na Biblioteca (nomes de demonstração) */
 type FolderRow = { name: string; modified: string }
@@ -116,18 +85,10 @@ const FILES: FileRow[] = [
   { name: 'Apresentação para investidores', type: 'Slides', modified: '1 semana atrás', icon: fPpt, color: '#C15A2B' },
 ]
 
-export default function LibraryPage({
-  isPinned,
-  togglePin,
-}: {
-  isPinned: (kind: 'chat' | 'project', id: string) => boolean
-  togglePin: (kind: 'chat' | 'project', id: string) => void
-}) {
+export default function LibraryPage() {
   const [filter, setFilter] = useState('Todos')
   /* switcher de visualização — apenas visual (não altera o layout por ora) */
   const [view, setView] = useState<'grid' | 'list'>('list')
-  /* projeto aberto (nível de navegação dentro da Biblioteca) */
-  const [openCollection, setOpenCollection] = useState<string | null>(null)
   /* dropdown do botão "Novo" */
   const [novoOpen, setNovoOpen] = useState(false)
 
@@ -144,22 +105,6 @@ export default function LibraryPage({
     }
   }, [novoOpen])
 
-  if (openCollection) {
-    const coll = COLLECTIONS.find((c) => c.name === openCollection)
-    const projectId = coll?.id ?? openCollection
-    return (
-      <ProjectHome
-        name={openCollection}
-        emoji={coll?.emoji}
-        color={coll?.color}
-        projectId={projectId}
-        pinned={isPinned('project', projectId)}
-        onTogglePin={() => togglePin('project', projectId)}
-        onBack={() => setOpenCollection(null)}
-      />
-    )
-  }
-
   return (
     <main className="library-page">
       <div className="lib-container">
@@ -170,67 +115,27 @@ export default function LibraryPage({
           <input type="text" placeholder="Buscar em toda a Biblioteca" spellCheck={false} />
         </div>
 
-        {/* Projetos */}
+        {/* Coleções */}
         <section className="lib-section">
           <div className="lib-section-head">
             <div className="lib-section-title">
-              <h2>Projetos</h2>
-              <p>Espaços de trabalho com conversas, arquivos e contexto próprios</p>
+              <h2>Coleções</h2>
+              <p>Arquivos agrupados para serem usados como conhecimento</p>
             </div>
-            <button className="lib-new" type="button" aria-label="Novo projeto">
+            <button className="lib-new" type="button" aria-label="Nova coleção">
               <img src={plus} alt="" aria-hidden="true" />
               <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                Novo projeto
+                Nova coleção
               </span>
             </button>
           </div>
 
-          <div className="lib-collections">
-            {COLLECTIONS.map((c, i) => {
-              const projPinned = isPinned('project', c.id)
-              return (
-                <div
-                  className="coll-card"
-                  role="button"
-                  tabIndex={0}
-                  key={c.name}
-                  style={{ '--i': i } as CSSProperties}
-                  onClick={() => setOpenCollection(c.name)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      setOpenCollection(c.name)
-                    }
-                  }}
-                >
-                  <span className="coll-card-top" style={{ background: c.color }}>
-                    <button
-                      type="button"
-                      className={`coll-card-pin${projPinned ? ' is-pinned' : ''}`}
-                      aria-label={projPinned ? 'Desafixar da Home' : 'Fixar na Home'}
-                      aria-pressed={projPinned}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        togglePin('project', c.id)
-                      }}
-                    >
-                      <Pin size={15} strokeWidth={2} fill={projPinned ? 'currentColor' : 'none'} />
-                      <span className="pill-tooltip coll-card-pin-tip" role="tooltip" aria-hidden="true">
-                        {projPinned ? 'Desafixar da Home' : 'Fixar na Home'}
-                      </span>
-                    </button>
-                    <span className="coll-card-avatar">
-                      <span className="coll-emoji">{c.emoji}</span>
-                    </span>
-                  </span>
-                  <span className="coll-card-body">
-                    <span className="coll-name">{c.name}</span>
-                    <span className="coll-desc">{c.description}</span>
-                    <span className="coll-date">{c.createdAt}</span>
-                  </span>
-                </div>
-              )
-            })}
+          <div className="lib-coll-empty">
+            <span className="lib-coll-empty-emoji" aria-hidden="true">🗂️</span>
+            <p className="lib-coll-empty-title">Nenhuma coleção ainda</p>
+            <p className="lib-coll-empty-sub">
+              Agrupe arquivos em uma coleção para usá-los como conhecimento.
+            </p>
           </div>
         </section>
 

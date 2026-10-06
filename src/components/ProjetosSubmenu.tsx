@@ -27,7 +27,12 @@ export default function ProjetosSubmenu({ onSelect }: Props) {
   const shown = showAll || q ? projects : projects.slice(0, LIMIT)
 
   const pick = (p: Project) =>
-    onSelect({ id: p.id, label: p.name, citation: p.name })
+    onSelect({
+      id: p.id,
+      label: p.name,
+      citation: p.name,
+      project: { id: p.id, name: p.name, emoji: p.emoji, color: p.color },
+    })
 
   return (
     <div className="biblioteca-submenu projetos-submenu" role="listbox" aria-label="Projetos">

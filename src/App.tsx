@@ -7,6 +7,7 @@ import ImagesPage from './components/ImagesPage'
 import VideosPage from './components/VideosPage'
 import AudioPage from './components/AudioPage'
 import DocumentsPage from './components/DocumentsPage'
+import ProjectsPage from './components/ProjectsPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
 import SitesPage from './components/SitesPage'
@@ -167,7 +168,12 @@ export default function App() {
         onNewTask={() => setActiveProject(null)}
       />
       {view === 'chat' ? (
-        <ChatHome mode={chatMode} onModeChange={setChatMode} project={activeProject} />
+        <ChatHome
+          mode={chatMode}
+          onModeChange={setChatMode}
+          project={activeProject}
+          onOpenProject={openProjectChat}
+        />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
       ) : view === 'videos' ? (
@@ -177,7 +183,9 @@ export default function App() {
       ) : view === 'documentos' ? (
         <DocumentsPage key="documentos" />
       ) : view === 'library' ? (
-        <LibraryPage key="library" isPinned={isPinned} togglePin={togglePin} />
+        <LibraryPage key="library" />
+      ) : view === 'projetos' ? (
+        <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} />
       ) : view === 'tarefas' ? (
         <TarefasPage key="tarefas" onOpenTask={openTaskDrawer} />
       ) : view === 'sites' ? (

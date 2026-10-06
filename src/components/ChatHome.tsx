@@ -9,10 +9,13 @@ export default function ChatHome({
   mode,
   onModeChange,
   project = null,
+  onOpenProject,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
   project?: ActiveProject | null
+  /* citar um projeto pelo @ ativa o contexto do projeto (gradiente etc.) */
+  onOpenProject?: (p: ActiveProject) => void
 }) {
   return (
     <main
@@ -60,11 +63,11 @@ export default function ChatHome({
         </div>
 
         <ChatComposer
-          key={project?.id ?? 'home'}
           mode={mode}
           onModeChange={onModeChange}
           placeholder={project ? `Conversar em ${project.name}` : undefined}
           excludeProjects={!!project}
+          onPickProject={onOpenProject}
         />
       </div>
     </main>

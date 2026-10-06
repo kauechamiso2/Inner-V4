@@ -1,14 +1,26 @@
-/* Projetos fake — compartilhados entre o submenu do @ e o menu da sidebar.
-   Apenas para demonstração. */
-export type Project = { id: string; name: string; sub: string }
+/* Projetos reais do protótipo — compartilhados entre o submenu do @ e a página
+   de Projetos. São os mesmos dois espaços de trabalho da Biblioteca antiga. */
+export type Project = {
+  id: string
+  name: string
+  sub: string
+  emoji: string
+  color: string
+}
 
 export const PROJECTS: Project[] = [
-  { id: 'p-rebrand', name: 'Rebranding 2026', sub: '24 arquivos · editado há 2h' },
-  { id: 'p-verao', name: 'Campanha de Verão', sub: '12 arquivos · ontem' },
-  { id: 'p-site', name: 'Site Institucional', sub: '38 arquivos · há 3 dias' },
-  { id: 'p-v4', name: 'Lançamento V4', sub: '56 arquivos · há 3 dias' },
-  { id: 'p-linkedin', name: 'Conteúdo LinkedIn', sub: '19 arquivos · há 5 dias' },
-  { id: 'p-mercado', name: 'Pesquisa de Mercado', sub: '7 arquivos · há 1 semana' },
-  { id: 'p-app', name: 'App Mobile', sub: '42 arquivos · há 1 semana' },
-  { id: 'p-latam', name: 'Expansão LATAM', sub: '15 arquivos · há 2 semanas' },
+  {
+    id: 'col-hr',
+    name: 'HR Stuff',
+    sub: 'Documentos, políticas e processos de RH da empresa',
+    emoji: '🧑‍💼',
+    color: '#3E63C4',
+  },
+  {
+    id: 'col-mkt',
+    name: 'Marketing & Conteúdo',
+    sub: 'Calendário, campanhas e produção de conteúdo da marca',
+    emoji: '📣',
+    color: '#F0603A',
+  },
 ]

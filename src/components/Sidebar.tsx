@@ -7,6 +7,7 @@ import avatar from '../assets/avatar.png'
 import {
   CaretRightIcon,
   DotsThreeIcon,
+  FolderSimpleIcon,
   GraduationCapIcon,
   HomeNavIcon,
   PacksIcon,
@@ -217,6 +218,22 @@ export default function Sidebar({
     )
   }
 
+  /* Projetos é um item fixo próprio da sidebar: navega para a página de Projetos
+     (ícone de pasta animado no hover) */
+  const projetosNav = (index: number) => (
+    <NavItem
+      key="projetos"
+      index={index}
+      onSelect={() => onNavigate('projetos')}
+      item={{
+        label: 'Projetos',
+        href: '#projetos',
+        icon: <FolderSimpleIcon />,
+        active: activeView === 'projetos',
+      }}
+    />
+  )
+
   const fixedNav = (id: 'library' | 'tarefas', index: number) => {
     const def = MODULE_BY_ID[id]
     return (
@@ -314,6 +331,13 @@ export default function Sidebar({
               onSelect: () => onNavigate('library'),
             })}
             {rlItem({
+              id: 'projetos',
+              label: 'Projetos',
+              icon: <FolderSimpleIcon />,
+              active: activeView === 'projetos',
+              onSelect: () => onNavigate('projetos'),
+            })}
+            {rlItem({
               id: 'tarefas',
               label: 'Tarefas',
               icon: MODULE_BY_ID.tarefas.icon,
@@ -405,6 +429,7 @@ export default function Sidebar({
           <nav className="sidebar-group" aria-label="Pilares" ref={pilaresRef}>
             {chatItem}
             {fixedNav('library', itemIndex++)}
+            {projetosNav(itemIndex++)}
             {pinned.map((id) => moduleNav(id, itemIndex++))}
             {maisButton(itemIndex++)}
           </nav>
@@ -415,6 +440,7 @@ export default function Sidebar({
             <nav className="sidebar-group" aria-label="Pilares fixos">
               {chatItem}
               {fixedNav('library', itemIndex++)}
+              {projetosNav(itemIndex++)}
               {fixedNav('tarefas', itemIndex++)}
             </nav>
             {divider}
@@ -435,6 +461,7 @@ export default function Sidebar({
             {divider}
             <nav className="sidebar-group" aria-label="Biblioteca e tarefas">
               {fixedNav('library', itemIndex++)}
+              {projetosNav(itemIndex++)}
               {fixedNav('tarefas', itemIndex++)}
             </nav>
           </>

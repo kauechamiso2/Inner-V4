@@ -48,6 +48,9 @@ export type MentionItem = {
   attachment?: Attachment
   /* projeto: entra como citação inline (@Nome) no texto do input */
   citation?: string
+  /* projeto: ao selecionar, também ativa o contexto do projeto (gradiente,
+     saudação e placeholder), como ao escolher um projeto fixado na sidebar */
+  project?: { id: string; name: string; emoji?: string; color?: string }
 }
 
 export type Attachment = {
