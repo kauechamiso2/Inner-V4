@@ -74,7 +74,7 @@ const SECTIONS: Section[] = [
       { id: 'arquivos', label: 'Arquivos da Biblioteca', icon: <FileTextIcon />, submenu: 'arquivos' },
       {
         id: 'colecoes',
-        label: 'Coleções',
+        label: 'Bases de conhecimento',
         icon: <Brain size={18} strokeWidth={1.7} style={{ color: 'var(--text-mid)' }} />,
         submenu: 'colecoes',
       },

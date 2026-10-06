@@ -28,13 +28,13 @@ export default function BibliotecaSubmenu({ onSelect, kind = 'arquivos' }: Props
 
   if (kind === 'colecoes') {
     return (
-      <div className="biblioteca-submenu" role="listbox" aria-label="Coleções">
+      <div className="biblioteca-submenu" role="listbox" aria-label="Bases de conhecimento">
         <div className="bib-search">
           <img src={searchIcon} alt="" aria-hidden="true" />
-          <input type="text" placeholder="Buscar coleção" spellCheck={false} value="" readOnly />
+          <input type="text" placeholder="Buscar base de conhecimento" spellCheck={false} value="" readOnly />
         </div>
         <div className="bib-scroll">
-          <div className="bib-empty">Nenhuma coleção ainda</div>
+          <div className="bib-empty">Nenhuma base de conhecimento ainda</div>
         </div>
       </div>
     )

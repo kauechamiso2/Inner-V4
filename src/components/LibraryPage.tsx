@@ -105,26 +105,26 @@ export default function LibraryPage() {
           <input type="text" placeholder="Buscar em toda a Biblioteca" spellCheck={false} />
         </div>
 
-        {/* Coleções */}
+        {/* Bases de conhecimento */}
         <section className="lib-section">
           <div className="lib-section-head">
             <div className="lib-section-title">
-              <h2>Coleções</h2>
+              <h2>Bases de conhecimento</h2>
               <p>Arquivos agrupados para serem usados como conhecimento</p>
             </div>
-            <button className="lib-new" type="button" aria-label="Nova coleção">
+            <button className="lib-new" type="button" aria-label="Nova base de conhecimento">
               <img src={plus} alt="" aria-hidden="true" />
               <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                Nova coleção
+                Nova base de conhecimento
               </span>
             </button>
           </div>
 
           <div className="lib-coll-empty">
             <span className="lib-coll-empty-emoji" aria-hidden="true">🗂️</span>
-            <p className="lib-coll-empty-title">Nenhuma coleção ainda</p>
+            <p className="lib-coll-empty-title">Nenhuma base de conhecimento ainda</p>
             <p className="lib-coll-empty-sub">
-              Agrupe arquivos em uma coleção para usá-los como conhecimento.
+              Agrupe arquivos em uma base para o assistente usar como conhecimento.
             </p>
           </div>
         </section>
