@@ -5,7 +5,10 @@ import logo from '../assets/logo.svg'
 import ultra from '../assets/ultra.svg'
 import avatar from '../assets/avatar.png'
 import {
+  AgendadoIcon,
+  BooksIcon,
   CaretRightIcon,
+  ChatTeardropIcon,
   DotsThreeIcon,
   FolderSimpleIcon,
   GraduationCapIcon,
@@ -24,6 +27,7 @@ import {
 import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
 import ProjectsMenu from './ProjectsMenu'
+import AppsMenu from './AppsMenu'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
 
@@ -88,6 +92,9 @@ type SidebarProps = {
   onToggleCollapsed: () => void
   coachOpen: boolean
   onCoachDismiss: () => void
+  /* modo do input (Home = agente, Chat = chat) — itens separados no rail */
+  chatMode: 'agente' | 'chat'
+  onOpenChatMode: (mode: 'agente' | 'chat') => void
 }
 
 export default function Sidebar({
@@ -98,6 +105,8 @@ export default function Sidebar({
   onToggleCollapsed,
   coachOpen,
   onCoachDismiss,
+  chatMode,
+  onOpenChatMode,
 }: SidebarProps) {
   const [scrollAnimating, setScrollAnimating] = useState(false)
   const cooldownRef = useRef(false)
@@ -111,6 +120,14 @@ export default function Sidebar({
 
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
   const [projectsAnchor, setProjectsAnchor] = useState<DOMRect | null>(null)
+  /* popover "Mais apps" do rail */
+  const [appsAnchor, setAppsAnchor] = useState<DOMRect | null>(null)
+  const toggleApps = () => {
+    if (appsAnchor) setAppsAnchor(null)
+    else if (maisRef.current) setAppsAnchor(maisRef.current.getBoundingClientRect())
+  }
+  /* pilares que vivem dentro de "Mais apps" (restante, sem assistentes) */
+  const appsActive = PILLAR_DEFS.some((p) => p.id === activeView && p.id !== 'assistentes')
 
   /* Projetos é um pilar do pool, mas o clique abre o popover de projetos
      (ancorado no item), em vez de navegar */
@@ -315,20 +332,33 @@ export default function Sidebar({
     >
       {isRailLabels ? (
         <div className="rl-col">
-          <nav className="rl-group" aria-label="Pilares" ref={pilaresRef}>
+          <span className="rl-logo" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M9.6 1.7c.45 3.3 1.95 4.8 5.25 5.25-3.3.45-4.8 1.95-5.25 5.25-.45-3.3-1.95-4.8-5.25-5.25 3.3-.45 4.8-1.95 5.25-5.25Z"
+                fill="#fff"
+              />
+              <path
+                d="M15.2 11.4c.2 1.5 1 2.3 2.5 2.5-1.5.2-2.3 1-2.5 2.5-.2-1.5-1-2.3-2.5-2.5 1.5-.2 2.3-1 2.5-2.5Z"
+                fill="#fff"
+              />
+            </svg>
+          </span>
+
+          <nav className="rl-group" aria-label="Navegação" ref={pilaresRef}>
             {rlItem({
-              id: 'chat',
+              id: 'home',
               label: 'Home',
               icon: <HomeNavIcon />,
-              active: activeView === 'chat',
-              onSelect: () => onNavigate('chat'),
+              active: activeView === 'chat' && chatMode === 'agente',
+              onSelect: () => onOpenChatMode('agente'),
             })}
             {rlItem({
-              id: 'library',
-              label: 'Biblioteca',
-              icon: MODULE_BY_ID.library.icon,
-              active: activeView === 'library',
-              onSelect: () => onNavigate('library'),
+              id: 'chatmode',
+              label: 'Chat',
+              icon: <ChatTeardropIcon />,
+              active: activeView === 'chat' && chatMode === 'chat',
+              onSelect: () => onOpenChatMode('chat'),
             })}
             {rlItem({
               id: 'projetos',
@@ -338,32 +368,31 @@ export default function Sidebar({
               onSelect: () => onNavigate('projetos'),
             })}
             {rlItem({
-              id: 'tarefas',
-              label: 'Tarefas',
-              icon: MODULE_BY_ID.tarefas.icon,
+              id: 'automacoes',
+              label: 'Automações',
+              icon: <AgendadoIcon />,
               active: activeView === 'tarefas',
-              narrow: true,
               onSelect: () => onNavigate('tarefas'),
             })}
-            {pinned.map((id) =>
-              rlItem({
-                id,
-                label: MODULE_BY_ID[id].label,
-                icon: MODULE_BY_ID[id].icon,
-                active: id === 'projetos' ? !!projectsAnchor : activeView === id,
-                narrow: MODULE_BY_ID[id].narrowIcon,
-                onSelect: id === 'projetos' ? openProjects : () => onNavigate(id),
-                flipId: id,
-              }),
-            )}
+            {rlItem({
+              id: 'library',
+              label: 'Biblioteca',
+              icon: <BooksIcon />,
+              active: activeView === 'library',
+              onSelect: () => onNavigate('library'),
+            })}
+
+            <div className="rl-divider" role="separator">
+              <span />
+            </div>
+
             <button
               ref={maisRef}
               type="button"
-              className={`rl-item rl-more${menuAnchor ? ' is-active' : ''}${maisActive ? ' is-active' : ''}`}
-              data-flip-id="mais"
+              className={`rl-item rl-more${appsAnchor || appsActive ? ' is-active' : ''}`}
               aria-haspopup="menu"
-              aria-expanded={!!menuAnchor}
-              onClick={toggleMenu}
+              aria-expanded={!!appsAnchor}
+              onClick={toggleApps}
             >
               <span className="rl-target">
                 <DotsThreeIcon />
@@ -373,25 +402,6 @@ export default function Sidebar({
           </nav>
 
           <div className="rl-flex" />
-
-          <button className="rl-util" type="button">
-            <TicketIcon />
-            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Indique e ganhe
-            </span>
-          </button>
-          <button className="rl-util" type="button">
-            <PacksIcon />
-            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Packs
-            </span>
-          </button>
-          <button className="rl-util" type="button">
-            <GraduationCapIcon />
-            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Educação
-            </span>
-          </button>
 
           <div className="rl-avatar">
             <span className="sidebar-avatar-photo">
@@ -513,6 +523,15 @@ export default function Sidebar({
 
       {projectsAnchor && (
         <ProjectsMenu anchor={projectsAnchor} onClose={() => setProjectsAnchor(null)} />
+      )}
+
+      {appsAnchor && (
+        <AppsMenu
+          anchor={appsAnchor}
+          activeId={appsActive ? (activeView as PillarId) : null}
+          onOpenPillar={(id) => onNavigate(id)}
+          onClose={() => setAppsAnchor(null)}
+        />
       )}
 
       <LibraryCoachmark

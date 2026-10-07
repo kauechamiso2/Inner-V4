@@ -514,6 +514,10 @@ export default function HistoryPanel({
   const color = PILLAR_COLORS[view]
   const isChat = view === 'chat'
   const newLabel = isChat ? (chatMode === 'agente' ? 'Nova tarefa' : 'Novo Chat') : config.newLabel
+  /* Home (agente) mostra itens do agente; Chat mostra conversas com modelos */
+  const title = isChat ? (chatMode === 'agente' ? 'Home' : 'Chat') : config.title
+  const modeSources: ChatSource[] =
+    chatMode === 'agente' ? ['agent', 'task'] : ['blue', 'avatar', 'dark', 'spiral']
 
   const [pickerOpen, setPickerOpen] = useState(false)
   /* projetos pinados expandidos (mostram os chats de dentro) */
@@ -550,9 +554,9 @@ export default function HistoryPanel({
       aria-hidden={hidden}
       style={{ '--pillar': color } as CSSProperties}
     >
-      <div className="history-inner" key={view}>
+      <div className="history-inner" key={isChat ? `chat-${chatMode}` : view}>
         <header className="history-header">
-          <h2 className="history-title">{config.title}</h2>
+          <h2 className="history-title">{title}</h2>
         </header>
 
         <div className="history-content">
@@ -582,7 +586,7 @@ export default function HistoryPanel({
                   {pins.map((p) => {
                     if (p.kind === 'chat') {
                       const c = ALL_CHATS.find((x) => x.title === p.id)
-                      return c ? (
+                      return c && modeSources.includes(c.source) ? (
                         <ChatRow
                           key={`pin-${p.id}`}
                           chat={c}
@@ -591,6 +595,8 @@ export default function HistoryPanel({
                         />
                       ) : null
                     }
+                    /* projetos são contexto do agente: só aparecem na Home */
+                    if (chatMode !== 'agente') return null
                     const pr = findProject(p.id)
                     if (!pr) return null
                     const childChats =
@@ -634,7 +640,9 @@ export default function HistoryPanel({
             <div className="history-groups">
               {isChat
                 ? CHAT_GROUPS.map((group) => {
-                    const chats = group.chats.filter((c) => !pinnedChatIds.has(c.title))
+                    const chats = group.chats.filter(
+                      (c) => !pinnedChatIds.has(c.title) && modeSources.includes(c.source),
+                    )
                     if (chats.length === 0) return null
                     return (
                       <div className="history-group" key={group.label}>

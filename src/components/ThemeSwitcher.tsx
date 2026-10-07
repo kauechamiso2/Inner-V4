@@ -1,32 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './theme-switcher.css'
-import type { SidebarLayout } from './pillars'
-
-const LAYOUTS: { id: SidebarLayout; name: string; hint: string }[] = [
-  { id: 'a', name: 'Diagramação A', hint: 'Principal (Home)' },
-  { id: 'b', name: 'Diagramação B', hint: 'Fixos no topo' },
-  { id: 'c', name: 'Diagramação C', hint: 'Tudo fixável' },
-  { id: 'd', name: 'Diagramação D', hint: 'Pilares após o Chat' },
-  { id: 'e', name: 'Diagramação E', hint: 'Rail fixo com nomes' },
-]
-
-function Check() {
-  return (
-    <svg className="theme-check" width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path
-        d="M11.7 3.9 5.6 10 2.3 6.7"
-        stroke="#1c1c1c"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
 
 type Props = {
-  layout: SidebarLayout
-  onLayoutChange: (layout: SidebarLayout) => void
   coachOpen: boolean
   onCoachToggle: (open: boolean) => void
 }
@@ -38,7 +13,7 @@ function applyDark(on: boolean) {
   else delete document.documentElement.dataset.dark
 }
 
-export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoachToggle }: Props) {
+export default function ThemeSwitcher({ coachOpen, onCoachToggle }: Props) {
   const [open, setOpen] = useState(false)
   const [dark, setDark] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -92,26 +67,7 @@ export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoa
     <div className="theme-switcher" ref={rootRef}>
       {open && (
         <div className="theme-pop" role="menu" aria-label="Preferências">
-          <div className="theme-pop-header">Diagramação</div>
-          {LAYOUTS.map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={layout === l.id}
-              className={`theme-option${layout === l.id ? ' is-active' : ''}`}
-              onClick={() => onLayoutChange(l.id)}
-            >
-              <span className="layout-badge">{l.id.toUpperCase()}</span>
-              <span className="theme-name">
-                {l.name}
-                <span className="theme-hint">{l.hint}</span>
-              </span>
-              {layout === l.id && <Check />}
-            </button>
-          ))}
-
-          <div className="theme-pop-header is-section">Overlays</div>
+          <div className="theme-pop-header">Overlays</div>
           <button
             type="button"
             role="switch"

@@ -28,11 +28,11 @@ export default function TarefasPage({ onOpenTask }: { onOpenTask: (task: Task) =
   return (
     <main className="tasks-page">
       <div className="lib-container">
-        <h1 className="lib-title">Tarefas</h1>
+        <h1 className="lib-title">Automações</h1>
 
         <div className="lib-search">
           <img src={searchIcon} alt="" aria-hidden="true" />
-          <input type="text" placeholder="Buscar tarefas" spellCheck={false} />
+          <input type="text" placeholder="Buscar automações" spellCheck={false} />
         </div>
 
         {/* Ativas */}
@@ -40,7 +40,7 @@ export default function TarefasPage({ onOpenTask }: { onOpenTask: (task: Task) =
           <div className="lib-section-head">
             <div className="lib-section-title">
               <h2>Ativas</h2>
-              <p>Tarefas em execução ou agendadas</p>
+              <p>Automações em execução ou agendadas</p>
             </div>
             <div className="lib-files-actions">
               <button className="lib-new is-ghost" type="button" aria-label="Filtrar">

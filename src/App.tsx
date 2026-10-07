@@ -30,18 +30,10 @@ export type PinRef = { kind: PinKind; id: string }
    projeto (ícone + nome, gradiente, sem referência a projetos no @) */
 export type ActiveProject = { id: string; name: string; emoji?: string; color?: string }
 
-const LAYOUT_KEY = 'inner-v4-layout-v2'
 const COACH_KEY = 'inner-v4-coach-library'
 
-function readSavedLayout(): SidebarLayout {
-  try {
-    const saved = localStorage.getItem(LAYOUT_KEY)
-    if (['a', 'b', 'c', 'd', 'e'].includes(saved ?? '')) return saved as SidebarLayout
-  } catch {
-    /* storage indisponível */
-  }
-  return 'a'
-}
+/* Única diagramação agora: o rail com nomes (antiga "E"). */
+const LAYOUT: SidebarLayout = 'e'
 
 const GRID_VIEWS = ['library', 'tarefas', 'sites', 'prompts', 'assistentes', 'projetos'] as const
 
@@ -62,7 +54,7 @@ export default function App() {
   const [view, setView] = useState<AppView>('chat')
   /* última view com painel de histórico: mantém o conteúdo durante o colapso */
   const [panelView, setPanelView] = useState<PanelView>('chat')
-  const [layout, setLayout] = useState<SidebarLayout>(readSavedLayout)
+  const layout = LAYOUT
   /* colapso da sidebar — gerenciado aqui para a regra "drawer ⇄ sidebar" */
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try {
@@ -113,19 +105,19 @@ export default function App() {
     }
   }
 
-  const changeLayout = (next: SidebarLayout) => {
-    setLayout(next)
-    try {
-      localStorage.setItem(LAYOUT_KEY, next)
-    } catch {
-      /* storage indisponível */
-    }
-  }
-
   const navigate = (next: AppView) => {
     setView(next)
     if (!isGridView(next)) setPanelView(next)
     setDrawer(null) // trocar de página fecha qualquer drawer aberto
+  }
+
+  /* Home (agente) e Chat são itens separados da sidebar: ambos abrem a view de
+     chat, mudando o modo do input e o filtro do histórico. */
+  const openChatMode = (mode: 'agente' | 'chat') => {
+    setChatMode(mode)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
   }
 
   /* Regra global: drawer e sidebar expandida não coexistem. */
@@ -155,6 +147,8 @@ export default function App() {
         onToggleCollapsed={toggleCollapsed}
         coachOpen={coachOpen}
         onCoachDismiss={() => changeCoach(false)}
+        chatMode={chatMode}
+        onOpenChatMode={openChatMode}
       />
       <HistoryPanel
         view={panelView}
@@ -201,12 +195,7 @@ export default function App() {
       {drawer?.kind === 'task' && (
         <TaskDrawer task={drawer.task} closing={!!drawer.closing} onClose={closeDrawer} />
       )}
-      <ThemeSwitcher
-        layout={layout}
-        onLayoutChange={changeLayout}
-        coachOpen={coachOpen}
-        onCoachToggle={changeCoach}
-      />
+      <ThemeSwitcher coachOpen={coachOpen} onCoachToggle={changeCoach} />
     </div>
   )
 }
