@@ -1,7 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
 import './theme-switcher.css'
+import type { SidebarLayout } from './pillars'
+
+/* O rail (antiga "E") agora é a diagramação A/padrão; as demais seguem após. */
+const LAYOUTS: { id: SidebarLayout; badge: string; name: string; hint: string }[] = [
+  { id: 'e', badge: 'A', name: 'Rail com nomes', hint: 'Padrão' },
+  { id: 'a', badge: 'B', name: 'Principal', hint: 'Tudo a partir da Biblioteca' },
+  { id: 'b', badge: 'C', name: 'Fixos no topo', hint: 'Library/Tarefas travados' },
+  { id: 'c', badge: 'D', name: 'Tudo fixável', hint: 'Home e Biblioteca fixos' },
+  { id: 'd', badge: 'E', name: 'Pilares após o Chat', hint: 'Fixos embaixo' },
+]
+
+function Check() {
+  return (
+    <svg className="theme-check" width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path
+        d="M11.7 3.9 5.6 10 2.3 6.7"
+        stroke="#1c1c1c"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
 
 type Props = {
+  layout: SidebarLayout
+  onLayoutChange: (layout: SidebarLayout) => void
   coachOpen: boolean
   onCoachToggle: (open: boolean) => void
 }
@@ -13,7 +39,7 @@ function applyDark(on: boolean) {
   else delete document.documentElement.dataset.dark
 }
 
-export default function ThemeSwitcher({ coachOpen, onCoachToggle }: Props) {
+export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoachToggle }: Props) {
   const [open, setOpen] = useState(false)
   const [dark, setDark] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -67,7 +93,26 @@ export default function ThemeSwitcher({ coachOpen, onCoachToggle }: Props) {
     <div className="theme-switcher" ref={rootRef}>
       {open && (
         <div className="theme-pop" role="menu" aria-label="Preferências">
-          <div className="theme-pop-header">Overlays</div>
+          <div className="theme-pop-header">Diagramação</div>
+          {LAYOUTS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={layout === l.id}
+              className={`theme-option${layout === l.id ? ' is-active' : ''}`}
+              onClick={() => onLayoutChange(l.id)}
+            >
+              <span className="layout-badge">{l.badge}</span>
+              <span className="theme-name">
+                {l.name}
+                <span className="theme-hint">{l.hint}</span>
+              </span>
+              {layout === l.id && <Check />}
+            </button>
+          ))}
+
+          <div className="theme-pop-header is-section">Overlays</div>
           <button
             type="button"
             role="switch"

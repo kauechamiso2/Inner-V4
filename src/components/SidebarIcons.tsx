@@ -81,6 +81,98 @@ export function AssistentesIcon({ size = 18 }: NavIconProps) {
   )
 }
 
+/* ============ Ícones do rail ============
+   Usam currentColor (a cor vem do .rl-item). Cada pilar tem a variante outline
+   (estado normal) e a filled (estado selecionado). */
+
+type IconSize = { size?: number }
+
+export function ChatDotsIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 3.3C6.9 3.3 3 6.75 3 11.1c0 1.98.82 3.78 2.2 5.15l-1.12 3.05a.62.62 0 0 0 .8.78l3.98-1.47c1 .34 2.05.52 3.14.52 5.1 0 9-3.45 9-7.8S17.1 3.3 12 3.3Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <circle cx="8.4" cy="11.1" r="1.15" fill="currentColor" />
+      <circle cx="12" cy="11.1" r="1.15" fill="currentColor" />
+      <circle cx="15.6" cy="11.1" r="1.15" fill="currentColor" />
+    </svg>
+  )
+}
+
+export function AppsIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="7" cy="7" r="3.1" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M17 4.4 20 9.6h-6L17 4.4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <circle cx="7" cy="17" r="3.1" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="17" cy="17" r="3.1" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  )
+}
+
+export function AppsFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="7" cy="7" r="3.3" />
+      <path d="M17 4.1 20.3 9.9h-6.6L17 4.1Z" strokeLinejoin="round" />
+      <circle cx="7" cy="17" r="3.3" />
+      <circle cx="17" cy="17" r="3.3" />
+    </svg>
+  )
+}
+
+/* ---- Variantes filled (estado selecionado) ---- */
+
+export function HomeFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M11.18 2.9 3.7 8.77c-.44.35-.7.88-.7 1.44V19.5c0 .97.78 1.75 1.75 1.75H8.5v-5.3c0-.42.34-.76.76-.76h5.48c.42 0 .76.34.76.76v5.3h3.75c.97 0 1.75-.78 1.75-1.75v-9.29c0-.56-.26-1.09-.7-1.44L12.82 2.9a1.32 1.32 0 0 0-1.64 0Z" />
+    </svg>
+  )
+}
+
+export function ChatDotsFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M12 3.3C6.9 3.3 3 6.75 3 11.1c0 1.98.82 3.78 2.2 5.15l-1.12 3.05a.62.62 0 0 0 .8.78l3.98-1.47c1 .34 2.05.52 3.14.52 5.1 0 9-3.45 9-7.8S17.1 3.3 12 3.3ZM7.25 11.1a1.15 1.15 0 1 0 2.3 0 1.15 1.15 0 0 0-2.3 0Zm3.6 0a1.15 1.15 0 1 0 2.3 0 1.15 1.15 0 0 0-2.3 0Zm3.6 0a1.15 1.15 0 1 0 2.3 0 1.15 1.15 0 0 0-2.3 0Z"
+      />
+    </svg>
+  )
+}
+
+export function FolderFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 6.6A1.6 1.6 0 0 1 4.6 5h4.26c.43 0 .84.17 1.14.47L11.6 7h7.8A1.6 1.6 0 0 1 21 8.6v8.8A1.6 1.6 0 0 1 19.4 19H4.6A1.6 1.6 0 0 1 3 17.4V6.6Z" />
+    </svg>
+  )
+}
+
+export function AgendadoFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M7.75 2.5c.46 0 .83.37.83.83V4.5h6.84V3.33a.83.83 0 1 1 1.66 0V4.5h1.42A1.75 1.75 0 0 1 20.5 6.25V8.2h-17V6.25A1.75 1.75 0 0 1 5.25 4.5h1.67V3.33c0-.46.37-.83.83-.83Z" />
+      <path d="M3.5 9.7h17v8.05A1.75 1.75 0 0 1 18.75 19.5H5.25A1.75 1.75 0 0 1 3.5 17.75V9.7Zm9.25 1.9a.75.75 0 0 0-1.5 0v2.6c0 .2.08.39.22.53l1.6 1.6a.75.75 0 1 0 1.06-1.06l-1.38-1.38V11.6Z" fillRule="evenodd" clipRule="evenodd" />
+    </svg>
+  )
+}
+
+export function BooksFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M4 3.4h4.3a1 1 0 0 1 1 1v15.2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4.4a1 1 0 0 1 1-1Z" />
+      <path d="M11.1 4.46 14.96 3.4a1 1 0 0 1 1.23.7l3.78 13.73a1 1 0 0 1-.7 1.23l-3.86 1.06a1 1 0 0 1-1.23-.7L10.4 5.69a1 1 0 0 1 .7-1.23Z" />
+    </svg>
+  )
+}
+
 // Ícones do design (Phosphor), inline para permitir animação por sub-forma.
 // Path data copiado exatamente dos SVGs exportados do Figma — não editar à mão.
 

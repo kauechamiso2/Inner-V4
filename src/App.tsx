@@ -30,10 +30,20 @@ export type PinRef = { kind: PinKind; id: string }
    projeto (ícone + nome, gradiente, sem referência a projetos no @) */
 export type ActiveProject = { id: string; name: string; emoji?: string; color?: string }
 
+const LAYOUT_KEY = 'inner-v4-layout-v3'
 const COACH_KEY = 'inner-v4-coach-library'
 
-/* Única diagramação agora: o rail com nomes (antiga "E"). */
-const LAYOUT: SidebarLayout = 'e'
+/* Rail com nomes (antiga "E") é a diagramação padrão; as demais seguem
+   disponíveis no menu de preferências. */
+function readSavedLayout(): SidebarLayout {
+  try {
+    const saved = localStorage.getItem(LAYOUT_KEY)
+    if (['a', 'b', 'c', 'd', 'e'].includes(saved ?? '')) return saved as SidebarLayout
+  } catch {
+    /* storage indisponível */
+  }
+  return 'e'
+}
 
 const GRID_VIEWS = ['library', 'tarefas', 'sites', 'prompts', 'assistentes', 'projetos'] as const
 
@@ -54,7 +64,7 @@ export default function App() {
   const [view, setView] = useState<AppView>('chat')
   /* última view com painel de histórico: mantém o conteúdo durante o colapso */
   const [panelView, setPanelView] = useState<PanelView>('chat')
-  const layout = LAYOUT
+  const [layout, setLayout] = useState<SidebarLayout>(readSavedLayout)
   /* colapso da sidebar — gerenciado aqui para a regra "drawer ⇄ sidebar" */
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try {
@@ -100,6 +110,15 @@ export default function App() {
     setCoachOpen(open)
     try {
       sessionStorage.setItem(COACH_KEY, open ? 'open' : 'dismissed')
+    } catch {
+      /* storage indisponível */
+    }
+  }
+
+  const changeLayout = (next: SidebarLayout) => {
+    setLayout(next)
+    try {
+      localStorage.setItem(LAYOUT_KEY, next)
     } catch {
       /* storage indisponível */
     }
@@ -195,7 +214,12 @@ export default function App() {
       {drawer?.kind === 'task' && (
         <TaskDrawer task={drawer.task} closing={!!drawer.closing} onClose={closeDrawer} />
       )}
-      <ThemeSwitcher coachOpen={coachOpen} onCoachToggle={changeCoach} />
+      <ThemeSwitcher
+        layout={layout}
+        onLayoutChange={changeLayout}
+        coachOpen={coachOpen}
+        onCoachToggle={changeCoach}
+      />
     </div>
   )
 }

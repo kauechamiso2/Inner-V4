@@ -5,13 +5,20 @@ import logo from '../assets/logo.svg'
 import ultra from '../assets/ultra.svg'
 import avatar from '../assets/avatar.png'
 import {
+  AgendadoFillIcon,
   AgendadoIcon,
+  AppsFillIcon,
+  AppsIcon,
+  BooksFillIcon,
   BooksIcon,
   CaretRightIcon,
-  ChatTeardropIcon,
+  ChatDotsFillIcon,
+  ChatDotsIcon,
   DotsThreeIcon,
+  FolderFillIcon,
   FolderSimpleIcon,
   GraduationCapIcon,
+  HomeFillIcon,
   HomeNavIcon,
   PacksIcon,
   SidebarSimpleIcon,
@@ -27,7 +34,6 @@ import {
 import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
 import ProjectsMenu from './ProjectsMenu'
-import AppsMenu from './AppsMenu'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
 
@@ -120,14 +126,20 @@ export default function Sidebar({
 
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
   const [projectsAnchor, setProjectsAnchor] = useState<DOMRect | null>(null)
-  /* popover "Mais apps" do rail */
+  /* popover "Mais Apps" do rail */
   const [appsAnchor, setAppsAnchor] = useState<DOMRect | null>(null)
   const toggleApps = () => {
     if (appsAnchor) setAppsAnchor(null)
     else if (maisRef.current) setAppsAnchor(maisRef.current.getBoundingClientRect())
   }
-  /* pilares que vivem dentro de "Mais apps" (restante, sem assistentes) */
-  const appsActive = PILLAR_DEFS.some((p) => p.id === activeView && p.id !== 'assistentes')
+  /* pilares fixados pelo usuário no rail (abaixo do divisor). Vazio por padrão. */
+  const [railPinned, setRailPinned] = useState<ModuleId[]>([])
+  const railModules = PILLAR_DEFS.filter((p) => p.id !== 'assistentes')
+  const railPinnedList = railPinned.filter((id) => id !== 'assistentes')
+  const toggleRailPin = (id: ModuleId) =>
+    setRailPinned((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  /* "Mais Apps" fica ativo quando a view é um pilar que não está no rail fixo */
+  const appsActive = railModules.some((p) => p.id === activeView)
 
   /* Projetos é um pilar do pool, mas o clique abre o popover de projetos
      (ancorado no item), em vez de navegar */
@@ -346,38 +358,44 @@ export default function Sidebar({
           </span>
 
           <nav className="rl-group" aria-label="Navegação" ref={pilaresRef}>
-            {rlItem({
-              id: 'home',
-              label: 'Home',
-              icon: <HomeNavIcon />,
-              active: activeView === 'chat' && chatMode === 'agente',
-              onSelect: () => onOpenChatMode('agente'),
-            })}
-            {rlItem({
-              id: 'chatmode',
-              label: 'Chat',
-              icon: <ChatTeardropIcon />,
-              active: activeView === 'chat' && chatMode === 'chat',
-              onSelect: () => onOpenChatMode('chat'),
-            })}
+            {(() => {
+              const homeOn = activeView === 'chat' && chatMode === 'agente'
+              return rlItem({
+                id: 'home',
+                label: 'Home',
+                icon: homeOn ? <HomeFillIcon /> : <HomeNavIcon />,
+                active: homeOn,
+                onSelect: () => onOpenChatMode('agente'),
+              })
+            })()}
+            {(() => {
+              const chatOn = activeView === 'chat' && chatMode === 'chat'
+              return rlItem({
+                id: 'chatmode',
+                label: 'Chat',
+                icon: chatOn ? <ChatDotsFillIcon /> : <ChatDotsIcon />,
+                active: chatOn,
+                onSelect: () => onOpenChatMode('chat'),
+              })
+            })()}
             {rlItem({
               id: 'projetos',
               label: 'Projetos',
-              icon: <FolderSimpleIcon />,
+              icon: activeView === 'projetos' ? <FolderFillIcon /> : <FolderSimpleIcon />,
               active: activeView === 'projetos',
               onSelect: () => onNavigate('projetos'),
             })}
             {rlItem({
               id: 'automacoes',
-              label: 'Automações',
-              icon: <AgendadoIcon />,
+              label: 'Agendado',
+              icon: activeView === 'tarefas' ? <AgendadoFillIcon /> : <AgendadoIcon />,
               active: activeView === 'tarefas',
               onSelect: () => onNavigate('tarefas'),
             })}
             {rlItem({
               id: 'library',
               label: 'Biblioteca',
-              icon: <BooksIcon />,
+              icon: activeView === 'library' ? <BooksFillIcon /> : <BooksIcon />,
               active: activeView === 'library',
               onSelect: () => onNavigate('library'),
             })}
@@ -385,6 +403,18 @@ export default function Sidebar({
             <div className="rl-divider" role="separator">
               <span />
             </div>
+
+            {railPinnedList.map((id) =>
+              rlItem({
+                id,
+                label: MODULE_BY_ID[id].label,
+                icon: MODULE_BY_ID[id].icon,
+                active: activeView === id,
+                narrow: MODULE_BY_ID[id].narrowIcon,
+                onSelect: () => onNavigate(id as AppView),
+                flipId: id,
+              }),
+            )}
 
             <button
               ref={maisRef}
@@ -394,14 +424,31 @@ export default function Sidebar({
               aria-expanded={!!appsAnchor}
               onClick={toggleApps}
             >
-              <span className="rl-target">
-                <DotsThreeIcon />
-              </span>
-              <span className="rl-label">Mais</span>
+              <span className="rl-target">{appsAnchor || appsActive ? <AppsFillIcon /> : <AppsIcon />}</span>
+              <span className="rl-label">Mais Apps</span>
             </button>
           </nav>
 
           <div className="rl-flex" />
+
+          <button className="rl-util" type="button">
+            <TicketIcon />
+            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+              Indique e ganhe
+            </span>
+          </button>
+          <button className="rl-util" type="button">
+            <PacksIcon />
+            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+              Packs
+            </span>
+          </button>
+          <button className="rl-util" type="button">
+            <GraduationCapIcon />
+            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+              Educação
+            </span>
+          </button>
 
           <div className="rl-avatar">
             <span className="sidebar-avatar-photo">
@@ -526,9 +573,14 @@ export default function Sidebar({
       )}
 
       {appsAnchor && (
-        <AppsMenu
+        <PillarsMenu
           anchor={appsAnchor}
-          activeId={appsActive ? (activeView as PillarId) : null}
+          title="Mais Apps"
+          modules={railModules}
+          pinned={railPinnedList}
+          activeId={appsActive ? (activeView as ModuleId) : null}
+          onTogglePin={toggleRailPin}
+          onReorder={(order) => setRailPinned(order)}
           onOpenPillar={(id) => onNavigate(id)}
           onClose={() => setAppsAnchor(null)}
         />

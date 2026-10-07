@@ -17,6 +17,8 @@ type Props = {
   onReorder: (order: ModuleId[]) => void
   onOpenPillar: (id: NavModuleId) => void
   onClose: () => void
+  /* título do menu (ex.: "Mais Apps" no rail) */
+  title?: string
   /* diagramações B/C: Chat aparece no topo do menu, travado (sem pin/drag) */
   showChat?: boolean
   chatActive?: boolean
@@ -32,6 +34,7 @@ export default function PillarsMenu({
   onReorder,
   onOpenPillar,
   onClose,
+  title = 'Personalizar pilares',
   showChat = false,
   chatActive = false,
   onOpenChat,
@@ -151,7 +154,7 @@ export default function PillarsMenu({
       role="dialog"
       aria-label="Personalizar pilares"
     >
-      <div className="pm-header">Personalizar pilares</div>
+      <div className="pm-header">{title}</div>
 
       {showChat && (
         <div className="pm-line">

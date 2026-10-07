@@ -1003,6 +1003,12 @@
   text-decoration: none;
   cursor: pointer;
   font-family: inherit;
+  color: var(--text-mid);
+}
+
+/* selecionado: ícone filled em tom forte */
+.rl-item.is-active .rl-target {
+  color: var(--text-strong);
 }
 
 .rl-target {
