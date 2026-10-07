@@ -34,6 +34,8 @@ import {
 import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
 import ProjectsMenu from './ProjectsMenu'
+import AppsGallery from './AppsGallery'
+import { APPS, APP_BY_ID } from './apps'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
 
@@ -137,14 +139,13 @@ export default function Sidebar({
     if (appsAnchor) setAppsAnchor(null)
     else if (maisRef.current) setAppsAnchor(maisRef.current.getBoundingClientRect())
   }
-  /* pilares fixados pelo usuário no rail (abaixo do divisor). Vazio por padrão. */
-  const [railPinned, setRailPinned] = useState<ModuleId[]>([])
-  const railModules = PILLAR_DEFS.filter((p) => p.id !== 'assistentes')
-  const railPinnedList = railPinned.filter((id) => id !== 'assistentes')
-  const toggleRailPin = (id: ModuleId) =>
+  /* apps fixados pelo usuário no rail (abaixo do divisor). Vazio por padrão. */
+  const [railPinned, setRailPinned] = useState<string[]>([])
+  const toggleRailPin = (id: string) =>
     setRailPinned((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
-  /* "Mais Apps" fica ativo quando a view é um pilar que não está no rail fixo */
-  const appsActive = railModules.some((p) => p.id === activeView)
+  /* "Mais Apps" fica ativo quando a view atual é um app com ação */
+  const activeApp = APPS.find((a) => a.view === activeView)
+  const appsActive = !!activeApp
 
   /* Projetos é um pilar do pool, mas o clique abre o popover de projetos
      (ancorado no item), em vez de navegar */
@@ -409,17 +410,18 @@ export default function Sidebar({
               <span />
             </div>
 
-            {railPinnedList.map((id) =>
-              rlItem({
+            {railPinned.map((id) => {
+              const t = APP_BY_ID[id]
+              if (!t) return null
+              return rlItem({
                 id,
-                label: MODULE_BY_ID[id].label,
-                icon: MODULE_BY_ID[id].icon,
-                active: activeView === id,
-                narrow: MODULE_BY_ID[id].narrowIcon,
-                onSelect: () => onNavigate(id as AppView),
+                label: t.label,
+                icon: t.icon,
+                active: t.view ? activeView === t.view : false,
+                onSelect: t.view ? () => onNavigate(t.view as AppView) : () => {},
                 flipId: id,
-              }),
-            )}
+              })
+            })}
 
             <button
               ref={maisRef}
@@ -578,15 +580,14 @@ export default function Sidebar({
       )}
 
       {appsAnchor && (
-        <PillarsMenu
+        <AppsGallery
           anchor={appsAnchor}
-          title="Mais Apps"
-          modules={railModules}
-          pinned={railPinnedList}
-          activeId={appsActive ? (activeView as ModuleId) : null}
+          pinned={railPinned}
+          activeId={activeApp?.id ?? null}
           onTogglePin={toggleRailPin}
-          onReorder={(order) => setRailPinned(order)}
-          onOpenPillar={(id) => onNavigate(id)}
+          onOpen={(tool) => {
+            if (tool.view) onNavigate(tool.view)
+          }}
           onClose={() => setAppsAnchor(null)}
         />
       )}
