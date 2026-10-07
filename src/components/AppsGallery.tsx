@@ -117,7 +117,7 @@ export default function AppsGallery({ anchor, pinned, activeId, onTogglePin, onO
           <h3 className="ag-title">Todas as ferramentas</h3>
           <p className="ag-sub">Passe o mouse e clique no pin (ou botão direito) para fixar</p>
           <div className="ag-grid">
-            {APPS.map((tool) => (
+            {APPS.filter((tool) => !pinned.includes(tool.id)).map((tool) => (
               <Cell key={tool.id} tool={tool} />
             ))}
           </div>

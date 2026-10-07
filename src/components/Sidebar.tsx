@@ -146,7 +146,6 @@ export default function Sidebar({
     setRailPinned((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   /* "Mais Apps" fica ativo quando a view atual é um app com ação */
   const activeApp = APPS.find((a) => a.view === activeView)
-  const appsActive = !!activeApp
 
   /* Projetos é um pilar do pool, mas o clique abre o popover de projetos
      (ancorado no item), em vez de navegar */
@@ -431,12 +430,12 @@ export default function Sidebar({
             <button
               ref={maisRef}
               type="button"
-              className={`rl-item rl-more${appsAnchor || appsActive ? ' is-active' : ''}`}
+              className={`rl-item rl-more${appsAnchor ? ' is-active' : ''}`}
               aria-haspopup="menu"
               aria-expanded={!!appsAnchor}
               onClick={toggleApps}
             >
-              <span className="rl-target">{appsAnchor || appsActive ? <AppsFillIcon /> : <AppsIcon />}</span>
+              <span className="rl-target">{appsAnchor ? <AppsFillIcon /> : <AppsIcon />}</span>
               <span className="rl-label">Mais Apps</span>
             </button>
           </nav>
