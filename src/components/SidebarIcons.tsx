@@ -1,13 +1,32 @@
 import { useId } from 'react'
-import { House } from 'lucide-react'
 
-/* Ícones de navegação via Lucide (currentColor = --text-mid, casa com a
+/* Ícones de navegação (currentColor = --text-mid, casa com a
    família de ícones do sidebar em claro/escuro). */
 type NavIconProps = { size?: number }
 const navStyle = { color: 'var(--text-mid)' as const }
 
+// Home: a casinha dá um "pulinho" no hover.
 export function HomeNavIcon({ size = 18 }: NavIconProps) {
-  return <House size={size} strokeWidth={1.7} style={navStyle} aria-hidden="true" />
+  return (
+    <svg
+      className="nav-icon"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={navStyle}
+      aria-hidden="true"
+    >
+      <g className="anim anim-home">
+        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+        <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      </g>
+    </svg>
+  )
 }
 // Tarefas: calendário + relógio (geometria do CalendarClock da Lucide), com o
 // ponteiro do relógio animado — gira ao passar o mouse (tempo correndo).
@@ -97,9 +116,9 @@ export function ChatDotsIcon({ size = 20 }: IconSize) {
   return (
     <svg width={size} height={size} viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
       <path d={CHAT_TEARDROP_RING} />
-      <circle cx="6" cy="8.7" r="0.95" />
-      <circle cx="9.28" cy="8.7" r="0.95" />
-      <circle cx="12.55" cy="8.7" r="0.95" />
+      <circle className="anim anim-chat-dot anim-chat-dot-1" cx="6" cy="8.7" r="0.95" />
+      <circle className="anim anim-chat-dot anim-chat-dot-2" cx="9.28" cy="8.7" r="0.95" />
+      <circle className="anim anim-chat-dot anim-chat-dot-3" cx="12.55" cy="8.7" r="0.95" />
     </svg>
   )
 }
@@ -107,10 +126,10 @@ export function ChatDotsIcon({ size = 20 }: IconSize) {
 export function AppsIcon({ size = 20 }: IconSize) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="7" cy="7" r="3.1" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M17 4.4 20 9.6h-6L17 4.4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <circle cx="7" cy="17" r="3.1" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="17" cy="17" r="3.1" stroke="currentColor" strokeWidth="1.7" />
+      <circle className="anim anim-app anim-app-1" cx="7" cy="7" r="3.1" stroke="currentColor" strokeWidth="1.7" />
+      <path className="anim anim-app anim-app-2" d="M17 4.4 20 9.6h-6L17 4.4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <circle className="anim anim-app anim-app-3" cx="7" cy="17" r="3.1" stroke="currentColor" strokeWidth="1.7" />
+      <circle className="anim anim-app anim-app-4" cx="17" cy="17" r="3.1" stroke="currentColor" strokeWidth="1.7" />
     </svg>
   )
 }
@@ -118,10 +137,10 @@ export function AppsIcon({ size = 20 }: IconSize) {
 export function AppsFillIcon({ size = 20 }: IconSize) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <circle cx="7" cy="7" r="3.3" />
-      <path d="M17 4.1 20.3 9.9h-6.6L17 4.1Z" strokeLinejoin="round" />
-      <circle cx="7" cy="17" r="3.3" />
-      <circle cx="17" cy="17" r="3.3" />
+      <circle className="anim anim-app anim-app-1" cx="7" cy="7" r="3.3" />
+      <path className="anim anim-app anim-app-2" d="M17 4.1 20.3 9.9h-6.6L17 4.1Z" strokeLinejoin="round" />
+      <circle className="anim anim-app anim-app-3" cx="7" cy="17" r="3.3" />
+      <circle className="anim anim-app anim-app-4" cx="17" cy="17" r="3.3" />
     </svg>
   )
 }
@@ -131,7 +150,10 @@ export function AppsFillIcon({ size = 20 }: IconSize) {
 export function HomeFillIcon({ size = 20 }: IconSize) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M11.18 2.9 3.7 8.77c-.44.35-.7.88-.7 1.44V19.5c0 .97.78 1.75 1.75 1.75H8.5v-5.3c0-.42.34-.76.76-.76h5.48c.42 0 .76.34.76.76v5.3h3.75c.97 0 1.75-.78 1.75-1.75v-9.29c0-.56-.26-1.09-.7-1.44L12.82 2.9a1.32 1.32 0 0 0-1.64 0Z" />
+      <path
+        className="anim anim-home"
+        d="M11.18 2.9 3.7 8.77c-.44.35-.7.88-.7 1.44V19.5c0 .97.78 1.75 1.75 1.75H8.5v-5.3c0-.42.34-.76.76-.76h5.48c.42 0 .76.34.76.76v5.3h3.75c.97 0 1.75-.78 1.75-1.75v-9.29c0-.56-.26-1.09-.7-1.44L12.82 2.9a1.32 1.32 0 0 0-1.64 0Z"
+      />
     </svg>
   )
 }
@@ -140,6 +162,7 @@ export function ChatDotsFillIcon({ size = 20 }: IconSize) {
   return (
     <svg width={size} height={size} viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
       <path
+        className="anim anim-chat-bubble"
         fillRule="evenodd"
         clipRule="evenodd"
         d={`${CHAT_TEARDROP_SOLID} M5.05 8.7a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0Z M8.33 8.7a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0Z M11.6 8.7a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0Z`}

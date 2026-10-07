@@ -72,7 +72,7 @@ export default function AppsGallery({ anchor, pinned, activeId, onTogglePin, onO
           onTogglePin(tool.id)
         }}
       >
-        <span className="ag-ic">{tool.icon}</span>
+        <span className={`ag-ic anim-${tool.anim}`}>{tool.icon}</span>
         <span className="ag-label">{tool.label}</span>
         <span
           className={`ag-pin${isPinned ? ' is-pinned' : ''}`}
