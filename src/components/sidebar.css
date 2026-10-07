@@ -1007,6 +1007,49 @@
   100% { transform: scale(1); }
 }
 
+/* Apps novos fixados no rail (ícones lucide, sem sub-shapes próprios):
+   reaproveitam o motion inteiro do ícone da galeria "Mais Apps".
+   Os keyframes ag-* ficam em apps-gallery.css (sempre carregado). */
+.rl-anim svg {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.rl-item:hover .anim-pop svg {
+  animation: ag-pop 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rl-item:hover .anim-bob svg {
+  animation: ag-bob 600ms ease-in-out;
+}
+.rl-item:hover .anim-spin svg {
+  animation: ag-spin 650ms cubic-bezier(0.5, 0, 0.3, 1);
+}
+.rl-item:hover .anim-wiggle svg {
+  animation: ag-wiggle 600ms ease-in-out;
+}
+.rl-item:hover .anim-swing svg {
+  transform-origin: top center;
+  animation: ag-swing 650ms ease-in-out;
+}
+.rl-item:hover .anim-beat svg {
+  animation: ag-beat 640ms ease-in-out;
+}
+.rl-item:hover .anim-fly svg {
+  animation: ag-fly 640ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rl-item:hover .anim-nudge svg {
+  animation: ag-nudge 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rl-item:hover .anim-flicker svg {
+  animation: ag-flicker 620ms ease-in-out;
+}
+.rl-item:hover .anim-ring svg {
+  transform-origin: top center;
+  animation: ag-ring 650ms ease-in-out;
+}
+.rl-item:hover .anim-rise svg {
+  animation: ag-rise 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* Usuários que preferem menos movimento */
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
@@ -1164,9 +1207,9 @@
   align-items: center;
   justify-content: center;
   width: 36px;
-  height: 17px;
+  height: 1px;
   flex-shrink: 0;
-  margin: 7px 0;
+  margin: -2px 0;
 }
 
 .rl-divider span {

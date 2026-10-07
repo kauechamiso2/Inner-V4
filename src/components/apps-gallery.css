@@ -156,6 +156,32 @@
   display: block;
 }
 
+/* tooltip de fixar/desafixar */
+.ag-pin-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  z-index: 2;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.ag-pin:hover .ag-pin-tip {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 220ms;
+}
+
 /* ---------- Animações por caso (no hover da célula) ---------- */
 .ag-ic svg {
   transform-box: fill-box;

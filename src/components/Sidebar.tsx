@@ -36,6 +36,7 @@ import PillarsMenu from './PillarsMenu'
 import ProjectsMenu from './ProjectsMenu'
 import AppsGallery from './AppsGallery'
 import { APPS, APP_BY_ID } from './apps'
+import type { AppAnim } from './apps'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
 
@@ -324,6 +325,7 @@ export default function Sidebar({
     narrow?: boolean
     onSelect?: (rect: DOMRect) => void
     flipId?: string
+    anim?: AppAnim
   }) => (
     <a
       key={opts.id}
@@ -339,7 +341,7 @@ export default function Sidebar({
           : undefined
       }
     >
-      <span className="rl-target">{opts.icon}</span>
+      <span className={`rl-target${opts.anim ? ` rl-anim anim-${opts.anim}` : ''}`}>{opts.icon}</span>
       <span className="rl-label">{opts.label}</span>
     </a>
   )
@@ -420,6 +422,9 @@ export default function Sidebar({
                 active: t.view ? activeView === t.view : false,
                 onSelect: t.view ? () => onNavigate(t.view as AppView) : () => {},
                 flipId: id,
+                // pilares já animam pelos sub-shapes; apps novos (ícones lucide)
+                // reaproveitam o motion inteiro do ícone usado na galeria
+                anim: t.view ? undefined : t.anim,
               })
             })}
 

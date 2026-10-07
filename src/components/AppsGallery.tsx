@@ -84,6 +84,9 @@ export default function AppsGallery({ anchor, pinned, activeId, onTogglePin, onO
           }}
         >
           <Pin size={13} strokeWidth={2} fill={isPinned ? 'currentColor' : 'none'} />
+          <span className="ag-pin-tip" aria-hidden="true">
+            {isPinned ? 'Desafixar' : 'Fixar'}
+          </span>
         </span>
       </button>
     )
