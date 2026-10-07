@@ -1080,7 +1080,7 @@
 }
 
 .sidebar.rail-labels {
-  width: 88px;
+  width: 82px;
   background: var(--rl-surface);
   border-right-color: var(--rl-border);
 }
