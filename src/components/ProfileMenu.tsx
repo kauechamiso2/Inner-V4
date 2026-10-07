@@ -11,13 +11,17 @@ import {
   Zap,
 } from 'lucide-react'
 import './profile-menu.css'
-import avatar from '../assets/avatar.png'
 import { GraduationCapIcon, PacksIcon, TicketIcon } from './SidebarIcons'
 
 type Props = {
   anchor: DOMRect
   onClose: () => void
 }
+
+/* anel de uso do Inner AI Agent (protótipo: fração já utilizada) */
+const RING_R = 9
+const RING_C = 2 * Math.PI * RING_R
+const AGENT_USED = 0.3
 
 /* Menu de conta (clique no avatar). Adapta o menu atual do Inner (modelos +
    créditos) ao nosso design e recebe Packs, Indique e ganhe e Educação, que
@@ -26,7 +30,6 @@ export default function ProfileMenu({ anchor, onClose }: Props) {
   const menuRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ top: anchor.top, left: anchor.right + 12 })
   const [closing, setClosing] = useState(false)
-  const [agentOn, setAgentOn] = useState(false)
 
   // Ancora à direita do avatar, alinhado pela base (abre pra cima)
   useLayoutEffect(() => {
@@ -71,21 +74,6 @@ export default function ProfileMenu({ anchor, onClose }: Props) {
       role="menu"
       aria-label="Conta"
     >
-      <button type="button" className="pf-head" role="menuitem">
-        <span className="pf-avatar">
-          <img src={avatar} alt="" />
-        </span>
-        <span className="pf-id">
-          <span className="pf-name">Kauê Chamiso</span>
-          <span className="pf-plan">Ultra</span>
-        </span>
-        <ChevronRight className="pf-chev" size={18} strokeWidth={2} />
-      </button>
-
-      <div className="pf-divider" role="separator">
-        <span />
-      </div>
-
       <div className="pf-section">
         <p className="pf-section-title">Mensagens de IA</p>
         <div className="pf-card">
@@ -112,16 +100,24 @@ export default function ProfileMenu({ anchor, onClose }: Props) {
           <span className="pf-orb" aria-hidden="true" />
           <span className="pf-card-label">Inner AI Agent</span>
           <Info className="pf-info" size={14} strokeWidth={2} />
-          <button
-            type="button"
-            className={`pf-toggle${agentOn ? ' is-on' : ''}`}
-            role="switch"
-            aria-checked={agentOn}
-            aria-label="Inner AI Agent"
-            onClick={() => setAgentOn((v) => !v)}
+          <svg
+            className="pf-usage"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            role="img"
+            aria-label={`${Math.round(AGENT_USED * 100)}% utilizado`}
           >
-            <span className="pf-toggle-dot" />
-          </button>
+            <circle className="pf-usage-track" cx="12" cy="12" r={RING_R} />
+            <circle
+              className="pf-usage-arc"
+              cx="12"
+              cy="12"
+              r={RING_R}
+              strokeDasharray={RING_C}
+              strokeDashoffset={RING_C * (1 - AGENT_USED)}
+            />
+          </svg>
         </div>
         <div className="pf-card">
           <Coins className="pf-card-ic is-credit" size={17} strokeWidth={2} />

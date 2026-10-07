@@ -2,7 +2,8 @@
 
 .profile-menu {
   --pf-accent: #b5742b;
-  --pf-toggle-off: rgba(0, 0, 0, 0.14);
+  --pf-ring-track: rgba(0, 0, 0, 0.1);
+  --pf-ring-arc: #3b82f6;
   --pf-danger: #cf5338;
   position: fixed;
   z-index: 320;
@@ -23,7 +24,8 @@
 
 :root[data-dark] .profile-menu {
   --pf-accent: #e2a869;
-  --pf-toggle-off: rgba(255, 255, 255, 0.18);
+  --pf-ring-track: rgba(255, 255, 255, 0.14);
+  --pf-ring-arc: #5b9bff;
   --pf-danger: #e8705a;
 }
 
@@ -43,67 +45,6 @@
     opacity: 0;
     transform: translateY(4px) scale(0.98);
   }
-}
-
-/* ---------- Cabeçalho (avatar + nome + plano) ---------- */
-.pf-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-  transition: background-color 130ms ease;
-}
-
-.pf-head:hover {
-  background: var(--hover-05);
-}
-
-.pf-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.pf-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.pf-id {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-  flex: 1;
-}
-
-.pf-name {
-  font-size: 14.5px;
-  font-weight: 600;
-  color: var(--text-strong);
-  line-height: 1.25;
-}
-
-.pf-plan {
-  font-size: 12.5px;
-  color: var(--text-faint);
-  line-height: 1.2;
-}
-
-.pf-chev {
-  color: var(--text-faint);
-  flex-shrink: 0;
 }
 
 /* ---------- Divisor ---------- */
@@ -189,38 +130,24 @@
   box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.4);
 }
 
-/* toggle */
-.pf-toggle {
-  position: relative;
-  width: 36px;
-  height: 20px;
+/* anel de uso do agente */
+.pf-usage {
   flex-shrink: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: var(--pf-toggle-off);
-  cursor: pointer;
-  transition: background-color 160ms ease;
+  transform: rotate(-90deg);
 }
 
-.pf-toggle-dot {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+.pf-usage-track {
+  fill: none;
+  stroke: var(--pf-ring-track);
+  stroke-width: 2.5;
 }
 
-.pf-toggle.is-on {
-  background: #6d6af0;
-}
-
-.pf-toggle.is-on .pf-toggle-dot {
-  transform: translateX(16px);
+.pf-usage-arc {
+  fill: none;
+  stroke: var(--pf-ring-arc);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 450ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* adicionar créditos */
@@ -298,7 +225,7 @@
   .profile-menu {
     animation: none;
   }
-  .pf-toggle-dot {
+  .pf-usage-arc {
     transition: none;
   }
 }
