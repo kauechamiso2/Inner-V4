@@ -87,18 +87,19 @@ export function AssistentesIcon({ size = 18 }: NavIconProps) {
 
 type IconSize = { size?: number }
 
+/* teardrop (Phosphor ChatTeardrop) + três dots no meio */
+const CHAT_TEARDROP_RING =
+  'M9.28125 1.6875C7.41707 1.68955 5.62984 2.43099 4.31167 3.74917C2.99349 5.06734 2.25205 6.85457 2.25 8.71875V14.625C2.25 14.9234 2.36853 15.2095 2.5795 15.4205C2.79048 15.6315 3.07663 15.75 3.375 15.75H9.28125C11.1461 15.75 12.9345 15.0092 14.2531 13.6906C15.5717 12.372 16.3125 10.5836 16.3125 8.71875C16.3125 6.85395 15.5717 5.06552 14.2531 3.74691C12.9345 2.42829 11.1461 1.6875 9.28125 1.6875ZM9.28125 14.625H3.375V8.71875C3.375 7.5506 3.7214 6.40869 4.37038 5.43741C5.01937 4.46614 5.9418 3.70912 7.02103 3.26209C8.10025 2.81506 9.2878 2.69809 10.4335 2.92599C11.5792 3.15388 12.6316 3.7164 13.4576 4.5424C14.2836 5.3684 14.8461 6.4208 15.074 7.5665C15.3019 8.7122 15.1849 9.89975 14.7379 10.979C14.2909 12.0582 13.5339 12.9806 12.5626 13.6296C11.5913 14.2786 10.4494 14.625 9.28125 14.625Z'
+const CHAT_TEARDROP_SOLID =
+  'M9.28125 1.6875C7.41707 1.68955 5.62984 2.43099 4.31167 3.74917C2.99349 5.06734 2.25205 6.85457 2.25 8.71875V14.625C2.25 14.9234 2.36853 15.2095 2.5795 15.4205C2.79048 15.6315 3.07663 15.75 3.375 15.75H9.28125C11.1461 15.75 12.9345 15.0092 14.2531 13.6906C15.5717 12.372 16.3125 10.5836 16.3125 8.71875C16.3125 6.85395 15.5717 5.06552 14.2531 3.74691C12.9345 2.42829 11.1461 1.6875 9.28125 1.6875Z'
+
 export function ChatDotsIcon({ size = 20 }: IconSize) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 3.3C6.9 3.3 3 6.75 3 11.1c0 1.98.82 3.78 2.2 5.15l-1.12 3.05a.62.62 0 0 0 .8.78l3.98-1.47c1 .34 2.05.52 3.14.52 5.1 0 9-3.45 9-7.8S17.1 3.3 12 3.3Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-      <circle cx="8.4" cy="11.1" r="1.15" fill="currentColor" />
-      <circle cx="12" cy="11.1" r="1.15" fill="currentColor" />
-      <circle cx="15.6" cy="11.1" r="1.15" fill="currentColor" />
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+      <path d={CHAT_TEARDROP_RING} />
+      <circle cx="6" cy="8.7" r="0.95" />
+      <circle cx="9.28" cy="8.7" r="0.95" />
+      <circle cx="12.55" cy="8.7" r="0.95" />
     </svg>
   )
 }
@@ -137,11 +138,11 @@ export function HomeFillIcon({ size = 20 }: IconSize) {
 
 export function ChatDotsFillIcon({ size = 20 }: IconSize) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
       <path
         fillRule="evenodd"
         clipRule="evenodd"
-        d="M12 3.3C6.9 3.3 3 6.75 3 11.1c0 1.98.82 3.78 2.2 5.15l-1.12 3.05a.62.62 0 0 0 .8.78l3.98-1.47c1 .34 2.05.52 3.14.52 5.1 0 9-3.45 9-7.8S17.1 3.3 12 3.3ZM7.25 11.1a1.15 1.15 0 1 0 2.3 0 1.15 1.15 0 0 0-2.3 0Zm3.6 0a1.15 1.15 0 1 0 2.3 0 1.15 1.15 0 0 0-2.3 0Zm3.6 0a1.15 1.15 0 1 0 2.3 0 1.15 1.15 0 0 0-2.3 0Z"
+        d={`${CHAT_TEARDROP_SOLID} M5.05 8.7a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0Z M8.33 8.7a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0Z M11.6 8.7a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0Z`}
       />
     </svg>
   )

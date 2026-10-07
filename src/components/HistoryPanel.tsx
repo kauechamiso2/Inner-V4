@@ -286,19 +286,22 @@ function ChatRow({
   chat,
   pinned,
   onTogglePin,
+  hideIcon = false,
 }: {
   chat: Chat
   pinned: boolean
   onTogglePin: () => void
+  /* Home (agente): o histórico fica mais limpo, só títulos */
+  hideIcon?: boolean
 }) {
   const isAgent = chat.source === 'agent'
   return (
-    <a className="chat-row" href="#conversa">
+    <a className={`chat-row${hideIcon ? ' no-icon' : ''}`} href="#conversa">
       <span className="chat-row-main">
-        <ChatAvatar source={chat.source} emoji={chat.emoji} />
+        {!hideIcon && <ChatAvatar source={chat.source} emoji={chat.emoji} />}
         <span className={`chat-row-title${isAgent ? '' : ' is-model'}`}>{chat.title}</span>
       </span>
-      {isAgent && !pinned && <span className="chat-chip">Agent</span>}
+      {isAgent && !pinned && !hideIcon && <span className="chat-chip">Agent</span>}
       <PinButton pinned={pinned} onToggle={onTogglePin} />
     </a>
   )
@@ -591,12 +594,11 @@ export default function HistoryPanel({
                           key={`pin-${p.id}`}
                           chat={c}
                           pinned
+                          hideIcon={chatMode === 'agente'}
                           onTogglePin={() => togglePin('chat', p.id)}
                         />
                       ) : null
                     }
-                    /* projetos são contexto do agente: só aparecem na Home */
-                    if (chatMode !== 'agente') return null
                     const pr = findProject(p.id)
                     if (!pr) return null
                     const childChats =
@@ -653,6 +655,7 @@ export default function HistoryPanel({
                               chat={chat}
                               key={chat.title}
                               pinned={false}
+                              hideIcon={chatMode === 'agente'}
                               onTogglePin={() => togglePin('chat', chat.title)}
                             />
                           ))}

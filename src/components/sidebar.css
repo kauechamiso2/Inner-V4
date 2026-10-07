@@ -156,7 +156,11 @@
 }
 
 .sidebar-toggle:hover .toggle-tooltip,
-.sidebar-toggle:focus-visible .toggle-tooltip {
+.sidebar-toggle:focus-visible .toggle-tooltip,
+.rl-util:hover .toggle-tooltip,
+.rl-util:focus-visible .toggle-tooltip,
+.rl-toggle:hover .toggle-tooltip,
+.rl-toggle:focus-visible .toggle-tooltip {
   opacity: 1;
   visibility: visible;
   transform: translateY(-50%) translateX(0) scale(1);
@@ -967,21 +971,34 @@
   overflow: visible;
 }
 
-/* marca compacta (sparkle) no topo do rail */
-.rl-logo {
+/* toggle do painel de histórico no topo do rail */
+.rl-toggle {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
   flex-shrink: 0;
-  margin-bottom: 22px;
-  border-radius: 11px;
-  background: var(--voice-bg);
+  margin-bottom: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
 }
 
-.rl-logo svg {
+.rl-toggle:hover {
+  background: var(--hover-05);
+  color: var(--text-strong);
+}
+
+.rl-toggle svg {
   display: block;
+  width: 18px;
+  height: 18px;
 }
 
 .rl-group {

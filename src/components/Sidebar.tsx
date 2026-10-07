@@ -101,6 +101,9 @@ type SidebarProps = {
   /* modo do input (Home = agente, Chat = chat) — itens separados no rail */
   chatMode: 'agente' | 'chat'
   onOpenChatMode: (mode: 'agente' | 'chat') => void
+  /* toggle do painel de histórico (ícone no topo do rail) */
+  historyHidden: boolean
+  onToggleHistory: () => void
 }
 
 export default function Sidebar({
@@ -113,6 +116,8 @@ export default function Sidebar({
   onCoachDismiss,
   chatMode,
   onOpenChatMode,
+  historyHidden,
+  onToggleHistory,
 }: SidebarProps) {
   const [scrollAnimating, setScrollAnimating] = useState(false)
   const cooldownRef = useRef(false)
@@ -344,18 +349,18 @@ export default function Sidebar({
     >
       {isRailLabels ? (
         <div className="rl-col">
-          <span className="rl-logo" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M9.6 1.7c.45 3.3 1.95 4.8 5.25 5.25-3.3.45-4.8 1.95-5.25 5.25-.45-3.3-1.95-4.8-5.25-5.25 3.3-.45 4.8-1.95 5.25-5.25Z"
-                fill="#fff"
-              />
-              <path
-                d="M15.2 11.4c.2 1.5 1 2.3 2.5 2.5-1.5.2-2.3 1-2.5 2.5-.2-1.5-1-2.3-2.5-2.5 1.5-.2 2.3-1 2.5-2.5Z"
-                fill="#fff"
-              />
-            </svg>
-          </span>
+          <button
+            type="button"
+            className="rl-toggle"
+            aria-label={historyHidden ? 'Abrir histórico' : 'Fechar histórico'}
+            aria-pressed={!historyHidden}
+            onClick={onToggleHistory}
+          >
+            <SidebarSimpleIcon />
+            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+              {historyHidden ? 'Abrir histórico' : 'Fechar histórico'}
+            </span>
+          </button>
 
           <nav className="rl-group" aria-label="Navegação" ref={pilaresRef}>
             {(() => {

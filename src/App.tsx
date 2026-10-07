@@ -77,6 +77,8 @@ export default function App() {
   const [drawer, setDrawer] = useState<Drawer>(null)
   /* modo do input do Chat (agente/chat) — compartilhado com o painel Home */
   const [chatMode, setChatMode] = useState<'agente' | 'chat'>('agente')
+  /* painel de histórico recolhido pelo usuário (toggle no topo do rail) */
+  const [historyCollapsed, setHistoryCollapsed] = useState(false)
   /* pins do histórico da Home (chats + projetos) */
   const [pins, setPins] = useState<PinRef[]>([
     { kind: 'chat', id: 'Análise do churn de setembro' },
@@ -168,10 +170,12 @@ export default function App() {
         onCoachDismiss={() => changeCoach(false)}
         chatMode={chatMode}
         onOpenChatMode={openChatMode}
+        historyHidden={historyCollapsed}
+        onToggleHistory={() => setHistoryCollapsed((c) => !c)}
       />
       <HistoryPanel
         view={panelView}
-        hidden={isGridView(view)}
+        hidden={isGridView(view) || historyCollapsed}
         chatMode={chatMode}
         pins={pins}
         isPinned={isPinned}
