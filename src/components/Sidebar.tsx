@@ -35,6 +35,7 @@ import type { AppView, ModuleId, PillarId, SidebarLayout } from './pillars'
 import PillarsMenu from './PillarsMenu'
 import ProjectsMenu from './ProjectsMenu'
 import AppsGallery from './AppsGallery'
+import ProfileMenu from './ProfileMenu'
 import { APPS, APP_BY_ID } from './apps'
 import type { AppAnim } from './apps'
 import LibraryCoachmark from './LibraryCoachmark'
@@ -140,6 +141,10 @@ export default function Sidebar({
     if (appsAnchor) setAppsAnchor(null)
     else if (maisRef.current) setAppsAnchor(maisRef.current.getBoundingClientRect())
   }
+  /* menu de conta (clique no avatar) */
+  const [profileAnchor, setProfileAnchor] = useState<DOMRect | null>(null)
+  const toggleProfile = (rect: DOMRect) =>
+    setProfileAnchor((cur) => (cur ? null : rect))
   /* apps fixados pelo usuário no rail (abaixo do divisor). Vazio por padrão. */
   const [railPinned, setRailPinned] = useState<string[]>([])
   const toggleRailPin = (id: string) =>
@@ -442,31 +447,19 @@ export default function Sidebar({
 
           <div className="rl-flex" />
 
-          <button className="rl-util" type="button">
-            <TicketIcon />
-            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Indique e ganhe
-            </span>
-          </button>
-          <button className="rl-util" type="button">
-            <PacksIcon />
-            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Packs
-            </span>
-          </button>
-          <button className="rl-util" type="button">
-            <GraduationCapIcon />
-            <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              Educação
-            </span>
-          </button>
-
-          <div className="rl-avatar">
+          <button
+            type="button"
+            className={`rl-avatar${profileAnchor ? ' is-active' : ''}`}
+            aria-label="Conta"
+            aria-haspopup="menu"
+            aria-expanded={!!profileAnchor}
+            onClick={(e) => toggleProfile(e.currentTarget.getBoundingClientRect())}
+          >
             <span className="sidebar-avatar-photo">
               <img src={avatar} alt="Avatar de Kauê" />
             </span>
             <img className="sidebar-ultra" src={ultra} alt="Plano Ultra" />
-          </div>
+          </button>
         </div>
       ) : (
         <>
@@ -594,6 +587,10 @@ export default function Sidebar({
           }}
           onClose={() => setAppsAnchor(null)}
         />
+      )}
+
+      {profileAnchor && (
+        <ProfileMenu anchor={profileAnchor} onClose={() => setProfileAnchor(null)} />
       )}
 
       <LibraryCoachmark
