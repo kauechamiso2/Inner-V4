@@ -346,7 +346,7 @@ export default function Sidebar({
       }
     >
       <span className={`rl-target${opts.anim ? ` rl-anim anim-${opts.anim}` : ''}`}>{opts.icon}</span>
-      <span className="rl-label">{opts.label}</span>
+      <span className={`rl-label${opts.label.trim().includes(' ') ? ' is-wrap' : ''}`}>{opts.label}</span>
     </a>
   )
 
@@ -441,7 +441,7 @@ export default function Sidebar({
               onClick={toggleApps}
             >
               <span className="rl-target">{appsAnchor ? <AppsFillIcon /> : <AppsIcon />}</span>
-              <span className="rl-label">Mais Apps</span>
+              <span className="rl-label is-wrap">Mais Apps</span>
             </button>
           </nav>
 
