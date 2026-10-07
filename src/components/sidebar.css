@@ -1080,7 +1080,7 @@
 }
 
 .sidebar.rail-labels {
-  width: 82px;
+  width: 76px;
   background: var(--rl-surface);
   border-right-color: var(--rl-border);
 }
@@ -1184,25 +1184,17 @@
 }
 
 .rl-label {
-  max-width: 72px;
-  font-size: 11px;
+  max-width: 66px;
+  font-size: 10.5px;
   font-weight: 500;
   line-height: 1.18;
   color: var(--text-mid);
   text-align: center;
-  /* palavra única: fica em 1 linha e, se faltar espaço, usa reticências
-     (nunca quebra no meio da palavra) */
+  /* estilo Monica: 1 linha sempre; nome longo recebe reticências (nunca quebra
+     no meio da palavra). Nome completo fica no tooltip (title) do item. */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* nomes compostos (com espaço): podem quebrar em 2 linhas, só entre palavras */
-.rl-label.is-wrap {
-  white-space: normal;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 
 .rl-item.is-active .rl-label {

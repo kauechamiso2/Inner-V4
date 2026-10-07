@@ -335,6 +335,7 @@ export default function Sidebar({
       key={opts.id}
       className={`rl-item${opts.active ? ' is-active' : ''}${opts.narrow ? ' is-16' : ''}`}
       href={`#${opts.id}`}
+      title={opts.label}
       data-flip-id={opts.flipId}
       onClick={
         opts.onSelect
@@ -346,7 +347,7 @@ export default function Sidebar({
       }
     >
       <span className={`rl-target${opts.anim ? ` rl-anim anim-${opts.anim}` : ''}`}>{opts.icon}</span>
-      <span className={`rl-label${opts.label.trim().includes(' ') ? ' is-wrap' : ''}`}>{opts.label}</span>
+      <span className="rl-label">{opts.label}</span>
     </a>
   )
 
@@ -441,7 +442,7 @@ export default function Sidebar({
               onClick={toggleApps}
             >
               <span className="rl-target">{appsAnchor ? <AppsFillIcon /> : <AppsIcon />}</span>
-              <span className="rl-label is-wrap">Mais Apps</span>
+              <span className="rl-label">Mais Apps</span>
             </button>
           </nav>
 
