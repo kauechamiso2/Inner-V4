@@ -31,14 +31,23 @@ import {
 } from 'lucide-react'
 import {
   ChatDotsIcon,
+  ChatDotsFillIcon,
   FileTextIcon,
+  FileTextFillIcon,
   GlobeIcon,
+  GlobeFillIcon,
   ImageIcon,
+  ImageFillIcon,
   PresentationChartIcon,
+  PresentationChartFillIcon,
   PromptsPillarIcon,
+  PromptsPillarFillIcon,
   SlidesIcon,
+  SlidesFillIcon,
   SpeakerHighIcon,
+  SpeakerHighFillIcon,
   VideoCameraIcon,
+  VideoCameraFillIcon,
 } from './SidebarIcons'
 import type { AppView } from './pillars'
 
@@ -130,6 +139,20 @@ export const CHAT_APP: AppTool = {
 export const APP_BY_ID = Object.fromEntries(
   [...APPS, CHAT_APP].map((a) => [a.id, a]),
 ) as Record<string, AppTool>
+
+/* Variante "filled" de cada pilar para o estado selecionado no rail.
+   Só os pilares existentes têm (os apps novos usam o ícone outline sempre). */
+export const APP_FILL_ICON: Record<string, ReactNode> = {
+  imagens: <ImageFillIcon />,
+  videos: <VideoCameraFillIcon />,
+  audio: <SpeakerHighFillIcon />,
+  reunioes: <PresentationChartFillIcon />,
+  documentos: <FileTextFillIcon />,
+  apresentacoes: <SlidesFillIcon />,
+  sites: <GlobeFillIcon />,
+  prompts: <PromptsPillarFillIcon />,
+  chat: <ChatDotsFillIcon size={22} />,
+}
 
 /* Lista completa do Mais Apps (todos os apps + Chat por último). */
 export const FULL_APPS: AppTool[] = [...APPS, CHAT_APP]

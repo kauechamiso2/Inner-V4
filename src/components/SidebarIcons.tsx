@@ -197,6 +197,76 @@ export function BooksFillIcon({ size = 20 }: IconSize) {
   )
 }
 
+/* ---- Variantes filled dos pilares (estado selecionado no rail) ----
+   currentColor → herdam o tom forte de .rl-item.is-active. Geometria Phosphor
+   "fill" (viewBox 256) ou silhueta sólida equivalente ao ícone outline. */
+
+export function ImageFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V158.75l-26.07-26.06a16,16,0,0,0-22.63,0l-20,20-44-44a16,16,0,0,0-22.62,0L40,149.37V56ZM156,88a12,12,0,1,1,12,12A12,12,0,0,1,156,88Z" />
+    </svg>
+  )
+}
+
+export function VideoCameraFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M251.77,73a8,8,0,0,0-8.21.39L208,97.05V72a16,16,0,0,0-16-16H32A16,16,0,0,0,16,72V184a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V159l35.56,23.71A8,8,0,0,0,248,184a8,8,0,0,0,8-8V80A8,8,0,0,0,251.77,73Z" />
+    </svg>
+  )
+}
+
+export function SpeakerHighFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM208,128a39.93,39.93,0,0,1-10,26.46,8,8,0,0,1-12-10.58,24,24,0,0,0,0-31.72,8,8,0,1,1,12-10.58A40,40,0,0,1,208,128Zm40,0a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z" />
+    </svg>
+  )
+}
+
+export function FileTextFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,176H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm-8-56V44l44,44Z" />
+    </svg>
+  )
+}
+
+export function GlobeFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M128,24A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24ZM101.63,168h52.74C149,186.34,140,202.87,128,215.89,116,202.87,107,186.34,101.63,168ZM98,152a145.72,145.72,0,0,1,0-48h60a145.72,145.72,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.79a161.79,161.79,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154.37,88H101.63C107,69.66,116,53.13,128,40.11,140,53.13,149,69.66,154.37,88Zm19.84,16h38.46a88.15,88.15,0,0,1,0,48H174.21a161.79,161.79,0,0,0,0-48Zm32.16-16H170.94a142.39,142.39,0,0,0-20.26-45A88.37,88.37,0,0,1,206.37,88ZM105.32,43A142.39,142.39,0,0,0,85.06,88H49.63A88.37,88.37,0,0,1,105.32,43ZM49.63,168H85.06a142.39,142.39,0,0,0,20.26,45A88.37,88.37,0,0,1,49.63,168Zm101.05,45a142.39,142.39,0,0,0,20.26-45h35.43A88.37,88.37,0,0,1,150.68,213Z" />
+    </svg>
+  )
+}
+
+export function PresentationChartFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" fillRule="evenodd" aria-hidden="true">
+      <path d="M224,48H136V32a8,8,0,0,0-16,0V48H32a8,8,0,0,0-8,8V168a8,8,0,0,0,8,8H74.3L55.4,201.6a8,8,0,0,0,12.8,9.6L92,180h72l23.8,31.2a8,8,0,0,0,12.8-9.6L181.7,176H224a8,8,0,0,0,8-8V56A8,8,0,0,0,224,48ZM104,144a8,8,0,0,1-16,0V120a8,8,0,0,1,16,0Zm32,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm32,0a8,8,0,0,1-16,0V88a8,8,0,0,1,16,0Z" />
+    </svg>
+  )
+}
+
+export function SlidesFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="currentColor" fillRule="evenodd" aria-hidden="true">
+      <path d="M3.7,3.6H14.3a1.6,1.6,0,0,1,1.6,1.6V12.8a1.6,1.6,0,0,1-1.6,1.6H3.7a1.6,1.6,0,0,1-1.6-1.6V5.2A1.6,1.6,0,0,1,3.7,3.6ZM5.4,9.1a0.8,0.8,0,0,0-0.8,0.8V11.2a0.8,0.8,0,0,0,0.8,0.8H9a0.8,0.8,0,0,0,0.8-0.8V9.9A0.8,0.8,0,0,0,9,9.1Z" />
+    </svg>
+  )
+}
+
+export function PromptsPillarFillIcon({ size = 20 }: IconSize) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M10.5664 1.9c.345 0 .625.28.625.625s-.28.625-.625.625H9.2V12.85h1.3664c.345 0 .625.28.625.625s-.28.625-.625.625h-4c-.345 0-.625-.28-.625-.625s.28-.625.625-.625H7.8V3.15H6.5664c-.345 0-.625-.28-.625-.625s.28-.625.625-.625Z" />
+      <path d="M.4667 10.6667V5.3333A1.5333 1.5333 0 0 1 2 3.8h1.9a.6667.6667 0 0 1 0 1.3333H2a.1.1 0 0 0-.1.1v5.3334a.1.1 0 0 0 .1.1h1.9a.6667.6667 0 0 1 0 1.3333H2A1.5333 1.5333 0 0 1 .4667 10.6667Z" />
+      <path d="M15.3333 10.6667V5.3333A1.5333 1.5333 0 0 0 13.8 3.8h-1.9a.6667.6667 0 0 0 0 1.3333h1.9a.1.1 0 0 1 .1.1v5.3334a.1.1 0 0 1-.1.1h-1.9a.6667.6667 0 0 0 0 1.3333h1.9A1.5333 1.5333 0 0 0 15.3333 10.6667Z" />
+    </svg>
+  )
+}
+
 // Ícones do design (Phosphor), inline para permitir animação por sub-forma.
 // Path data copiado exatamente dos SVGs exportados do Figma — não editar à mão.
 

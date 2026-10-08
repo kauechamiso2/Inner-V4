@@ -12,9 +12,10 @@
 }
 
 .ip-container {
-  max-width: 920px;
+  --ip-gutter: 40px;
+  width: 100%;
   margin: 0 auto;
-  padding: 52px 32px 48px;
+  padding: 52px var(--ip-gutter) 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,7 +44,7 @@
   border: 1px solid var(--sb-border);
   border-radius: 999px;
   box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.04);
-  margin-bottom: 20px;
+  margin-bottom: 44px;
   transition: background-color 420ms ease;
 }
 
@@ -73,20 +74,158 @@
   color: var(--text-faint);
 }
 
-/* ---------- Categorias ---------- */
+/* ---------- Seções (Ferramentas de Imagem / Explorar) ---------- */
 
-.ip-categories {
+.ip-section {
+  width: 100%;
+}
+
+.ip-section + .ip-section {
+  margin-top: 44px;
+}
+
+.ip-section-head {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ip-section-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text-strong);
+}
+
+/* ---------- Carrossel de ferramentas (blueprints) ---------- */
+
+.ip-rail-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* o trilho sangra até as bordas da área (sidebar/histórico à esquerda, tela à direita) */
+.ip-rail {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  margin: 0 calc(-1 * var(--ip-gutter));
+  padding: 2px var(--ip-gutter) 6px;
+  scroll-padding-inline: var(--ip-gutter);
+  scroll-snap-type: x proximity;
+}
+
+.ip-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* cards de ferramenta dentro do trilho horizontal — formato landscape */
+.ip-rail .tool-card {
+  flex: 0 0 304px;
+  width: 304px;
+  scroll-snap-align: start;
+}
+
+/* setas de navegação — aparecem no hover do trilho */
+.ip-rail-nav {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  margin-bottom: 40px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  color: var(--text-strong);
+  box-shadow: 0px 6px 18px -4px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-50%) scale(0.92);
+  transition:
+    opacity 180ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 150ms ease;
+  z-index: 2;
+}
+
+.ip-rail-nav.is-prev {
+  left: -10px;
+}
+
+.ip-rail-nav.is-next {
+  right: -10px;
+}
+
+.ip-rail-wrap:hover .ip-rail-nav {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+.ip-rail-nav:hover {
+  background: var(--ctl-bg-hover);
+}
+
+.ip-rail-nav.is-hidden {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* ---------- Filtros (Explorar) — apenas modelos ---------- */
+
+.ip-models {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ---------- Grid orgânico (Pinterest) ---------- */
+
+.ip-masonry {
+  columns: 400px;
+  column-gap: 20px;
+  margin-top: 24px;
+}
+
+.ip-masonry-tile {
+  break-inside: avoid;
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  background: var(--thumb-ph);
+  animation: masonry-in 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 22ms);
+  transition: background-color 420ms ease;
+}
+
+@keyframes masonry-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-masonry-tile {
+    animation: none;
+  }
 }
 
 .ip-pill {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   height: 34px;
   padding: 0 14px;
   border: 0;
@@ -101,6 +240,17 @@
   transition: background-color 150ms ease, color 150ms ease;
 }
 
+/* pílulas de modelo — mesmo formato, visual um pouco mais sutil */
+.ip-pill.is-model {
+  height: 32px;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.ip-pill.is-model.is-active {
+  color: var(--text-strong);
+}
+
 .ip-pill:hover {
   background: var(--hover-04);
 }
@@ -111,18 +261,11 @@
   font-weight: 500;
 }
 
-/* ---------- Grid de cards ---------- */
-
-.ip-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px 28px;
-  width: 100%;
-}
+/* ---------- Cards de ferramenta ---------- */
 
 .tool-card {
   position: relative;
-  height: 300px;
+  height: 224px;
   border-radius: 14px;
   background: var(--card-surface);
   overflow: hidden;
@@ -134,19 +277,19 @@
 
 .tool-card-header {
   position: absolute;
-  top: 24px;
-  left: 24px;
-  right: 24px;
+  top: 18px;
+  left: 20px;
+  right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .tool-card-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 20px;
+  line-height: 19px;
   color: var(--text-strong);
 }
 
@@ -164,14 +307,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 146px;
+  height: 126px;
   display: flex;
   justify-content: center;
 }
 
 .tool-card-art img {
-  width: 288px;
-  height: 146px;
+  width: 248px;
+  height: 126px;
   max-width: none;
   object-fit: contain;
   transform: translateY(0) scale(1) rotate(0deg);
@@ -248,29 +391,29 @@
 }
 
 .sk-title {
-  top: 24px;
-  left: 24px;
+  top: 18px;
+  left: 20px;
   width: 55%;
-  height: 16px;
+  height: 15px;
 }
 
 .sk-desc {
-  top: 50px;
-  left: 24px;
+  top: 42px;
+  left: 20px;
   width: 80%;
-  height: 10px;
+  height: 9px;
 }
 
 .sk-desc.is-short {
-  top: 66px;
+  top: 57px;
   width: 60%;
 }
 
 .sk-art {
   left: 50%;
   bottom: 0;
-  width: 162px;
-  height: 130px;
+  width: 160px;
+  height: 112px;
   transform: translateX(-50%);
   border-radius: 10px 10px 0 0;
 }
@@ -309,8 +452,13 @@
   .tool-card-art img,
   .sk-line::after,
   .sk-art::after,
+  .ip-rail-nav,
   .ip-container {
     animation: none !important;
     transition: none !important;
+  }
+
+  .ip-rail {
+    scroll-behavior: auto;
   }
 }

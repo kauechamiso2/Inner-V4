@@ -34,7 +34,7 @@ import PillarsMenu from './PillarsMenu'
 import ProjectsMenu from './ProjectsMenu'
 import AppsGallery from './AppsGallery'
 import ProfileMenu from './ProfileMenu'
-import { APP_BY_ID, REDUCED_APPS, FULL_APPS } from './apps'
+import { APP_BY_ID, APP_FILL_ICON, REDUCED_APPS, FULL_APPS } from './apps'
 import type { AppAnim } from './apps'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
@@ -412,15 +412,18 @@ export default function Sidebar({
               const t = APP_BY_ID[id]
               if (!t) return null
               const isChat = t.action === 'chat'
+              const isOn = isChat
+                ? activeView === 'chat' && chatMode === 'chat'
+                : t.view
+                  ? activeView === t.view
+                  : false
+              /* pilar selecionado → ícone filled (herda o tom forte do rail) */
+              const fillIcon = APP_FILL_ICON[id]
               return rlItem({
                 id,
                 label: t.shortLabel ?? t.label,
-                icon: t.icon,
-                active: isChat
-                  ? activeView === 'chat' && chatMode === 'chat'
-                  : t.view
-                    ? activeView === t.view
-                    : false,
+                icon: isOn && fillIcon ? fillIcon : t.icon,
+                active: isOn,
                 onSelect: isChat
                   ? () => onOpenChatMode('chat')
                   : t.view
