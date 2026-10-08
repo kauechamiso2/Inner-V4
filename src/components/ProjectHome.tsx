@@ -10,6 +10,7 @@ import TasksModal from './TasksModal'
 import { DEFAULT_PROJECT_CONTENT, PROJECT_CONTENT } from './projectContent'
 import type { ProjChat } from './projectContent'
 import { ACTIVE_TASKS, INACTIVE_TASKS } from './tasks'
+import type { ChosenAgent } from './agents'
 
 type SideItem = { id: string; icon: ReactNode; label: string; sub?: string; action: string }
 
@@ -37,6 +38,7 @@ export default function ProjectHome({
   pinned = false,
   onTogglePin,
   onBack,
+  agent = null,
 }: {
   name: string
   emoji?: string
@@ -45,6 +47,8 @@ export default function ProjectHome({
   pinned?: boolean
   onTogglePin?: () => void
   onBack: () => void
+  /* agente escolhido no onboarding — herdado no input do projeto */
+  agent?: ChosenAgent | null
 }) {
   const content = PROJECT_CONTENT[projectId] ?? DEFAULT_PROJECT_CONTENT
   const projectTasks = [...ACTIVE_TASKS, ...INACTIVE_TASKS].filter(
@@ -119,6 +123,7 @@ export default function ProjectHome({
             onModeChange={setMode}
             placeholder={`Conversar em ${name}`}
             excludeProjects
+            agent={agent}
           />
 
           <div className="ph-lists">

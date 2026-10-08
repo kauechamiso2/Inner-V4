@@ -265,7 +265,7 @@ export default function App() {
       ) : view === 'library' ? (
         <LibraryPage key="library" />
       ) : view === 'projetos' ? (
-        <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} />
+        <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} agent={chosenAgent} />
       ) : view === 'tarefas' ? (
         <TarefasPage key="tarefas" onOpenTask={openTaskDrawer} />
       ) : view === 'sites' ? (

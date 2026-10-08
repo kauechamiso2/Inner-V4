@@ -6,6 +6,7 @@ import './projects-page.css'
 import searchIcon from '../assets/search-light.svg'
 import { Pin } from 'lucide-react'
 import ProjectHome from './ProjectHome'
+import type { ChosenAgent } from './agents'
 
 type Collection = {
   id: string
@@ -45,9 +46,12 @@ const normalize = (s: string) =>
 export default function ProjectsPage({
   isPinned,
   togglePin,
+  agent = null,
 }: {
   isPinned: (kind: 'chat' | 'project', id: string) => boolean
   togglePin: (kind: 'chat' | 'project', id: string) => void
+  /* agente escolhido — herdado no input do detalhe do projeto */
+  agent?: ChosenAgent | null
 }) {
   const [openCollection, setOpenCollection] = useState<string | null>(null)
   const [query, setQuery] = useState('')
@@ -65,6 +69,7 @@ export default function ProjectsPage({
         pinned={isPinned('project', projectId)}
         onTogglePin={() => togglePin('project', projectId)}
         onBack={() => setOpenCollection(null)}
+        agent={agent}
       />
     )
   }
