@@ -48,6 +48,7 @@ export default function ChatComposer({
   onClearProject,
   agent = null,
   intro = false,
+  showTabs = true,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -65,6 +66,8 @@ export default function ChatComposer({
   agent?: ChosenAgent | null
   /* destaque único de "personalização" ao cair na tela */
   intro?: boolean
+  /* abas Agente/Chat — ocultadas no redesign (só o input) */
+  showTabs?: boolean
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
@@ -226,6 +229,7 @@ export default function ChatComposer({
 
   return (
     <div className="chat-input-wrap">
+      {showTabs && (
       <div className="chat-tabs" role="tablist" aria-label="Modo do input">
         <button
           type="button"
@@ -265,6 +269,7 @@ export default function ChatComposer({
           )}
         </button>
       </div>
+      )}
 
       <div className="chat-input-card">
         {attachments.length > 0 && (

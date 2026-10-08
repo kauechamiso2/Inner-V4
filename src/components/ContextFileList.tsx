@@ -16,6 +16,8 @@ import fText from '../assets/library/file-text.svg'
 import fExcel from '../assets/library/excel.svg'
 import fPpt from '../assets/library/ppt.svg'
 
+import type { Attachment } from './MentionMenu'
+
 export type FileType = 'pdf' | 'docx' | 'xlsx' | 'pptx' | 'txt' | 'png' | 'url' | 'nota'
 export type DetailFile = { id: string; name: string; type: FileType; thumb?: string }
 export type Section = { id: string; title: string; color: string; files: DetailFile[] }
@@ -27,6 +29,29 @@ const TYPE_META: Record<string, { icon: string; color: string }> = {
   txt: { icon: fText, color: '#3E63C4' },
   xlsx: { icon: fExcel, color: '#1F7A4D' },
   pptx: { icon: fPpt, color: '#C15A2B' },
+}
+
+const TYPE_LABEL: Record<FileType, string> = {
+  pdf: 'PDF',
+  docx: 'Documento',
+  txt: 'Texto',
+  xlsx: 'Planilha',
+  pptx: 'Apresentação',
+  png: 'Imagem',
+  url: 'Link',
+  nota: 'Nota',
+}
+
+/* mapeia um arquivo do contexto para um anexo do input (chip), reaproveitando
+   a mesma iconografia — usado ao citar um arquivo específico de um projeto. */
+export function fileAttachment(file: DetailFile): Attachment {
+  if (file.type === 'png' && file.thumb) {
+    return { kind: 'image', name: file.name, thumb: file.thumb }
+  }
+  if (file.type === 'url') return { kind: 'file', name: file.name, fileType: 'Link', emoji: '🔗' }
+  if (file.type === 'nota') return { kind: 'file', name: file.name, fileType: 'Nota', emoji: '📝' }
+  const meta = TYPE_META[file.type] ?? TYPE_META.docx
+  return { kind: 'file', name: file.name, fileType: TYPE_LABEL[file.type], img: meta.icon, color: meta.color }
 }
 
 const SHOW_LIMIT = 5

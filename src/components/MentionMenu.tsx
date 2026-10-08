@@ -19,6 +19,11 @@ import {
 } from './SidebarIcons'
 import { FILES, entryAttachment } from './libraryEntries'
 import { PROJECTS } from './projects'
+import type { Project } from './projects'
+import { PROJECT_CONTENT } from './projectContent'
+import { fileAttachment } from './ContextFileList'
+import type { DetailFile } from './ContextFileList'
+import ProjectFilesSubmenu from './ProjectFilesSubmenu'
 import { KNOWLEDGE_BASES } from './knowledgeBases'
 import gmail from '../assets/integrations/gmail.svg'
 import googleCalendar from '../assets/integrations/google-calendar.svg'
@@ -53,6 +58,10 @@ export type MentionItem = {
   /* projeto: ao selecionar, também ativa o contexto do projeto (gradiente,
      saudação e placeholder), como ao escolher um projeto fixado na sidebar */
   project?: { id: string; name: string; emoji?: string; color?: string }
+  /* sub-rótulo (ex.: projeto ao qual um arquivo do contexto pertence) */
+  sub?: string
+  /* projeto cujos arquivos abrem em cascata ao passar o mouse na linha */
+  projectFiles?: Project
 }
 
 export type Attachment = {
@@ -281,7 +290,7 @@ export default function MentionMenu({
       }))
       .filter((s) => s.items.length > 0)
 
-    /* busca por projetos (citação @Nome + contexto do projeto) */
+    /* busca por projetos (citação @Nome) e pelo conteúdo do contexto deles */
     if (!excludeProjects) {
       const projItems: MentionItem[] = PROJECTS.filter((p) => normalize(p.name).includes(q)).map(
         (p) => ({
@@ -290,9 +299,47 @@ export default function MentionMenu({
           icon: <FolderSimpleIcon />,
           citation: p.name,
           project: { id: p.id, name: p.name, emoji: p.emoji, color: p.color },
+          projectFiles: p,
         }),
       )
       if (projItems.length > 0) base.push({ label: 'Projetos', items: projItems })
+
+      /* arquivos e seções dentro do contexto dos projetos (anexo + referência) */
+      const fileMention = (p: Project, f: DetailFile): MentionItem => {
+        const att = fileAttachment(f)
+        return {
+          id: `ctx-${p.id}-${f.id}`,
+          label: f.name,
+          sub: p.name,
+          ...(att.emoji
+            ? { icon: <span className="mm-emoji">{att.emoji}</span> }
+            : { img: att.thumb ?? att.img }),
+          attachment: att,
+        }
+      }
+      const ctxItems: MentionItem[] = []
+      for (const p of PROJECTS) {
+        const c = PROJECT_CONTENT[p.id]
+        if (!c) continue
+        for (const sec of c.contextSections) {
+          if (normalize(sec.title).includes(q)) {
+            ctxItems.push({
+              id: `ctx-${p.id}-sec-${sec.id}`,
+              label: sec.title,
+              sub: p.name,
+              icon: <FolderSimpleIcon />,
+              attachment: { kind: 'collection', name: sec.title, color: sec.color },
+            })
+          }
+          for (const f of sec.files) {
+            if (normalize(f.name).includes(q)) ctxItems.push(fileMention(p, f))
+          }
+        }
+        for (const f of c.contextLoose) {
+          if (normalize(f.name).includes(q)) ctxItems.push(fileMention(p, f))
+        }
+      }
+      if (ctxItems.length > 0) base.push({ label: 'Em projetos', items: ctxItems })
     }
 
     /* busca pelas bases de conhecimento */
@@ -321,7 +368,11 @@ export default function MentionMenu({
   const [active, setActive] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
   const [submenuPos, setSubmenuPos] = useState<{ left: number; top: number } | null>(null)
-  const [submenuKind, setSubmenuKind] = useState<'arquivos' | 'colecoes' | 'projetos'>('arquivos')
+  const [submenuKind, setSubmenuKind] = useState<
+    'arquivos' | 'colecoes' | 'projetos' | 'projeto-files'
+  >('arquivos')
+  /* projeto cujo contexto (arquivos) abre em cascata, a partir de um resultado */
+  const [submenuProject, setSubmenuProject] = useState<Project | null>(null)
   const submenuOpen = submenuPos !== null
   const submenuTimer = useRef<number | undefined>(undefined)
 
@@ -339,6 +390,18 @@ export default function MentionMenu({
   const scheduleCloseSubmenu = () => {
     window.clearTimeout(submenuTimer.current)
     submenuTimer.current = window.setTimeout(() => setSubmenuPos(null), 160)
+  }
+  /* cascata com os arquivos do contexto de um projeto específico */
+  const openProjectFiles = (rowEl: HTMLElement, p: Project) => {
+    window.clearTimeout(submenuTimer.current)
+    setSubmenuKind('projeto-files')
+    setSubmenuProject(p)
+    const r = (menuRef.current ?? rowEl).getBoundingClientRect()
+    const rowTop = rowEl.getBoundingClientRect().top
+    const W = 282
+    const left = r.right + 8 + W < window.innerWidth ? r.right + 8 : r.left - 8 - W
+    const top = Math.max(12, Math.min(rowTop - 6, window.innerHeight - 380))
+    setSubmenuPos({ left, top })
   }
 
   useEffect(() => setActive(0), [query])
@@ -443,6 +506,48 @@ export default function MentionMenu({
                   </button>
                 )
               }
+              if (item.projectFiles) {
+                const pf = item.projectFiles
+                const open =
+                  submenuOpen && submenuKind === 'projeto-files' && submenuProject?.id === pf.id
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="option"
+                    aria-selected={idx === active}
+                    aria-haspopup="menu"
+                    aria-expanded={open}
+                    className={`mm-row${idx === active ? ' is-active' : ''}${open ? ' is-sub-open' : ''}`}
+                    onMouseEnter={(e) => {
+                      setActive(idx)
+                      openProjectFiles(e.currentTarget, pf)
+                    }}
+                    onMouseLeave={scheduleCloseSubmenu}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      onSelect(item)
+                    }}
+                  >
+                    <span className="mm-icon">{item.icon}</span>
+                    <span className="mm-text">
+                      <span className="mm-label">{item.label}</span>
+                      {item.sub && <span className="mm-sub">{item.sub}</span>}
+                    </span>
+                    <span className="mm-chevron" aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path
+                          d="M4.5 2.5L8 6l-3.5 3.5"
+                          stroke="currentColor"
+                          strokeWidth="1.3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </button>
+                )
+              }
               return (
                 <button
                   key={item.id}
@@ -460,7 +565,10 @@ export default function MentionMenu({
                   <span className={`mm-icon${item.mono ? ' is-mono' : ''}`}>
                     {item.img ? <img src={item.img} alt="" loading="lazy" /> : item.icon}
                   </span>
-                  <span className="mm-label">{item.label}</span>
+                  <span className="mm-text">
+                    <span className="mm-label">{item.label}</span>
+                    {item.sub && <span className="mm-sub">{item.sub}</span>}
+                  </span>
                   {mode === 'chat' && item.agentOnly && <span className="mm-agent">Agent</span>}
                 </button>
               )
@@ -477,7 +585,11 @@ export default function MentionMenu({
             onMouseEnter={() => window.clearTimeout(submenuTimer.current)}
             onMouseLeave={scheduleCloseSubmenu}
           >
-            {submenuKind === 'projetos' ? (
+            {submenuKind === 'projeto-files' ? (
+              submenuProject ? (
+                <ProjectFilesSubmenu project={submenuProject} onSelect={onSelect} />
+              ) : null
+            ) : submenuKind === 'projetos' ? (
               <ProjetosSubmenu onSelect={onSelect} />
             ) : (
               <BibliotecaSubmenu kind={submenuKind} onSelect={onSelect} />

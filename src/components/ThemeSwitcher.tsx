@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import './theme-switcher.css'
 import type { SidebarLayout } from './pillars'
+import type { ProtoVersion } from '../App'
+
+/* Versões do protótipo (selecionáveis no topo do menu). */
+const VERSIONS: { id: ProtoVersion; badge: string; name: string; hint: string }[] = [
+  { id: 'v1', badge: '1', name: 'Padrão', hint: 'Input enxuto · Mais Apps reduzido' },
+  { id: 'v2', badge: '2', name: 'Mais Apps', hint: 'Input enxuto · todos os apps' },
+  { id: 'v3', badge: '3', name: 'Input chat/agent', hint: 'Input com abas · todos os apps' },
+]
 
 /* O rail (antiga "E") agora é a diagramação A/padrão; as demais seguem após. */
 const LAYOUTS: { id: SidebarLayout; badge: string; name: string; hint: string }[] = [
@@ -30,6 +38,8 @@ type Props = {
   onLayoutChange: (layout: SidebarLayout) => void
   coachOpen: boolean
   onCoachToggle: (open: boolean) => void
+  version: ProtoVersion
+  onVersionChange: (v: ProtoVersion) => void
 }
 
 const DARK_KEY = 'inner-v4-dark'
@@ -39,7 +49,14 @@ function applyDark(on: boolean) {
   else delete document.documentElement.dataset.dark
 }
 
-export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoachToggle }: Props) {
+export default function ThemeSwitcher({
+  layout,
+  onLayoutChange,
+  coachOpen,
+  onCoachToggle,
+  version,
+  onVersionChange,
+}: Props) {
   const [open, setOpen] = useState(false)
   const [dark, setDark] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -93,7 +110,26 @@ export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoa
     <div className="theme-switcher" ref={rootRef}>
       {open && (
         <div className="theme-pop" role="menu" aria-label="Preferências">
-          <div className="theme-pop-header">Diagramação</div>
+          <div className="theme-pop-header">Versão</div>
+          {VERSIONS.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={version === v.id}
+              className={`theme-option${version === v.id ? ' is-active' : ''}`}
+              onClick={() => onVersionChange(v.id)}
+            >
+              <span className="layout-badge">{v.badge}</span>
+              <span className="theme-name">
+                {v.name}
+                <span className="theme-hint">{v.hint}</span>
+              </span>
+              {version === v.id && <Check />}
+            </button>
+          ))}
+
+          <div className="theme-pop-header is-section">Diagramação</div>
           {LAYOUTS.map((l) => (
             <button
               key={l.id}
@@ -128,6 +164,7 @@ export default function ThemeSwitcher({ layout, onLayoutChange, coachOpen, onCoa
               <span className="mini-switch-knob" />
             </span>
           </button>
+
         </div>
       )}
 

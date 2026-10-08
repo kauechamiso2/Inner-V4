@@ -30,6 +30,7 @@ import {
   UserRoundCheck,
 } from 'lucide-react'
 import {
+  ChatDotsIcon,
   FileTextIcon,
   GlobeIcon,
   ImageIcon,
@@ -58,10 +59,14 @@ export type AppAnim =
 export type AppTool = {
   id: string
   label: string
+  /* rótulo curto quando fixado no rail (ex.: "Chat" em vez de "Chat com Modelos") */
+  shortLabel?: string
   icon: ReactNode
   anim: AppAnim
   /* quando definido, o app navega para essa view; os novos ficam sem ação */
   view?: AppView
+  /* ação especial (ex.: 'chat' abre o modo chat em vez de navegar por view) */
+  action?: 'chat'
 }
 
 const lu = (Icon: typeof PenLine) => <Icon size={22} strokeWidth={1.7} />
@@ -110,4 +115,38 @@ export const APPS: AppTool[] = [
   { id: 'motivador', label: 'Motivador', icon: lu(Flame), anim: 'flicker' },
 ]
 
-export const APP_BY_ID = Object.fromEntries(APPS.map((a) => [a.id, a])) as Record<string, AppTool>
+/* Entrada "Chat" — vive dentro do Mais Apps (por último) e é fixável no rail.
+   Na galeria aparece como "Chat com Modelos"; fixado no rail, vira só "Chat". */
+export const CHAT_APP: AppTool = {
+  id: 'chat',
+  label: 'Chat com Modelos',
+  shortLabel: 'Chat',
+  icon: <ChatDotsIcon size={22} />,
+  anim: 'wiggle',
+  action: 'chat',
+}
+
+/* inclui o Chat para que fixar/resolver pelo id funcione no rail e na galeria */
+export const APP_BY_ID = Object.fromEntries(
+  [...APPS, CHAT_APP].map((a) => [a.id, a]),
+) as Record<string, AppTool>
+
+/* Lista completa do Mais Apps (todos os apps + Chat por último). */
+export const FULL_APPS: AppTool[] = [...APPS, CHAT_APP]
+
+/* Variação reduzida (versão "Padrão"): os 8 pilares + Chat por último,
+   sem os "apps novos". */
+const REDUCED_PILLAR_IDS = [
+  'imagens',
+  'videos',
+  'audio',
+  'reunioes',
+  'documentos',
+  'apresentacoes',
+  'sites',
+  'prompts',
+]
+export const REDUCED_APPS: AppTool[] = [
+  ...REDUCED_PILLAR_IDS.map((id) => APP_BY_ID[id]).filter(Boolean),
+  CHAT_APP,
+]

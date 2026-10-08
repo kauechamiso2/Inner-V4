@@ -205,6 +205,12 @@
   background: var(--hover-07);
 }
 
+/* :active explícito (maior especificidade que o bg de repouso) p/ dar
+   feedback de toque — senão o resting --hover-05 cobre o :active base */
+.history-new.is-plus:active {
+  background: var(--hover-07);
+}
+
 .history-new span {
   font-size: 14px;
   font-weight: 400;
@@ -258,38 +264,6 @@
     transition: none !important;
     transform: none !important;
   }
-}
-
-.history-action {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background-color 150ms ease;
-}
-
-.history-action:hover {
-  background: var(--hover-04);
-}
-
-.history-action:active {
-  background: var(--hover-07);
-}
-
-.history-action img {
-  width: 17px;
-  height: 17px;
-  display: block;
-}
-
-.history-action span {
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--text-strong);
-  white-space: nowrap;
 }
 
 /* Label "Histórico" + busca */

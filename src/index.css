@@ -274,7 +274,6 @@
 
 /* Logo (SVG escuro via <img>) e ícones de <img> do painel */
 :root[data-dark] .sidebar-logo,
-:root[data-dark] .history-action img,
 :root[data-dark] .history-search img {
   filter: invert(0.82);
 }

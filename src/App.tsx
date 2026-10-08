@@ -33,8 +33,15 @@ export type PinRef = { kind: PinKind; id: string }
    projeto (ícone + nome, gradiente, sem referência a projetos no @) */
 export type ActiveProject = { id: string; name: string; emoji?: string; color?: string }
 
+/* versões do protótipo (selecionáveis no menu "···"):
+   v1 = Padrão (input enxuto + Mais Apps reduzido)
+   v2 = Mais Apps (input enxuto + todos os apps)
+   v3 = Input chat/agent (input com abas + todos os apps) */
+export type ProtoVersion = 'v1' | 'v2' | 'v3'
+
 const LAYOUT_KEY = 'inner-v4-layout-v3'
 const COACH_KEY = 'inner-v4-coach-library'
+const VERSION_KEY = 'inner-v4-version'
 
 /* Rail com nomes (antiga "E") é a diagramação padrão; as demais seguem
    disponíveis no menu de preferências. */
@@ -74,6 +81,27 @@ export default function App() {
   const [agent, setAgent] = useState<{ id: AgentId; name: string } | null>(null)
   /* destaque de "personalização" ao cair na plataforma (uma vez) */
   const [intro, setIntro] = useState(false)
+  /* versão do protótipo — default v1 (Padrão). Deriva input (abas) e Mais Apps. */
+  const [version, setVersion] = useState<ProtoVersion>(() => {
+    try {
+      const v = localStorage.getItem(VERSION_KEY)
+      if (v === 'v1' || v === 'v2' || v === 'v3') return v
+    } catch {
+      /* storage indisponível */
+    }
+    return 'v1'
+  })
+  const changeVersion = (v: ProtoVersion) => {
+    setVersion(v)
+    try {
+      localStorage.setItem(VERSION_KEY, v)
+    } catch {
+      /* storage indisponível */
+    }
+  }
+  /* só a v3 mantém as abas Agente/Chat; só a v1 usa o Mais Apps reduzido */
+  const showTabs = version === 'v3'
+  const appsReduced = version === 'v1'
   const [view, setView] = useState<AppView>('chat')
   /* última view com painel de histórico: mantém o conteúdo durante o colapso */
   const [panelView, setPanelView] = useState<PanelView>('chat')
@@ -197,6 +225,7 @@ export default function App() {
         onOpenChatMode={openChatMode}
         historyHidden={historyCollapsed}
         onToggleHistory={() => setHistoryCollapsed((c) => !c)}
+        appsReduced={appsReduced}
       />
       <HistoryPanel
         view={panelView}
@@ -220,6 +249,7 @@ export default function App() {
           onClearProject={() => setActiveProject(null)}
           agent={chosenAgent}
           intro={intro}
+          showTabs={showTabs}
         />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
@@ -252,6 +282,8 @@ export default function App() {
         onLayoutChange={changeLayout}
         coachOpen={coachOpen}
         onCoachToggle={changeCoach}
+        version={version}
+        onVersionChange={changeVersion}
       />
     </div>
     {showOnboarding && (

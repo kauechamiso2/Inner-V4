@@ -1,11 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Pin } from 'lucide-react'
 import './apps-gallery.css'
-import { APPS, APP_BY_ID } from './apps'
+import { APP_BY_ID } from './apps'
 import type { AppTool } from './apps'
 
 type Props = {
   anchor: DOMRect
+  /* lista a exibir (completa = APPS; reduzida = REDUCED_APPS no redesign) */
+  tools: AppTool[]
   pinned: string[]
   activeId: string | null
   onTogglePin: (id: string) => void
@@ -15,7 +17,7 @@ type Props = {
 
 /* Galeria "Mais Apps": grid com ferramentas fixadas + todas. Fixar pelo hover
    (ícone de pin) ou com o botão direito. */
-export default function AppsGallery({ anchor, pinned, activeId, onTogglePin, onOpen, onClose }: Props) {
+export default function AppsGallery({ anchor, tools, pinned, activeId, onTogglePin, onOpen, onClose }: Props) {
   const menuRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ top: anchor.top, left: anchor.right + 10 })
   const [closing, setClosing] = useState(false)
@@ -62,7 +64,7 @@ export default function AppsGallery({ anchor, pinned, activeId, onTogglePin, onO
         type="button"
         className={`ag-cell${activeId === tool.id ? ' is-active' : ''}`}
         onClick={() => {
-          if (tool.view) {
+          if (tool.view || tool.action) {
             onOpen(tool)
             requestClose()
           }
@@ -117,7 +119,7 @@ export default function AppsGallery({ anchor, pinned, activeId, onTogglePin, onO
           <h3 className="ag-title">Todas as ferramentas</h3>
           <p className="ag-sub">Passe o mouse e clique no pin (ou botão direito) para fixar</p>
           <div className="ag-grid">
-            {APPS.filter((tool) => !pinned.includes(tool.id)).map((tool) => (
+            {tools.filter((tool) => !pinned.includes(tool.id)).map((tool) => (
               <Cell key={tool.id} tool={tool} />
             ))}
           </div>

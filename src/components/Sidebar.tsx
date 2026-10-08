@@ -12,8 +12,6 @@ import {
   BooksFillIcon,
   BooksIcon,
   CaretRightIcon,
-  ChatDotsFillIcon,
-  ChatDotsIcon,
   DotsThreeIcon,
   FolderFillIcon,
   FolderSimpleIcon,
@@ -36,7 +34,7 @@ import PillarsMenu from './PillarsMenu'
 import ProjectsMenu from './ProjectsMenu'
 import AppsGallery from './AppsGallery'
 import ProfileMenu from './ProfileMenu'
-import { APPS, APP_BY_ID } from './apps'
+import { APP_BY_ID, REDUCED_APPS, FULL_APPS } from './apps'
 import type { AppAnim } from './apps'
 import LibraryCoachmark from './LibraryCoachmark'
 import { useFlip } from './useFlip'
@@ -108,6 +106,8 @@ type SidebarProps = {
   /* toggle do painel de histórico (ícone no topo do rail) */
   historyHidden: boolean
   onToggleHistory: () => void
+  /* versão "Padrão" do protótipo: usa o Mais Apps reduzido (pilares + Chat) */
+  appsReduced?: boolean
 }
 
 export default function Sidebar({
@@ -122,6 +122,7 @@ export default function Sidebar({
   onOpenChatMode,
   historyHidden,
   onToggleHistory,
+  appsReduced = false,
 }: SidebarProps) {
   const [scrollAnimating, setScrollAnimating] = useState(false)
   const cooldownRef = useRef(false)
@@ -150,7 +151,7 @@ export default function Sidebar({
   const toggleRailPin = (id: string) =>
     setRailPinned((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   /* "Mais Apps" fica ativo quando a view atual é um app com ação */
-  const activeApp = APPS.find((a) => a.view === activeView)
+  const activeApp = FULL_APPS.find((a) => a.view === activeView)
 
   /* Projetos é um pilar do pool, mas o clique abre o popover de projetos
      (ancorado no item), em vez de navegar */
@@ -381,16 +382,6 @@ export default function Sidebar({
                 onSelect: () => onOpenChatMode('agente'),
               })
             })()}
-            {(() => {
-              const chatOn = activeView === 'chat' && chatMode === 'chat'
-              return rlItem({
-                id: 'chatmode',
-                label: 'Chat',
-                icon: chatOn ? <ChatDotsFillIcon /> : <ChatDotsIcon />,
-                active: chatOn,
-                onSelect: () => onOpenChatMode('chat'),
-              })
-            })()}
             {rlItem({
               id: 'projetos',
               label: 'Projetos',
@@ -420,12 +411,21 @@ export default function Sidebar({
             {railPinned.map((id) => {
               const t = APP_BY_ID[id]
               if (!t) return null
+              const isChat = t.action === 'chat'
               return rlItem({
                 id,
-                label: t.label,
+                label: t.shortLabel ?? t.label,
                 icon: t.icon,
-                active: t.view ? activeView === t.view : false,
-                onSelect: t.view ? () => onNavigate(t.view as AppView) : () => {},
+                active: isChat
+                  ? activeView === 'chat' && chatMode === 'chat'
+                  : t.view
+                    ? activeView === t.view
+                    : false,
+                onSelect: isChat
+                  ? () => onOpenChatMode('chat')
+                  : t.view
+                    ? () => onNavigate(t.view as AppView)
+                    : () => {},
                 flipId: id,
                 // pilares já animam pelos sub-shapes; apps novos (ícones lucide)
                 // reaproveitam o motion inteiro do ícone usado na galeria
@@ -580,11 +580,13 @@ export default function Sidebar({
       {appsAnchor && (
         <AppsGallery
           anchor={appsAnchor}
+          tools={appsReduced ? REDUCED_APPS : FULL_APPS}
           pinned={railPinned}
           activeId={activeApp?.id ?? null}
           onTogglePin={toggleRailPin}
           onOpen={(tool) => {
-            if (tool.view) onNavigate(tool.view)
+            if (tool.action === 'chat') onOpenChatMode('chat')
+            else if (tool.view) onNavigate(tool.view)
           }}
           onClose={() => setAppsAnchor(null)}
         />

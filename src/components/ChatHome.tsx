@@ -15,6 +15,7 @@ export default function ChatHome({
   onClearProject,
   agent = null,
   intro = false,
+  showTabs = true,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -27,6 +28,8 @@ export default function ChatHome({
   agent?: ChosenAgent | null
   /* destaque único de "personalização" ao cair na tela */
   intro?: boolean
+  /* abas Agente/Chat do input — ocultadas no redesign */
+  showTabs?: boolean
 }) {
   return (
     <main
@@ -93,6 +96,7 @@ export default function ChatHome({
           onClearProject={onClearProject}
           agent={agent}
           intro={intro}
+          showTabs={showTabs}
         />
       </div>
     </main>
