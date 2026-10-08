@@ -17,7 +17,7 @@ import TaskDrawer from './components/TaskDrawer'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import Onboarding from './components/Onboarding'
 import { PILLAR_BY_ID } from './components/pillars'
-import { AGENT_BY_ID } from './components/agents'
+import { AGENT_BY_ID, ORB_ACCENT, ORB_NAME } from './components/agents'
 import type { AgentId, ChosenAgent } from './components/agents'
 import type { AppView, PanelView, PillarId, SidebarLayout } from './components/pillars'
 import type { Task } from './components/tasks'
@@ -199,16 +199,19 @@ export default function App() {
     if (!next) closeDrawer() // abrir a sidebar fecha o drawer
   }
 
-  /* resolve o personagem escolhido (foto/nome/cor) que a plataforma herda */
-  const chosenAgent: ChosenAgent | null = agent
-    ? {
-        id: agent.id,
-        img: AGENT_BY_ID[agent.id].img,
-        name: agent.name || AGENT_BY_ID[agent.id].name,
-        accent: AGENT_BY_ID[agent.id].accent,
-        banner: AGENT_BY_ID[agent.id].banner,
-      }
-    : null
+  /* resolve o agente escolhido (foto/nome/cor) que a plataforma herda.
+     'orb' = agente padrão (esfera), sem foto/banner. */
+  const chosenAgent: ChosenAgent | null = !agent
+    ? null
+    : agent.id === 'orb'
+      ? { id: 'orb', name: agent.name || ORB_NAME, accent: ORB_ACCENT, orb: true }
+      : {
+          id: agent.id,
+          img: AGENT_BY_ID[agent.id].img,
+          name: agent.name || AGENT_BY_ID[agent.id].name,
+          accent: AGENT_BY_ID[agent.id].accent,
+          banner: AGENT_BY_ID[agent.id].banner,
+        }
 
   return (
     <>

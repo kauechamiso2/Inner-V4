@@ -4,7 +4,8 @@ import { flushSync } from 'react-dom'
 import './onboarding.css'
 import bg from '../assets/onboarding-bg.webp'
 import logo from '../assets/logo.svg'
-import { AGENTS } from './agents'
+import AgentOrb from './AgentOrb'
+import { AGENTS, ORB_NAME, ORB_TILE, ORB_GLOW } from './agents'
 
 type Props = {
   /* chamado ao clicar em "Continuar" (plataforma começa a entrar) */
@@ -31,6 +32,7 @@ export default function Onboarding({ onContinue, onDone }: Props) {
   const [exiting, setExiting] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
   const choosing = selected !== null
+  const isOrb = selected === 'orb'
   const agent = AGENTS.find((a) => a.id === selected)
 
   useLayoutEffect(() => {
@@ -44,11 +46,12 @@ export default function Onboarding({ onContinue, onDone }: Props) {
   }, [])
 
   const choose = (id: string) => {
+    const orbPick = id === 'orb'
     const a = AGENTS.find((x) => x.id === id)
-    if (!a) return
+    if (!orbPick && !a) return
     const apply = () => {
       setSelected(id)
-      setName(a.name)
+      setName(orbPick ? ORB_NAME : a!.name)
     }
     const doc = document as DocVT
     if (!choosing && typeof doc.startViewTransition === 'function') {
@@ -63,10 +66,11 @@ export default function Onboarding({ onContinue, onDone }: Props) {
   }
 
   const finish = () => {
-    if (!agent || exiting) return
-    onContinue?.(agent.id, name.trim())
+    if ((!agent && !isOrb) || exiting) return
+    const id = isOrb ? 'orb' : agent!.id
+    onContinue?.(id, name.trim())
     setExiting(true)
-    window.setTimeout(() => onDone?.(agent.id, name.trim()), 600)
+    window.setTimeout(() => onDone?.(id, name.trim()), 600)
   }
 
   const rightStyle = agent
@@ -76,7 +80,14 @@ export default function Onboarding({ onContinue, onDone }: Props) {
         '--g2': agent.glow[1],
         '--g3': agent.glow[2],
       } as CSSProperties)
-    : undefined
+    : isOrb
+      ? ({
+          '--ob-tile-to': ORB_TILE,
+          '--g1': ORB_GLOW[0],
+          '--g2': ORB_GLOW[1],
+          '--g3': ORB_GLOW[2],
+        } as CSSProperties)
+      : undefined
 
   const label = name.trim() || 'Name'
 
@@ -98,7 +109,7 @@ export default function Onboarding({ onContinue, onDone }: Props) {
         <div className={`ob-card${choosing ? ' is-choosing' : ''}`}>
           <div className="ob-left">
             <div className="ob-head">
-              <h1 className="ob-title">Alguém novo chegou pra te ajudar 👋</h1>
+              <h1 className="ob-title">Conheça seu novo agente 👋</h1>
               <p className="ob-sub">
                 Diga oi pro seu novo companheiro! Daqui pra frente é vocês dois.
                 <br />
@@ -107,12 +118,24 @@ export default function Onboarding({ onContinue, onDone }: Props) {
             </div>
 
             <div className="ob-grid">
+              <button
+                type="button"
+                className={`ob-opt is-orb${isOrb ? ' is-selected' : ''}`}
+                style={{ '--i': 0 } as CSSProperties}
+                aria-pressed={isOrb}
+                aria-label="Escolher o agente padrão"
+                onClick={() => choose('orb')}
+              >
+                <span className="ob-slot ob-slot-orb">
+                  <AgentOrb size={96} />
+                </span>
+              </button>
               {AGENTS.map((a, i) => (
                 <button
                   key={a.id}
                   type="button"
                   className={`ob-opt${selected === a.id ? ' is-selected' : ''}`}
-                  style={{ '--i': i } as CSSProperties}
+                  style={{ '--i': i + 1 } as CSSProperties}
                   aria-pressed={selected === a.id}
                   aria-label={`Escolher companheiro ${i + 1}`}
                   onClick={() => choose(a.id)}
@@ -123,10 +146,16 @@ export default function Onboarding({ onContinue, onDone }: Props) {
             </div>
           </div>
 
-          {choosing && agent && (
+          {choosing && (agent || isOrb) && (
             <div className="ob-right" style={rightStyle}>
               <div className="ob-name-tile">
-                <img className="ob-name-av" src={agent.img} alt="" draggable={false} />
+                {agent ? (
+                  <img className="ob-name-av" src={agent.img} alt="" draggable={false} />
+                ) : (
+                  <span className="ob-name-av ob-name-av-orb" aria-hidden="true">
+                    <AgentOrb size={120} />
+                  </span>
+                )}
                 <div className="ob-name-field">
                   <input
                     ref={nameRef}

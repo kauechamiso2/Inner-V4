@@ -176,9 +176,12 @@
 
 /* ---------- Grade ---------- */
 .ob-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 160px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 32px;
+  /* 3 slots (160px) + 2 gaps (32px) → 3 por linha; a última linha (2) centraliza */
+  width: 544px;
   margin-top: 56px;
   view-transition-name: ob-grid;
 }
@@ -207,6 +210,19 @@
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+}
+
+/* opção da esfera (agente padrão): orb centrado sobre círculo claro */
+.ob-slot-orb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #ffffff 0%, #eceef4 100%);
+}
+
+:root[data-dark] .ob-slot-orb {
+  background: radial-gradient(circle at 50% 40%, #3f3f46 0%, #2a2a30 100%);
 }
 
 /* anel de seleção (stroke, sem sombra) */
@@ -281,6 +297,19 @@
   height: 163px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+/* esfera no card de batizar: orb centrado sobre círculo claro */
+.ob-name-av-orb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #ffffff 0%, #eceef4 100%);
+}
+
+:root[data-dark] .ob-name-av-orb {
+  background: radial-gradient(circle at 50% 40%, #3f3f46 0%, #2a2a30 100%);
 }
 
 .ob-name-field {

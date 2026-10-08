@@ -238,7 +238,7 @@ export default function ChatComposer({
           className={`chat-tab${mode === 'agente' ? ' is-active' : ''}${agent && intro ? ' is-intro' : ''}`}
           onClick={() => setMode('agente')}
         >
-          {agent ? (
+          {agent && !agent.orb ? (
             <span className="chat-tab-face" aria-hidden="true">
               <img src={agent.img} alt="" draggable={false} />
             </span>

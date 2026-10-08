@@ -441,6 +441,17 @@
   flex-shrink: 0;
 }
 
+/* FeatureSubmenu (Integrações / Prompts / Ferramentas): linhas de ação */
+.bib-row.is-feature .bib-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+}
+
+.bib-row.is-static {
+  cursor: default;
+}
+
 /* emoji de coleção nos resultados de Biblioteca do menu de @ */
 .mm-emoji {
   display: flex;

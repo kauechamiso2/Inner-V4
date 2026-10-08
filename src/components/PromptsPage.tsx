@@ -18,9 +18,9 @@ const CATEGORIES = [
   'Produto',
 ]
 
-type Prompt = { id: string; name: string; desc: string; category: string }
+export type Prompt = { id: string; name: string; desc: string; category: string }
 
-const PROMPTS: Prompt[] = [
+export const PROMPTS: Prompt[] = [
   { id: 'p1', name: 'Reduza o ruído na comunicação de vendas', desc: 'Desenvolva uma estratégia completa de gestão da informação para times de vendas, com foco em reduzir a sobrecarga, melhorar a priorização e acelerar a tomada de decisão.', category: 'Vendas' },
   { id: 'p2', name: 'Plano de conteúdo para 30 dias', desc: 'Crie um calendário editorial completo para um mês, com temas, formatos e chamadas para ação alinhados aos objetivos da campanha e à persona da marca.', category: 'Marketing' },
   { id: 'p3', name: 'Headlines que convertem', desc: 'Gere variações de títulos persuasivos para anúncios e landing pages, testando diferentes gatilhos mentais e tons de voz para maximizar a taxa de clique.', category: 'Marketing' },

@@ -3,7 +3,6 @@ import type { CSSProperties, ReactNode } from 'react'
 import { ChevronRight, Pin, Search as SearchIcon, SquarePen } from 'lucide-react'
 import './history.css'
 import magnifyingGlass from '../assets/magnifying-glass.svg'
-import folder from '../assets/library/folder.svg'
 import { COLLECTIONS as LIB_COLLECTIONS } from './libraryEntries'
 import { PROJECT_CONTENT } from './projectContent'
 import AgentOrb from './AgentOrb'
@@ -14,7 +13,9 @@ import modelSpiral from '../assets/model-spiral.svg'
 import avatarBoy from '../assets/avatar-boy.png'
 import {
   AgendadoIcon,
+  ChatDotsIcon,
   FileTextIcon,
+  FolderSimpleIcon,
   PlusIcon,
   PresentationChartIcon,
   SlidesIcon,
@@ -306,9 +307,15 @@ function ChatRow({
 }) {
   const isAgent = chat.source === 'agent'
   return (
-    <a className={`chat-row${hideIcon ? ' no-icon' : ''}`} href="#conversa">
+    <a className={`chat-row${hideIcon && !pinned ? ' no-icon' : ''}`} href="#conversa">
       <span className="chat-row-main">
-        {!hideIcon && <ChatAvatar source={chat.source} emoji={chat.emoji} />}
+        {pinned ? (
+          <span className="chat-lead-icon" aria-hidden="true">
+            <ChatDotsIcon size={16} />
+          </span>
+        ) : (
+          !hideIcon && <ChatAvatar source={chat.source} emoji={chat.emoji} />
+        )}
         <span className={`chat-row-title${isAgent ? '' : ' is-model'}`}>{chat.title}</span>
       </span>
       {isAgent && !pinned && !hideIcon && <span className="chat-chip">Agent</span>}
@@ -357,7 +364,7 @@ function ProjectRow({
               </span>
             ) : (
               <span className="proj-row-icon proj-lead-icon" aria-hidden="true">
-                <img src={folder} alt="" />
+                <FolderSimpleIcon />
               </span>
             )}
             {hasChildren && (
@@ -437,7 +444,7 @@ function PinPicker({
                   </span>
                 ) : (
                   <span className="proj-row-icon" aria-hidden="true">
-                    <img src={folder} alt="" />
+                    <FolderSimpleIcon />
                   </span>
                 )}
                 <span className="pin-pick-title">{p.name}</span>
@@ -531,7 +538,8 @@ export default function HistoryPanel({
 }: Props) {
   const config = PANEL_CONFIG[view]
   const isChat = view === 'chat'
-  /* faixa de boas-vindas: só na Home (modo agente) com personagem escolhido */
+  /* faixa de boas-vindas: só na Home (modo agente) com um agente escolhido
+     (inclui o orb/agente padrão, que mostra a esfera no lugar do busto) */
   const showGreeting = isChat && chatMode === 'agente' && !!agent
   const newLabel = isChat ? (chatMode === 'agente' ? 'Nova tarefa' : 'Novo Chat') : config.newLabel
   /* Home (agente) mostra itens do agente; Chat mostra conversas com modelos */
@@ -580,8 +588,12 @@ export default function HistoryPanel({
               className={`hp-greet${intro ? ' is-intro' : ''}`}
               style={{ '--accent': agent.accent } as CSSProperties}
             >
-              <span className="hp-greet-av">
-                <img src={agent.banner ?? agent.img} alt="" draggable={false} />
+              <span className={`hp-greet-av${agent.orb ? ' is-orb' : ''}`}>
+                {agent.orb ? (
+                  <AgentOrb size={26} />
+                ) : (
+                  <img src={agent.banner ?? agent.img} alt="" draggable={false} />
+                )}
               </span>
               <span className="hp-greet-text">
                 <span className="hp-greet-name">{agent.name}</span>
@@ -644,7 +656,8 @@ export default function HistoryPanel({
                       <ProjectRow
                         key={`pin-${p.id}`}
                         name={pr.name}
-                        emoji={pr.emoji}
+                        /* pinados: ícone de projeto (pasta) no lugar do emoji escolhido */
+                        emoji={undefined}
                         pinned
                         selected={activeProject?.id === pr.id}
                         childChats={childChats}

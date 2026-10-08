@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
 import searchIcon from '../assets/library/search.svg'
-import folder from '../assets/library/folder.svg'
-import type { Project } from './projects'
-import { PROJECT_CONTENT } from './projectContent'
 import { fileAttachment } from './ContextFileList'
 import type { DetailFile } from './ContextFileList'
+import type { KnowledgeBase } from './knowledgeBases'
+import { FileIcon } from './ProjectFilesSubmenu'
 import type { MentionItem } from './MentionMenu'
 
 const normalize = (s: string) =>
@@ -13,72 +12,48 @@ const normalize = (s: string) =>
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
 
-/* ícone de um arquivo do contexto (reaproveita o mapeamento do anexo) */
-export function FileIcon({ file }: { file: DetailFile }) {
-  const att = fileAttachment(file)
-  if (att.thumb) {
-    return (
-      <span className="bib-icon is-thumb">
-        <img src={att.thumb} alt="" loading="lazy" />
-      </span>
-    )
-  }
-  if (att.emoji) return <span className="bib-icon is-emoji">{att.emoji}</span>
-  return (
-    <span
-      className="bib-icon"
-      style={{ background: `color-mix(in srgb, ${att.color} 14%, var(--pop-surface))` }}
-    >
-      <img src={att.img} alt="" />
-    </span>
-  )
-}
-
 type Props = {
-  project: Project
+  base: KnowledgeBase
   onSelect: (item: MentionItem) => void
 }
 
-/* Nível de arquivos de um projeto: "projeto inteiro" + arquivos do contexto
-   (por seção e soltos), com busca. Aberto em cascata a partir de um projeto. */
-export default function ProjectFilesSubmenu({ project, onSelect }: Props) {
+/* Nível de arquivos de uma base de conhecimento: "base inteira" + arquivos
+   (por seção e soltos), com busca. Aberto em cascata a partir de uma base. */
+export default function KnowledgeBaseFilesSubmenu({ base, onSelect }: Props) {
   const [query, setQuery] = useState('')
   const q = normalize(query)
 
-  const content = PROJECT_CONTENT[project.id]
-
   const sections = useMemo(
     () =>
-      (content?.contextSections ?? []).map((s) => ({
+      base.sections.map((s) => ({
         title: s.title,
         files: q ? s.files.filter((f) => normalize(f.name).includes(q)) : s.files,
       })),
-    [content, q],
+    [base, q],
   )
   const loose = useMemo(
-    () => (content?.contextLoose ?? []).filter((f) => !q || normalize(f.name).includes(q)),
-    [content, q],
+    () => base.loose.filter((f) => !q || normalize(f.name).includes(q)),
+    [base, q],
   )
   const hasAny = sections.some((s) => s.files.length > 0) || loose.length > 0
 
   const pickFile = (f: DetailFile) =>
-    onSelect({ id: `${project.id}-${f.id}`, label: f.name, attachment: fileAttachment(f) })
+    onSelect({ id: `${base.id}-${f.id}`, label: f.name, attachment: fileAttachment(f) })
 
-  const pickProject = () =>
+  const pickBase = () =>
     onSelect({
-      id: project.id,
-      label: project.name,
-      citation: project.name,
-      project: { id: project.id, name: project.name, emoji: project.emoji, color: project.color },
+      id: base.id,
+      label: base.name,
+      attachment: { kind: 'collection', name: base.name, emoji: base.emoji, color: base.color },
     })
 
   return (
-    <div className="biblioteca-submenu projetos-submenu" role="listbox" aria-label={project.name}>
+    <div className="biblioteca-submenu" role="listbox" aria-label={base.name}>
       <div className="bib-search">
         <img src={searchIcon} alt="" aria-hidden="true" />
         <input
           type="text"
-          placeholder="Buscar no contexto"
+          placeholder="Buscar na base"
           spellCheck={false}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -93,15 +68,13 @@ export default function ProjectFilesSubmenu({ project, onSelect }: Props) {
             className="bib-row"
             onMouseDown={(e) => {
               e.preventDefault()
-              pickProject()
+              pickBase()
             }}
           >
-            <span className="bib-icon is-folder">
-              <img src={folder} alt="" />
-            </span>
+            <span className="bib-icon is-emoji">{base.emoji}</span>
             <span className="bib-text">
-              <span className="bib-label">Usar o projeto inteiro</span>
-              <span className="bib-sub">{project.name}</span>
+              <span className="bib-label">Usar a base inteira</span>
+              <span className="bib-sub">{base.name}</span>
             </span>
           </button>
         )}

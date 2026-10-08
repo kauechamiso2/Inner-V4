@@ -12,8 +12,9 @@ import worldOrange from '../assets/world-orange.webp'
 import worldPurple from '../assets/world-purple.webp'
 
 /* Fonte única dos personagens (Agentes). Usada no onboarding (escolha) e na
-   plataforma, que herda a foto/nome/cor do escolhido. */
-export type AgentId = 'rock' | 'octopus' | 'orange' | 'purple'
+   plataforma, que herda a foto/nome/cor do escolhido.
+   'orb' é o agente padrão (a esfera), sem personagem/foto. */
+export type AgentId = 'orb' | 'rock' | 'octopus' | 'orange' | 'purple'
 
 export type Agent = {
   id: AgentId
@@ -35,11 +36,21 @@ export type Agent = {
 /* O que a plataforma recebe após a escolha (nome já pode estar editado). */
 export type ChosenAgent = {
   id: AgentId
-  img: string
+  /* ausente para o orb (agente padrão, sem foto) */
+  img?: string
   name: string
   accent: string
   banner?: string
+  /* agente padrão (esfera): a plataforma renderiza o orb no lugar da foto */
+  orb?: boolean
 }
+
+/* Agente padrão (esfera) — identidade neutra herdada quando o orb é escolhido. */
+export const ORB_NAME = 'Agente'
+export const ORB_ACCENT = '#6366f1'
+/* tint do card de batizar + 3 tons do glow do botão (onboarding) */
+export const ORB_TILE = '236,233,255'
+export const ORB_GLOW = ['#8b9bff', '#6366f1', '#b48bff']
 
 /* Ordem: cima-esq, cima-dir, baixo-esq, baixo-dir. */
 export const AGENTS: Agent[] = [

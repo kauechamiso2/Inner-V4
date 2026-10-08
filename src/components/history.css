@@ -123,6 +123,13 @@
   object-fit: cover;
 }
 
+/* agente padrão (orb): esfera centrada no tile em vez do busto */
+.hp-greet-av.is-orb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* texto numa linha só: nome + saudação em cinza */
 .hp-greet-text {
   flex: 1;
@@ -717,16 +724,14 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  color: var(--text-mid);
 }
 
-.proj-row-icon img {
+/* ícone de projeto (pasta) na mesma família/cor do ícone de chat pinado */
+.proj-row-icon svg {
   width: 16px;
   height: 16px;
   display: block;
-}
-
-:root[data-dark] .proj-row-icon img {
-  filter: invert(0.72);
 }
 
 /* ---------- Seção Pinados ---------- */
@@ -903,6 +908,24 @@
   height: 16px;
   flex-shrink: 0;
   color: var(--text-mid);
+}
+
+/* chats fixados: ícone de chat (bolha) à esquerda do título — mesmo wrapper
+   (20px) dos projetos pinados para alinhar título e ícone */
+.chat-lead-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--text-mid);
+}
+
+.chat-lead-icon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
 }
 
 .chat-task-icon svg {

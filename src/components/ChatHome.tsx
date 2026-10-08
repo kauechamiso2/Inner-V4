@@ -61,7 +61,7 @@ export default function ChatHome({
             </>
           ) : mode === 'agente' ? (
             <>
-              {agent ? (
+              {agent && !agent.orb ? (
                 <span
                   className={`greeting-face${intro ? ' is-intro' : ''}`}
                   style={{ '--accent': agent.accent } as CSSProperties}
@@ -79,7 +79,10 @@ export default function ChatHome({
                   </span>
                 </span>
               )}
-              <h1 className="greeting-text">Me dê uma tarefa...</h1>
+              <span className="greeting-text-col">
+                {agent && <span className="greeting-agent-name">{agent.name}</span>}
+                <h1 className="greeting-text">Me dê uma tarefa...</h1>
+              </span>
             </>
           ) : (
             <h1 className="greeting-text">Converse com modelos de IA</h1>

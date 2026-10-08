@@ -1,9 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { ChevronRight } from 'lucide-react'
 import searchIcon from '../assets/library/search.svg'
 import { FILES, entryAttachment, normalizeLib } from './libraryEntries'
 import type { LibEntry } from './libraryEntries'
 import { KNOWLEDGE_BASES } from './knowledgeBases'
 import type { KnowledgeBase } from './knowledgeBases'
+import KnowledgeBaseFilesSubmenu from './KnowledgeBaseFilesSubmenu'
 import type { MentionItem } from './MentionMenu'
 
 const FILE_LIMIT = 7
@@ -20,6 +23,27 @@ type Props = {
 export default function BibliotecaSubmenu({ onSelect, kind = 'arquivos' }: Props) {
   const [query, setQuery] = useState('')
   const [showAll, setShowAll] = useState(false)
+  /* base de conhecimento cujo conteúdo (arquivos) abre em cascata */
+  const [openBase, setOpenBase] = useState<KnowledgeBase | null>(null)
+  const [panelPos, setPanelPos] = useState<{ left: number; top: number } | null>(null)
+  const closeTimer = useRef<number | undefined>(undefined)
+
+  const openFiles = (rowEl: HTMLElement, b: KnowledgeBase) => {
+    window.clearTimeout(closeTimer.current)
+    const r = rowEl.getBoundingClientRect()
+    const W = 282
+    const left = r.right + 8 + W < window.innerWidth ? r.right + 8 : r.left - 8 - W
+    const top = Math.max(12, Math.min(r.top - 6, window.innerHeight - 380))
+    setOpenBase(b)
+    setPanelPos({ left, top })
+  }
+  const scheduleClose = () => {
+    window.clearTimeout(closeTimer.current)
+    closeTimer.current = window.setTimeout(() => {
+      setOpenBase(null)
+      setPanelPos(null)
+    }, 180)
+  }
 
   const q = normalizeLib(query)
 
@@ -54,7 +78,11 @@ export default function BibliotecaSubmenu({ onSelect, kind = 'arquivos' }: Props
                 <button
                   key={b.id}
                   type="button"
-                  className="bib-row"
+                  className={`bib-row has-drill${openBase?.id === b.id ? ' is-sub-open' : ''}`}
+                  aria-haspopup="menu"
+                  aria-expanded={openBase?.id === b.id}
+                  onMouseEnter={(e) => openFiles(e.currentTarget, b)}
+                  onMouseLeave={scheduleClose}
                   onMouseDown={(e) => {
                     e.preventDefault()
                     onSelect({
@@ -69,6 +97,9 @@ export default function BibliotecaSubmenu({ onSelect, kind = 'arquivos' }: Props
                     <span className="bib-label">{b.name}</span>
                     <span className="bib-sub">{baseCount(b)} arquivos</span>
                   </span>
+                  <span className="proj-drill" aria-hidden="true">
+                    <ChevronRight size={16} strokeWidth={2} />
+                  </span>
                 </button>
               ))}
             </div>
@@ -76,6 +107,20 @@ export default function BibliotecaSubmenu({ onSelect, kind = 'arquivos' }: Props
             <div className="bib-empty">Nenhuma base de conhecimento ainda</div>
           )}
         </div>
+
+        {openBase &&
+          panelPos &&
+          createPortal(
+            <div
+              className="mm-sub-panel"
+              style={{ left: panelPos.left, top: panelPos.top }}
+              onMouseEnter={() => window.clearTimeout(closeTimer.current)}
+              onMouseLeave={scheduleClose}
+            >
+              <KnowledgeBaseFilesSubmenu base={openBase} onSelect={onSelect} />
+            </div>,
+            document.body,
+          )}
       </div>
     )
   }

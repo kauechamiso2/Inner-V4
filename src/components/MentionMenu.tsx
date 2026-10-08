@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import './mention-menu.css'
-import { Brain } from 'lucide-react'
+import { Brain, LayoutGrid, Plug } from 'lucide-react'
 import BibliotecaSubmenu from './BibliotecaSubmenu'
 import ProjetosSubmenu from './ProjetosSubmenu'
+import FeatureSubmenu from './FeatureSubmenu'
 import {
   FileTextIcon,
   FolderSimpleIcon,
@@ -12,15 +13,15 @@ import {
   ImageIcon,
   LightningIcon,
   PresentationChartIcon,
+  PromptsPillarIcon,
   SlidesIcon,
   SpeakerHighIcon,
   UploadSimpleIcon,
   VideoCameraIcon,
 } from './SidebarIcons'
+import { PROMPTS } from './PromptsPage'
 import { FILES, entryAttachment } from './libraryEntries'
-import { PROJECTS } from './projects'
 import type { Project } from './projects'
-import { PROJECT_CONTENT } from './projectContent'
 import { fileAttachment } from './ContextFileList'
 import type { DetailFile } from './ContextFileList'
 import ProjectFilesSubmenu from './ProjectFilesSubmenu'
@@ -49,8 +50,8 @@ export type MentionItem = {
   placeholder?: string
   /* só funciona no modo Agente: em Chat, mostra badge e troca de modo ao clicar */
   agentOnly?: boolean
-  /* abre um submenu em cascata (busca + lista) — Arquivos, Coleções ou Projetos */
-  submenu?: 'arquivos' | 'colecoes' | 'projetos'
+  /* abre um submenu em cascata (busca + lista) */
+  submenu?: 'arquivos' | 'colecoes' | 'projetos' | 'integracoes' | 'prompts' | 'ferramentas'
   /* quando selecionado, entra como anexo (acima do input), não como pill */
   attachment?: Attachment
   /* projeto: entra como citação inline (@Nome) no texto do input */
@@ -78,177 +79,203 @@ export type Attachment = {
 
 type Section = { label: string; items: MentionItem[] }
 
+/* Integrações (cascata) — apps externos */
+const INTEGRATIONS: MentionItem[] = [
+  { id: 'gmail', label: 'Gmail', img: gmail, feature: true, placeholder: 'O que você quer fazer no Gmail?' },
+  {
+    id: 'google-calendar',
+    label: 'Google Calendar',
+    img: googleCalendar,
+    feature: true,
+    placeholder: 'O que você quer fazer no Google Calendar?',
+  },
+  {
+    id: 'google-drive',
+    label: 'Google Drive',
+    img: googleDrive,
+    feature: true,
+    agentOnly: true,
+    placeholder: 'O que você quer buscar no Google Drive?',
+  },
+  {
+    id: 'google-sheets',
+    label: 'Google Sheets',
+    img: googleSheets,
+    feature: true,
+    agentOnly: true,
+    placeholder: 'O que você quer fazer no Google Sheets?',
+  },
+  {
+    id: 'google-slides',
+    label: 'Google Slides',
+    img: googleSlides,
+    feature: true,
+    agentOnly: true,
+    placeholder: 'O que você quer fazer no Google Slides?',
+  },
+  { id: 'outlook', label: 'Outlook', img: outlook, feature: true, placeholder: 'O que você quer fazer no Outlook?' },
+  {
+    id: 'hubspot',
+    label: 'Hubspot',
+    img: hubspot,
+    feature: true,
+    agentOnly: true,
+    placeholder: 'O que você quer fazer no Hubspot?',
+  },
+  {
+    id: 'salesforce',
+    label: 'Salesforce',
+    img: salesforce,
+    feature: true,
+    agentOnly: true,
+    placeholder: 'O que você quer fazer no Salesforce?',
+  },
+  {
+    id: 'github',
+    label: 'Github',
+    img: github,
+    mono: true,
+    feature: true,
+    agentOnly: true,
+    placeholder: 'O que você quer fazer no Github?',
+  },
+  {
+    id: 'notion',
+    label: 'Notion',
+    img: notion,
+    mono: true,
+    feature: true,
+    agentOnly: true,
+    placeholder: 'O que você quer fazer no Notion?',
+  },
+]
+
+/* Ferramentas (cascata) — busca, tarefa agendada e os pilares de geração */
+const TOOLS: MentionItem[] = [
+  {
+    id: 'web-search',
+    label: 'Busca na Web',
+    icon: <GlobeIcon />,
+    feature: true,
+    placeholder: 'O que você quer pesquisar na web?',
+  },
+  {
+    id: 'tarefa',
+    label: 'Tarefa agendada',
+    icon: <LightningIcon />,
+    feature: true,
+    placeholder: 'Descreva a tarefa que você quer adicionar',
+  },
+  {
+    id: 'imagem',
+    label: 'Imagem',
+    icon: <ImageIcon />,
+    feature: true,
+    placeholder: 'Descreva a imagem que você quer criar...',
+  },
+  {
+    id: 'video',
+    label: 'Vídeo',
+    icon: <VideoCameraIcon />,
+    feature: true,
+    placeholder: 'Descreva o vídeo que você quer criar...',
+  },
+  {
+    id: 'audio',
+    label: 'Áudio',
+    icon: <SpeakerHighIcon />,
+    feature: true,
+    placeholder: 'Descreva o áudio que você quer gerar...',
+  },
+  {
+    id: 'reuniao',
+    label: 'Reunião',
+    icon: <PresentationChartIcon />,
+    feature: true,
+    placeholder: 'Sobre o que será a reunião?',
+  },
+  {
+    id: 'documento',
+    label: 'Documento',
+    icon: <FileTextIcon />,
+    feature: true,
+    placeholder: 'Sobre o que será o documento?',
+  },
+  {
+    id: 'apresentacao',
+    label: 'Apresentação',
+    icon: <SlidesIcon />,
+    feature: true,
+    placeholder: 'Sobre o que será a apresentação?',
+  },
+  {
+    id: 'site',
+    label: 'Site',
+    icon: <GlobeIcon />,
+    feature: true,
+    placeholder: 'Descreva o site que você quer criar...',
+  },
+]
+
+/* Prompts (cascata) — sem ação por enquanto */
+const PROMPT_ITEMS: MentionItem[] = PROMPTS.map((p) => ({
+  id: `prompt-${p.id}`,
+  label: p.name,
+  icon: <PromptsPillarIcon size={18} />,
+}))
+
+/* lookup para renderizar o submenu certo por tipo */
+const FEATURE_LISTS: Record<
+  'integracoes' | 'prompts' | 'ferramentas',
+  { items: MentionItem[]; placeholder: string; label: string; noAction?: boolean }
+> = {
+  integracoes: { items: INTEGRATIONS, placeholder: 'Buscar integração', label: 'Integrações' },
+  ferramentas: { items: TOOLS, placeholder: 'Buscar ferramenta', label: 'Ferramentas' },
+  prompts: { items: PROMPT_ITEMS, placeholder: 'Buscar prompt', label: 'Prompts', noAction: true },
+}
+
+/* Menu principal: upload + biblioteca/base (grupo 1); integrações, prompts e
+   ferramentas (grupo 2, separado por divisória). */
 const SECTIONS: Section[] = [
   {
-    label: 'Adicionar',
+    label: '',
     items: [
-      { id: 'upload', label: 'Fotos e arquivos', icon: <UploadSimpleIcon /> },
-      { id: 'arquivos', label: 'Arquivos da Biblioteca', icon: <FileTextIcon />, submenu: 'arquivos' },
+      { id: 'upload', label: 'Upload do dispositivo', icon: <UploadSimpleIcon /> },
+      { id: 'minha-biblioteca', label: 'Minha biblioteca', icon: <FileTextIcon />, submenu: 'arquivos' },
       {
-        id: 'colecoes',
-        label: 'Bases de conhecimento',
+        id: 'base-conhecimento',
+        label: 'Base de conhecimento',
         icon: <Brain size={18} strokeWidth={1.7} style={{ color: 'var(--text-mid)' }} />,
         submenu: 'colecoes',
       },
-      { id: 'projetos', label: 'Projetos', icon: <FolderSimpleIcon />, submenu: 'projetos' },
-      {
-        id: 'tarefa',
-        label: 'Tarefa',
-        icon: <LightningIcon />,
-        feature: true,
-        placeholder: 'Descreva a tarefa que você quer adicionar',
-      },
-      {
-        id: 'web-search',
-        label: 'Pesquisa na web',
-        icon: <GlobeIcon />,
-        feature: true,
-        placeholder: 'O que você quer pesquisar na web?',
-      },
     ],
   },
   {
-    label: 'Gerar',
+    label: '',
     items: [
       {
-        id: 'imagem',
-        label: 'Imagem',
-        icon: <ImageIcon />,
-        feature: true,
-        placeholder: 'Descreva a imagem que você quer criar...',
+        id: 'integracoes',
+        label: 'Integrações',
+        icon: <Plug size={18} strokeWidth={1.7} style={{ color: 'var(--text-mid)' }} />,
+        submenu: 'integracoes',
       },
+      { id: 'prompts', label: 'Prompts', icon: <PromptsPillarIcon size={18} />, submenu: 'prompts' },
       {
-        id: 'video',
-        label: 'Vídeo',
-        icon: <VideoCameraIcon />,
-        feature: true,
-        placeholder: 'Descreva o vídeo que você quer criar...',
-      },
-      {
-        id: 'reuniao',
-        label: 'Reunião',
-        icon: <PresentationChartIcon />,
-        feature: true,
-        placeholder: 'Sobre o que será a reunião?',
-      },
-      {
-        id: 'audio',
-        label: 'Áudio',
-        icon: <SpeakerHighIcon />,
-        feature: true,
-        placeholder: 'Descreva o áudio que você quer gerar...',
-      },
-      {
-        id: 'documento',
-        label: 'Documento',
-        icon: <FileTextIcon />,
-        feature: true,
-        placeholder: 'Sobre o que será o documento?',
-      },
-      {
-        id: 'apresentacao',
-        label: 'Apresentação',
-        icon: <SlidesIcon />,
-        feature: true,
-        placeholder: 'Sobre o que será a apresentação?',
-      },
-      {
-        id: 'site',
-        label: 'Site',
-        icon: <GlobeIcon />,
-        feature: true,
-        placeholder: 'Descreva o site que você quer criar...',
-      },
-    ],
-  },
-  {
-    label: 'Integrações',
-    items: [
-      {
-        id: 'gmail',
-        label: 'Gmail',
-        img: gmail,
-        feature: true,
-        placeholder: 'O que você quer fazer no Gmail?',
-      },
-      {
-        id: 'google-calendar',
-        label: 'Google Calendar',
-        img: googleCalendar,
-        feature: true,
-        placeholder: 'O que você quer fazer no Google Calendar?',
-      },
-      {
-        id: 'google-drive',
-        label: 'Google Drive',
-        img: googleDrive,
-        feature: true,
-        agentOnly: true,
-        placeholder: 'O que você quer buscar no Google Drive?',
-      },
-      {
-        id: 'google-sheets',
-        label: 'Google Sheets',
-        img: googleSheets,
-        feature: true,
-        agentOnly: true,
-        placeholder: 'O que você quer fazer no Google Sheets?',
-      },
-      {
-        id: 'google-slides',
-        label: 'Google Slides',
-        img: googleSlides,
-        feature: true,
-        agentOnly: true,
-        placeholder: 'O que você quer fazer no Google Slides?',
-      },
-      {
-        id: 'outlook',
-        label: 'Outlook',
-        img: outlook,
-        feature: true,
-        placeholder: 'O que você quer fazer no Outlook?',
-      },
-      {
-        id: 'hubspot',
-        label: 'Hubspot',
-        img: hubspot,
-        feature: true,
-        agentOnly: true,
-        placeholder: 'O que você quer fazer no Hubspot?',
-      },
-      {
-        id: 'salesforce',
-        label: 'Salesforce',
-        img: salesforce,
-        feature: true,
-        agentOnly: true,
-        placeholder: 'O que você quer fazer no Salesforce?',
-      },
-      {
-        id: 'github',
-        label: 'Github',
-        img: github,
-        mono: true,
-        feature: true,
-        agentOnly: true,
-        placeholder: 'O que você quer fazer no Github?',
-      },
-      {
-        id: 'notion',
-        label: 'Notion',
-        img: notion,
-        mono: true,
-        feature: true,
-        agentOnly: true,
-        placeholder: 'O que você quer fazer no Notion?',
+        id: 'ferramentas',
+        label: 'Ferramentas',
+        icon: <LayoutGrid size={17} strokeWidth={1.7} style={{ color: 'var(--text-mid)' }} />,
+        submenu: 'ferramentas',
       },
     ],
   },
 ]
 
 /* todos os rótulos — usados pelo highlight do @ no input */
-export const MENTION_LABELS = SECTIONS.flatMap((s) => s.items.map((i) => i.label))
+export const MENTION_LABELS = [
+  ...SECTIONS.flatMap((s) => s.items.map((i) => i.label)),
+  ...INTEGRATIONS.map((i) => i.label),
+  ...TOOLS.map((i) => i.label),
+]
 
 const normalize = (s: string) =>
   s
@@ -278,69 +305,9 @@ export default function MentionMenu({
   excludeProjects = false,
 }: Props) {
   const sections = useMemo(() => {
-    const source = excludeProjects
-      ? SECTIONS.map((s) => ({ ...s, items: s.items.filter((i) => i.submenu !== 'projetos') }))
-      : SECTIONS
     const q = normalize(query)
-    if (!q) return source
-    const base = source
-      .map((s) => ({
-        ...s,
-        items: s.items.filter((i) => normalize(i.label).includes(q)),
-      }))
-      .filter((s) => s.items.length > 0)
-
-    /* busca por projetos (citação @Nome) e pelo conteúdo do contexto deles */
-    if (!excludeProjects) {
-      const projItems: MentionItem[] = PROJECTS.filter((p) => normalize(p.name).includes(q)).map(
-        (p) => ({
-          id: p.id,
-          label: p.name,
-          icon: <FolderSimpleIcon />,
-          citation: p.name,
-          project: { id: p.id, name: p.name, emoji: p.emoji, color: p.color },
-          projectFiles: p,
-        }),
-      )
-      if (projItems.length > 0) base.push({ label: 'Projetos', items: projItems })
-
-      /* arquivos e seções dentro do contexto dos projetos (anexo + referência) */
-      const fileMention = (p: Project, f: DetailFile): MentionItem => {
-        const att = fileAttachment(f)
-        return {
-          id: `ctx-${p.id}-${f.id}`,
-          label: f.name,
-          sub: p.name,
-          ...(att.emoji
-            ? { icon: <span className="mm-emoji">{att.emoji}</span> }
-            : { img: att.thumb ?? att.img }),
-          attachment: att,
-        }
-      }
-      const ctxItems: MentionItem[] = []
-      for (const p of PROJECTS) {
-        const c = PROJECT_CONTENT[p.id]
-        if (!c) continue
-        for (const sec of c.contextSections) {
-          if (normalize(sec.title).includes(q)) {
-            ctxItems.push({
-              id: `ctx-${p.id}-sec-${sec.id}`,
-              label: sec.title,
-              sub: p.name,
-              icon: <FolderSimpleIcon />,
-              attachment: { kind: 'collection', name: sec.title, color: sec.color },
-            })
-          }
-          for (const f of sec.files) {
-            if (normalize(f.name).includes(q)) ctxItems.push(fileMention(p, f))
-          }
-        }
-        for (const f of c.contextLoose) {
-          if (normalize(f.name).includes(q)) ctxItems.push(fileMention(p, f))
-        }
-      }
-      if (ctxItems.length > 0) base.push({ label: 'Em projetos', items: ctxItems })
-    }
+    if (!q) return SECTIONS
+    const base: Section[] = []
 
     /* busca pelas bases de conhecimento */
     const kbItems: MentionItem[] = KNOWLEDGE_BASES.filter((b) =>
@@ -353,6 +320,41 @@ export default function MentionMenu({
     }))
     if (kbItems.length > 0) base.push({ label: 'Bases de conhecimento', items: kbItems })
 
+    /* arquivos e seções dentro das bases de conhecimento (anexo + referência) */
+    const kbFileMention = (b: (typeof KNOWLEDGE_BASES)[number], f: DetailFile): MentionItem => {
+      const att = fileAttachment(f)
+      return {
+        id: `kb-${b.id}-${f.id}`,
+        label: f.name,
+        sub: b.name,
+        ...(att.emoji
+          ? { icon: <span className="mm-emoji">{att.emoji}</span> }
+          : { img: att.thumb ?? att.img }),
+        attachment: att,
+      }
+    }
+    const kbCtxItems: MentionItem[] = []
+    for (const b of KNOWLEDGE_BASES) {
+      for (const sec of b.sections) {
+        if (normalize(sec.title).includes(q)) {
+          kbCtxItems.push({
+            id: `kb-${b.id}-sec-${sec.id}`,
+            label: sec.title,
+            sub: b.name,
+            icon: <FolderSimpleIcon />,
+            attachment: { kind: 'collection', name: sec.title, color: sec.color },
+          })
+        }
+        for (const f of sec.files) {
+          if (normalize(f.name).includes(q)) kbCtxItems.push(kbFileMention(b, f))
+        }
+      }
+      for (const f of b.loose) {
+        if (normalize(f.name).includes(q)) kbCtxItems.push(kbFileMention(b, f))
+      }
+    }
+    if (kbCtxItems.length > 0) base.push({ label: 'Em bases de conhecimento', items: kbCtxItems })
+
     /* busca também pelos arquivos da Biblioteca */
     const libItems: MentionItem[] = FILES.filter((f) => normalize(f.label).includes(q)).map((f) => ({
       id: f.id,
@@ -361,6 +363,13 @@ export default function MentionMenu({
       attachment: entryAttachment(f, false),
     }))
     if (libItems.length > 0) base.push({ label: 'Arquivos', items: libItems })
+
+    /* ações: integrações e ferramentas (busca, tarefa, pilares) */
+    const intHits = INTEGRATIONS.filter((i) => normalize(i.label).includes(q))
+    if (intHits.length > 0) base.push({ label: 'Integrações', items: intHits })
+    const toolHits = TOOLS.filter((i) => normalize(i.label).includes(q))
+    if (toolHits.length > 0) base.push({ label: 'Ferramentas', items: toolHits })
+
     return base
   }, [query, excludeProjects])
 
@@ -369,14 +378,17 @@ export default function MentionMenu({
   const menuRef = useRef<HTMLDivElement>(null)
   const [submenuPos, setSubmenuPos] = useState<{ left: number; top: number } | null>(null)
   const [submenuKind, setSubmenuKind] = useState<
-    'arquivos' | 'colecoes' | 'projetos' | 'projeto-files'
+    'arquivos' | 'colecoes' | 'projetos' | 'projeto-files' | 'integracoes' | 'prompts' | 'ferramentas'
   >('arquivos')
   /* projeto cujo contexto (arquivos) abre em cascata, a partir de um resultado */
   const [submenuProject, setSubmenuProject] = useState<Project | null>(null)
   const submenuOpen = submenuPos !== null
   const submenuTimer = useRef<number | undefined>(undefined)
 
-  const openSubmenu = (rowEl: HTMLElement, kind: 'arquivos' | 'colecoes' | 'projetos') => {
+  const openSubmenu = (
+    rowEl: HTMLElement,
+    kind: 'arquivos' | 'colecoes' | 'projetos' | 'integracoes' | 'prompts' | 'ferramentas',
+  ) => {
     window.clearTimeout(submenuTimer.current)
     setSubmenuKind(kind)
     /* ancora no rect do menu; cascata à direita, ou à esquerda se não couber */
@@ -465,9 +477,9 @@ export default function MentionMenu({
       {flat.length === 0 ? (
         <div className="mm-empty">Sem resultados</div>
       ) : (
-        sections.map((section) => (
-          <div className="mm-section" key={section.label}>
-            <div className="mm-header">{section.label}</div>
+        sections.map((section, si) => (
+          <div className="mm-section" key={section.label || `g${si}`}>
+            {section.label && <div className="mm-header">{section.label}</div>}
             {section.items.map((item) => {
               const idx = flat.indexOf(item)
               if (item.submenu) {
@@ -591,6 +603,17 @@ export default function MentionMenu({
               ) : null
             ) : submenuKind === 'projetos' ? (
               <ProjetosSubmenu onSelect={onSelect} />
+            ) : submenuKind === 'integracoes' ||
+              submenuKind === 'prompts' ||
+              submenuKind === 'ferramentas' ? (
+              <FeatureSubmenu
+                items={FEATURE_LISTS[submenuKind].items}
+                placeholder={FEATURE_LISTS[submenuKind].placeholder}
+                ariaLabel={FEATURE_LISTS[submenuKind].label}
+                mode={mode}
+                onSelect={onSelect}
+                noAction={FEATURE_LISTS[submenuKind].noAction}
+              />
             ) : (
               <BibliotecaSubmenu kind={submenuKind} onSelect={onSelect} />
             )}
