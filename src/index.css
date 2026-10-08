@@ -40,14 +40,6 @@
   --tooltip-bg: #1c1c1c;
   --tooltip-fg: #ffffff;
 
-  /* Botão "Nova …" do histórico: bases e proporções do mix com a cor do pilar
-     (o color-mix em si vive no componente, onde --pillar está definida) */
-  --newbtn-base: #ffffff;
-  --newbtn-mix: 12%;
-  --newbtn-mix-hover: 17%;
-  --newbtn-mix-active: 23%;
-  --newbtn-fg-mix: 100%;
-
   /* Página de ferramentas (cards) — mesma família neutra do sidebar */
   --card-surface: #f3f3f3;
   --card-desc: #8e8e8e;
@@ -173,13 +165,6 @@
   --feature-border: rgba(99, 160, 255, 0.32);
   --feature-remove-hover: rgba(99, 160, 255, 0.26);
 
-  /* Figma: botão "Nova conversa" dark = #2d2a47 com texto #a9a1f2 */
-  --newbtn-base: #1a1a1e;
-  --newbtn-mix: 24%;
-  --newbtn-mix-hover: 30%;
-  --newbtn-mix-active: 36%;
-  --newbtn-fg-mix: 58%;
-
   --thumb-ph: #3a3a3a;
   --rl-divider-line: rgba(255, 255, 255, 0.14);
   --chip-bg: #2e3138;
@@ -239,8 +224,6 @@
   --pop-surface: #272c35;
   --pop-border: #353b46;
   --pop-divider: #323843;
-
-  --newbtn-base: #1d2129;
 
   --thumb-ph: #353b46;
   --chip-bg: #2b313c;
@@ -316,6 +299,28 @@ body {
   display: flex;
   height: 100dvh;
   overflow: hidden;
+}
+
+/* a plataforma espera escondida durante o onboarding e entra suave ao concluir */
+.app-pre {
+  opacity: 0;
+}
+
+.app-enter {
+  animation: app-enter 780ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+}
+
+@keyframes app-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-enter {
+    animation-duration: 1ms;
+  }
 }
 
 .main {

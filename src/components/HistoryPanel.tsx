@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import { ChevronRight, Pin, Search as SearchIcon } from 'lucide-react'
+import { ChevronRight, Pin, Search as SearchIcon, SquarePen } from 'lucide-react'
 import './history.css'
 import magnifyingGlass from '../assets/magnifying-glass.svg'
 import folder from '../assets/library/folder.svg'
@@ -23,6 +23,16 @@ import {
 import { PILLAR_COLORS } from './pillars'
 import type { GenPillarId, PanelView } from './pillars'
 import type { ActiveProject } from '../App'
+import type { ChosenAgent } from './agents'
+
+/* saudação por período do dia (pt-BR) + nome do usuário (protótipo) */
+const USER_NAME = 'Kauê'
+function greetingFor(d = new Date()): string {
+  const h = d.getHours()
+  if (h < 12) return 'Bom dia'
+  if (h < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
 
 /* ---------- Mock: histórico do Chat ---------- */
 
@@ -500,6 +510,10 @@ type Props = {
   activeProject?: ActiveProject | null
   onOpenProject?: (p: ActiveProject) => void
   onNewTask?: () => void
+  /* personagem escolhido — tinge o botão e exibe a faixa de boas-vindas na Home */
+  agent?: ChosenAgent | null
+  /* destaque único de "personalização" ao cair na tela */
+  intro?: boolean
 }
 
 export default function HistoryPanel({
@@ -512,10 +526,13 @@ export default function HistoryPanel({
   activeProject = null,
   onOpenProject,
   onNewTask,
+  agent = null,
+  intro = false,
 }: Props) {
   const config = PANEL_CONFIG[view]
-  const color = PILLAR_COLORS[view]
   const isChat = view === 'chat'
+  /* faixa de boas-vindas: só na Home (modo agente) com personagem escolhido */
+  const showGreeting = isChat && chatMode === 'agente' && !!agent
   const newLabel = isChat ? (chatMode === 'agente' ? 'Nova tarefa' : 'Novo Chat') : config.newLabel
   /* Home (agente) mostra itens do agente; Chat mostra conversas com modelos */
   const title = isChat ? (chatMode === 'agente' ? 'Home' : 'Chat') : config.title
@@ -555,17 +572,37 @@ export default function HistoryPanel({
       className={`history-panel${hidden ? ' is-hidden' : ''}`}
       aria-label={`Histórico de ${config.title}`}
       aria-hidden={hidden}
-      style={{ '--pillar': color } as CSSProperties}
     >
       <div className="history-inner" key={isChat ? `chat-${chatMode}` : view}>
-        <header className="history-header">
-          <h2 className="history-title">{title}</h2>
+        <header className={`history-header${showGreeting ? ' has-greet' : ''}`}>
+          {showGreeting && agent ? (
+            <div
+              className={`hp-greet${intro ? ' is-intro' : ''}`}
+              style={{ '--accent': agent.accent } as CSSProperties}
+            >
+              <span className="hp-greet-av">
+                <img src={agent.banner ?? agent.img} alt="" draggable={false} />
+              </span>
+              <span className="hp-greet-text">
+                <span className="hp-greet-name">{agent.name}</span>
+                <span className="hp-greet-msg">
+                  {greetingFor()}, {USER_NAME}
+                </span>
+              </span>
+            </div>
+          ) : (
+            <h2 className="history-title">{title}</h2>
+          )}
         </header>
 
         <div className="history-content">
           <div className="history-actions">
-            <button className="history-new" type="button" onClick={onNewTask}>
-              <PlusIcon />
+            <button
+              className={`history-new${isChat ? ' is-compose' : ' is-plus'}`}
+              type="button"
+              onClick={onNewTask}
+            >
+              {isChat ? <SquarePen /> : <PlusIcon />}
               <span>{newLabel}</span>
             </button>
           </div>

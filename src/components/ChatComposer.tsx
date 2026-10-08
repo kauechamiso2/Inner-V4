@@ -5,6 +5,7 @@ import { CaretDownIcon, PlusIcon, VoiceWaveIcon } from './SidebarIcons'
 import MentionMenu, { MENTION_LABELS } from './MentionMenu'
 import type { Attachment, MentionItem } from './MentionMenu'
 import type { ActiveProject } from '../App'
+import type { ChosenAgent } from './agents'
 import microphone from '../assets/microphone.svg'
 import arrowUp from '../assets/arrow-up.svg'
 
@@ -45,6 +46,8 @@ export default function ChatComposer({
   onPickProject,
   project = null,
   onClearProject,
+  agent = null,
+  intro = false,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -58,6 +61,10 @@ export default function ChatComposer({
   project?: ActiveProject | null
   /* chamado quando a citação do projeto ativo é removida do input */
   onClearProject?: () => void
+  /* personagem escolhido: a aba "Agente" vira a foto + nome dele */
+  agent?: ChosenAgent | null
+  /* destaque único de "personalização" ao cair na tela */
+  intro?: boolean
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
@@ -224,11 +231,17 @@ export default function ChatComposer({
           type="button"
           role="tab"
           aria-selected={mode === 'agente'}
-          className={`chat-tab${mode === 'agente' ? ' is-active' : ''}`}
+          className={`chat-tab${mode === 'agente' ? ' is-active' : ''}${agent && intro ? ' is-intro' : ''}`}
           onClick={() => setMode('agente')}
         >
-          <AgentOrb size={14} />
-          Agente
+          {agent ? (
+            <span className="chat-tab-face" aria-hidden="true">
+              <img src={agent.img} alt="" draggable={false} />
+            </span>
+          ) : (
+            <AgentOrb size={14} />
+          )}
+          {agent ? agent.name : 'Agente'}
           {mode === 'agente' && (
             <>
               <span className="tab-foot tab-foot-l" aria-hidden="true" />

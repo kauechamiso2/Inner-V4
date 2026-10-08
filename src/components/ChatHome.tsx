@@ -1,7 +1,9 @@
+import type { CSSProperties } from 'react'
 import './chat-home.css'
 import AgentOrb from './AgentOrb'
 import ChatComposer from './ChatComposer'
 import type { ActiveProject } from '../App'
+import type { ChosenAgent } from './agents'
 
 type InputMode = 'agente' | 'chat'
 
@@ -11,6 +13,8 @@ export default function ChatHome({
   project = null,
   onOpenProject,
   onClearProject,
+  agent = null,
+  intro = false,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -19,6 +23,10 @@ export default function ChatHome({
   onOpenProject?: (p: ActiveProject) => void
   /* remover a citação do projeto no input volta ao empty state da Home */
   onClearProject?: () => void
+  /* personagem escolhido no onboarding — personaliza a saudação/input */
+  agent?: ChosenAgent | null
+  /* destaque único de "personalização" ao cair na tela */
+  intro?: boolean
 }) {
   return (
     <main
@@ -50,14 +58,24 @@ export default function ChatHome({
             </>
           ) : mode === 'agente' ? (
             <>
-              <span className="greeting-orb">
-                <span className="greeting-orb-glow">
-                  <AgentOrb size={26} />
+              {agent ? (
+                <span
+                  className={`greeting-face${intro ? ' is-intro' : ''}`}
+                  style={{ '--accent': agent.accent } as CSSProperties}
+                  aria-hidden="true"
+                >
+                  <img src={agent.img} alt="" draggable={false} />
                 </span>
-                <span className="greeting-orb-core">
-                  <AgentOrb size={26} />
+              ) : (
+                <span className="greeting-orb">
+                  <span className="greeting-orb-glow">
+                    <AgentOrb size={26} />
+                  </span>
+                  <span className="greeting-orb-core">
+                    <AgentOrb size={26} />
+                  </span>
                 </span>
-              </span>
+              )}
               <h1 className="greeting-text">Me dê uma tarefa...</h1>
             </>
           ) : (
@@ -73,6 +91,8 @@ export default function ChatHome({
           onPickProject={onOpenProject}
           project={project}
           onClearProject={onClearProject}
+          agent={agent}
+          intro={intro}
         />
       </div>
     </main>

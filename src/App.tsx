@@ -15,7 +15,10 @@ import AssistentesPage from './components/AssistentesPage'
 import PromptsPage from './components/PromptsPage'
 import TaskDrawer from './components/TaskDrawer'
 import ThemeSwitcher from './components/ThemeSwitcher'
+import Onboarding from './components/Onboarding'
 import { PILLAR_BY_ID } from './components/pillars'
+import { AGENT_BY_ID } from './components/agents'
+import type { AgentId, ChosenAgent } from './components/agents'
 import type { AppView, PanelView, PillarId, SidebarLayout } from './components/pillars'
 import type { Task } from './components/tasks'
 
@@ -61,6 +64,16 @@ function titleFor(view: Exclude<AppView, 'chat'>): string {
 }
 
 export default function App() {
+  /* primeiro acesso: escolher o Agente (etapa obrigatória).
+     Por hora sempre aparece ao carregar; vamos travar por localStorage
+     quando o fluxo (escolher + batizar) estiver completo. */
+  const [showOnboarding, setShowOnboarding] = useState(true)
+  /* entrada da plataforma: dispara quando o usuário conclui o onboarding */
+  const [entering, setEntering] = useState(false)
+  /* personagem escolhido (id + nome batizado) — personaliza a plataforma */
+  const [agent, setAgent] = useState<{ id: AgentId; name: string } | null>(null)
+  /* destaque de "personalização" ao cair na plataforma (uma vez) */
+  const [intro, setIntro] = useState(false)
   const [view, setView] = useState<AppView>('chat')
   /* última view com painel de histórico: mantém o conteúdo durante o colapso */
   const [panelView, setPanelView] = useState<PanelView>('chat')
@@ -158,8 +171,20 @@ export default function App() {
     if (!next) closeDrawer() // abrir a sidebar fecha o drawer
   }
 
+  /* resolve o personagem escolhido (foto/nome/cor) que a plataforma herda */
+  const chosenAgent: ChosenAgent | null = agent
+    ? {
+        id: agent.id,
+        img: AGENT_BY_ID[agent.id].img,
+        name: agent.name || AGENT_BY_ID[agent.id].name,
+        accent: AGENT_BY_ID[agent.id].accent,
+        banner: AGENT_BY_ID[agent.id].banner,
+      }
+    : null
+
   return (
-    <div className="app">
+    <>
+    <div className={`app${showOnboarding && !entering ? ' app-pre' : ''}${entering ? ' app-enter' : ''}`}>
       <Sidebar
         activeView={view}
         onNavigate={navigate}
@@ -183,6 +208,8 @@ export default function App() {
         activeProject={activeProject}
         onOpenProject={openProjectChat}
         onNewTask={() => setActiveProject(null)}
+        agent={chosenAgent}
+        intro={intro}
       />
       {view === 'chat' ? (
         <ChatHome
@@ -191,6 +218,8 @@ export default function App() {
           project={activeProject}
           onOpenProject={openProjectChat}
           onClearProject={() => setActiveProject(null)}
+          agent={chosenAgent}
+          intro={intro}
         />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
@@ -225,5 +254,17 @@ export default function App() {
         onCoachToggle={changeCoach}
       />
     </div>
+    {showOnboarding && (
+      <Onboarding
+        onContinue={(id, name) => {
+          setAgent({ id: id as AgentId, name })
+          setEntering(true)
+          setIntro(true)
+          window.setTimeout(() => setIntro(false), 2600)
+        }}
+        onDone={() => setShowOnboarding(false)}
+      />
+    )}
+    </>
   )
 }
