@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import './images-page.css'
-import searchIcon from '../assets/search-light.svg'
+import ImagePromptBar from './ImagePromptBar'
 import artImageGeneration from '../assets/tools/image-generation.png'
 import artRemoveBackground from '../assets/tools/remove-background.png'
 import artGenerateCartoon from '../assets/tools/generate-cartoon.png'
@@ -12,6 +12,18 @@ import artPhotoRestoration from '../assets/tools/photo-restoration.png'
 import artLinkedinPhoto from '../assets/tools/linkedin-photo.png'
 import artImageFromImage from '../assets/tools/image-from-image.png'
 import artChangeBackground from '../assets/tools/change-background.png'
+import mCharMonster from '../assets/masonry/char-monster.webp'
+import mCharFox from '../assets/masonry/char-fox.webp'
+import mCharCyber from '../assets/masonry/char-cyber.webp'
+import mPeopleFreckles from '../assets/masonry/people-freckles.webp'
+import mPeopleSunglasses from '../assets/masonry/people-sunglasses.webp'
+import mPeopleCraftsman from '../assets/masonry/people-craftsman.webp'
+import mClothesStreetwear from '../assets/masonry/clothes-streetwear.webp'
+import mClothesHandbag from '../assets/masonry/clothes-handbag.webp'
+import mLandscapeLake from '../assets/masonry/landscape-lake.webp'
+import mLandscapeDesert from '../assets/masonry/landscape-desert.webp'
+import mFoodPoke from '../assets/masonry/food-poke.webp'
+import mTechRobot from '../assets/masonry/tech-robot.webp'
 
 /* Filtros = modelos disponíveis (espelham o seletor de modelos, sem ícones) */
 const MODELS = [
@@ -84,10 +96,82 @@ const TOOLS: Tool[] = [
   },
 ]
 
-/* alturas variadas → grid orgânico estilo Pinterest (placeholders por enquanto) */
-const MASONRY_HEIGHTS = [
-  360, 460, 300, 420, 268, 440, 332, 392, 480, 288, 372, 440, 316, 408, 344, 428,
-  276, 464, 364, 304, 416, 324, 396, 448, 300, 468, 340, 388,
+/* grid orgânico (Pinterest) — imagens geradas, intercaladas por tema/proporção.
+   prompt/model aparecem no overlay ao passar o mouse. */
+type MasonryImg = { src: string; ar: number; prompt: string; model: string }
+const MASONRY: MasonryImg[] = [
+  {
+    src: mCharMonster,
+    ar: 0.747,
+    prompt: 'Monstrinho fofo de pelúcia verde, olhos grandes e curiosos, fundo claro, render 3D estilo Pixar',
+    model: 'Nano Banana 2',
+  },
+  {
+    src: mLandscapeLake,
+    ar: 1.34,
+    prompt: 'Lago de montanha ao amanhecer com reflexo espelhado, névoa suave, clima cinematográfico',
+    model: 'Nano Banana 2',
+  },
+  {
+    src: mPeopleFreckles,
+    ar: 0.747,
+    prompt: 'Retrato editorial de mulher jovem com sardas, luz natural de janela, tons quentes',
+    model: 'GPT Image 2',
+  },
+  {
+    src: mClothesStreetwear,
+    ar: 1,
+    prompt: 'Flat lay de look streetwear minimalista, tons neutros, tênis e peças dobradas, vista de cima',
+    model: 'Flux Schnell 1.0',
+  },
+  {
+    src: mCharCyber,
+    ar: 0.558,
+    prompt: 'Garota cyberpunk com cabelo neon rosa e ciano, cidade futurista ao fundo, luz dramática',
+    model: 'Nano Banana Pro',
+  },
+  {
+    src: mFoodPoke,
+    ar: 1,
+    prompt: 'Poke bowl colorido visto de cima, salmão fresco, abacate e legumes, luz natural, foto gastronômica',
+    model: 'Nano Banana 2',
+  },
+  {
+    src: mPeopleSunglasses,
+    ar: 0.747,
+    prompt: 'Homem estiloso de óculos escuros na rua, golden hour, fundo desfocado, cinematográfico',
+    model: 'Nano Banana 2',
+  },
+  {
+    src: mLandscapeDesert,
+    ar: 1.792,
+    prompt: 'Dunas de areia do deserto ao pôr do sol, sombras longas, paleta quente, minimalista',
+    model: 'GPT Image 2',
+  },
+  {
+    src: mTechRobot,
+    ar: 0.747,
+    prompt: 'Robô humanoide futurista, branco brilhante e cromado, luz de estúdio, sci-fi detalhado',
+    model: 'Nano Banana Pro',
+  },
+  {
+    src: mClothesHandbag,
+    ar: 1,
+    prompt: 'Bolsa de couro de luxo sobre superfície de mármore, sombras suaves, foto de produto elegante',
+    model: 'Nano Banana Pro',
+  },
+  {
+    src: mCharFox,
+    ar: 0.747,
+    prompt: 'Raposa ilustrada com uma mochilinha, arte vetorial plana, cores vibrantes, divertida',
+    model: 'Flux Schnell 1.0',
+  },
+  {
+    src: mPeopleCraftsman,
+    ar: 0.747,
+    prompt: 'Retrato documental de artesão idoso trabalhando a madeira, mãos marcadas, luz quente',
+    model: 'Playground 2.5',
+  },
 ]
 
 const SKELETON_MS = 950
@@ -132,10 +216,7 @@ export default function ImagesPage() {
       <div className="ip-container">
         <h1 className="ip-title">Geração e edição de Imagens</h1>
 
-        <div className="ip-search">
-          <img src={searchIcon} alt="" aria-hidden="true" />
-          <input type="text" placeholder="Buscar ferramentas" spellCheck={false} />
-        </div>
+        <ImagePromptBar />
 
         {/* ---------- Ferramentas de Imagem (carrossel) ---------- */}
         <section className="ip-section">
@@ -235,14 +316,30 @@ export default function ImagesPage() {
             ))}
           </div>
 
-          {/* grid orgânico (Pinterest) — placeholders cinza por enquanto */}
-          <div className="ip-masonry" aria-hidden="true">
-            {MASONRY_HEIGHTS.map((h, i) => (
-              <div
-                className="ip-masonry-tile"
-                key={i}
-                style={{ height: h, '--i': i } as CSSProperties}
-              />
+          {/* grid orgânico (Pinterest) — imagens geradas; overlay com prompt no hover */}
+          <div className="ip-masonry">
+            {MASONRY.map((m, i) => (
+              <figure
+                className="ip-mtile"
+                key={m.src}
+                style={{ aspectRatio: String(m.ar), '--i': i } as CSSProperties}
+              >
+                <img src={m.src} alt="" loading="lazy" />
+                <figcaption className="ip-mtile-ov">
+                  <p className="ip-mtile-prompt">{m.prompt}</p>
+                  <div className="ip-mtile-foot">
+                    <span className="ip-mtile-model">{m.model}</span>
+                    <span className="ip-mtile-acts">
+                      <button type="button" className="ip-mtile-icon" aria-label="Baixar imagem">
+                        <Download size={15} strokeWidth={2} />
+                      </button>
+                      <button type="button" className="ip-mtile-use">
+                        Usar de base
+                      </button>
+                    </span>
+                  </div>
+                </figcaption>
+              </figure>
             ))}
           </div>
         </section>

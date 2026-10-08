@@ -78,6 +78,15 @@
   white-space: nowrap;
 }
 
+/* pilar de Imagens: título "Gerações" + lupa na mesma linha */
+.history-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
 /* ---------- Faixa de boas-vindas (Home personalizada) ---------- */
 .history-header.has-greet {
   height: auto;

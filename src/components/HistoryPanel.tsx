@@ -191,7 +191,7 @@ const PILLAR_GROUPS: Record<GenPillarId, GenGroup[]> = {
 
 const PANEL_CONFIG: Record<PanelView, { title: string; newLabel: string }> = {
   chat: { title: 'Home', newLabel: 'Nova tarefa' },
-  imagens: { title: 'Imagens', newLabel: 'Nova imagem' },
+  imagens: { title: 'Gerações', newLabel: 'Nova imagem' },
   videos: { title: 'Vídeos', newLabel: 'Novo vídeo' },
   audio: { title: 'Áudio', newLabel: 'Novo áudio' },
   reunioes: { title: 'Reuniões', newLabel: 'Nova reunião' },
@@ -538,6 +538,8 @@ export default function HistoryPanel({
 }: Props) {
   const config = PANEL_CONFIG[view]
   const isChat = view === 'chat'
+  /* pilar de Imagens: histórico de "Gerações" — título + lupa, sem botão "Nova" */
+  const isGen = view === 'imagens'
   /* faixa de boas-vindas: só na Home (modo agente) com um agente escolhido
      (inclui o orb/agente padrão, que mostra a esfera no lugar do busto) */
   const showGreeting = isChat && chatMode === 'agente' && !!agent
@@ -602,22 +604,31 @@ export default function HistoryPanel({
                 </span>
               </span>
             </div>
+          ) : isGen ? (
+            <div className="history-title-row">
+              <h2 className="history-title">{title}</h2>
+              <button className="history-search" type="button" aria-label="Buscar nas gerações">
+                <img src={magnifyingGlass} alt="" aria-hidden="true" />
+              </button>
+            </div>
           ) : (
             <h2 className="history-title">{title}</h2>
           )}
         </header>
 
         <div className="history-content">
-          <div className="history-actions">
-            <button
-              className={`history-new${isChat ? ' is-compose' : ' is-plus'}`}
-              type="button"
-              onClick={onNewTask}
-            >
-              {isChat ? <SquarePen /> : <PlusIcon />}
-              <span>{newLabel}</span>
-            </button>
-          </div>
+          {!isGen && (
+            <div className="history-actions">
+              <button
+                className={`history-new${isChat ? ' is-compose' : ' is-plus'}`}
+                type="button"
+                onClick={onNewTask}
+              >
+                {isChat ? <SquarePen /> : <PlusIcon />}
+                <span>{newLabel}</span>
+              </button>
+            </div>
+          )}
 
           {isChat && (
             <div className="pinados">
@@ -681,12 +692,14 @@ export default function HistoryPanel({
             </div>
           )}
 
-          <div className="history-label-row">
-            <span className="history-label">Histórico</span>
-            <button className="history-search" type="button" aria-label="Buscar no histórico">
-              <img src={magnifyingGlass} alt="" aria-hidden="true" />
-            </button>
-          </div>
+          {!isGen && (
+            <div className="history-label-row">
+              <span className="history-label">Histórico</span>
+              <button className="history-search" type="button" aria-label="Buscar no histórico">
+                <img src={magnifyingGlass} alt="" aria-hidden="true" />
+              </button>
+            </div>
+          )}
 
           <div className="history-scroll">
             <div className="history-groups">

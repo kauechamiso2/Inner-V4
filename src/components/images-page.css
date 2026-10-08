@@ -31,7 +31,244 @@
   white-space: nowrap;
 }
 
-/* ---------- Busca ---------- */
+/* ---------- Input de prompt (geração de imagem) ---------- */
+
+.ip-prompt {
+  width: min(720px, 100%);
+  margin-bottom: 44px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--pop-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.04);
+  /* arredondamento resolve rápido, antes da altura crescer */
+  transition:
+    border-radius 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 300ms ease,
+    border-color 200ms ease,
+    background-color 420ms ease;
+}
+
+.ip-prompt.is-open {
+  border-radius: 22px;
+  border-color: var(--ctl-border);
+  box-shadow: var(--input-shadow);
+}
+
+.ip-prompt-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 18px;
+  transition: padding 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ip-prompt.is-open .ip-prompt-top {
+  padding: 16px 18px 8px;
+}
+
+.ip-prompt-spark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--text-faint);
+  transition: color 240ms ease;
+}
+
+.ip-prompt.is-open .ip-prompt-spark {
+  color: var(--text-strong);
+}
+
+.ip-prompt-input {
+  flex: 1 0 0;
+  min-width: 0;
+  height: 20px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--text-strong);
+  overflow: hidden;
+  transition: height 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ip-prompt.is-open .ip-prompt-input {
+  height: 46px;
+  overflow-y: auto;
+}
+
+.ip-prompt-input::placeholder {
+  color: var(--text-faint);
+}
+
+/* toolbar (2ª linha): aparece ao expandir */
+.ip-prompt-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease,
+    padding 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ip-prompt.is-open .ip-prompt-bar {
+  max-height: 56px;
+  opacity: 1;
+  padding: 0 12px 12px;
+}
+
+.ip-prompt-ctrls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 1px;
+}
+
+.ip-prompt-ctrls::-webkit-scrollbar {
+  display: none;
+}
+
+.ip-pc {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--ctl-border);
+  border-radius: 999px;
+  background: var(--ctl-bg);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-mid);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.ip-pc:hover {
+  background: var(--ctl-bg-hover);
+}
+
+.ip-pc svg {
+  color: var(--text-soft);
+}
+
+.ip-pc-drop {
+  padding-right: 8px;
+}
+
+.ip-pc-drop svg {
+  color: var(--text-faint);
+}
+
+/* stepper de quantidade */
+.ip-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 3px;
+  border: 1px solid var(--ctl-border);
+  border-radius: 999px;
+  background: var(--ctl-bg);
+}
+
+.ip-stepper button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.ip-stepper button:hover:not(:disabled) {
+  background: var(--hover-06);
+}
+
+.ip-stepper button:disabled {
+  color: var(--text-ghost);
+  cursor: default;
+}
+
+.ip-stepper-val {
+  min-width: 28px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-mid);
+}
+
+/* gerar: cinza enquanto vazio, roxo quando há prompt (igual ao Chat) */
+.ip-prompt-go {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--send-idle);
+  color: #ffffff;
+  cursor: default;
+  transition:
+    background-color 220ms ease,
+    transform 150ms ease;
+}
+
+.ip-prompt-go.is-ready {
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  cursor: pointer;
+}
+
+.ip-prompt-go.is-ready:hover {
+  transform: scale(1.06);
+}
+
+.ip-prompt-go.is-ready:active {
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-prompt,
+  .ip-prompt-top,
+  .ip-prompt-input,
+  .ip-prompt-bar {
+    transition: none;
+  }
+}
+
+/* ---------- Busca (demais pilares: Projetos, Vídeos, Documentos, etc.) ---------- */
 
 .ip-search {
   display: flex;
@@ -189,20 +426,143 @@
 /* ---------- Grid orgânico (Pinterest) ---------- */
 
 .ip-masonry {
-  columns: 400px;
-  column-gap: 20px;
+  columns: 320px;
+  column-gap: 18px;
   margin-top: 24px;
 }
 
-.ip-masonry-tile {
+.ip-mtile {
+  position: relative;
   break-inside: avoid;
   width: 100%;
-  margin-bottom: 20px;
+  margin: 0 0 18px;
   border-radius: 16px;
+  overflow: hidden;
   background: var(--thumb-ph);
+  cursor: pointer;
   animation: masonry-in 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   animation-delay: calc(var(--i, 0) * 22ms);
-  transition: background-color 420ms ease;
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 320ms ease;
+}
+
+.ip-mtile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 12px 26px -8px rgba(0, 0, 0, 0.22);
+}
+
+.ip-mtile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* overlay (gradiente preto embaixo) com prompt + ações, no hover */
+.ip-mtile-ov {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 44px 14px 14px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.88) 0%,
+    rgba(0, 0, 0, 0.62) 42%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 240ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.ip-mtile:hover .ip-mtile-ov {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.ip-mtile-prompt {
+  margin: 0 0 11px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.94);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ip-mtile-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ip-mtile-model {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ip-mtile-acts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ip-mtile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.ip-mtile-icon:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.ip-mtile-use {
+  height: 30px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1c1c1c;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.ip-mtile-use:hover {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.ip-mtile-use:active {
+  transform: scale(0.96);
 }
 
 @keyframes masonry-in {
@@ -217,8 +577,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ip-masonry-tile {
+  .ip-mtile {
     animation: none;
+  }
+
+  .ip-mtile,
+  .ip-mtile-ov {
+    transition: none;
   }
 }
 
