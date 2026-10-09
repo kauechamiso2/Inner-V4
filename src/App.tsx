@@ -153,6 +153,7 @@ export default function App() {
     setChatMode('agente')
     setActiveProject(null)
     setActiveChatId(null)
+    if (view !== 'chat') reopenHistory()
     setPendingMessage(text)
     setRestoreThread(null)
     setHomeKey((k) => k + 1)
@@ -199,7 +200,15 @@ export default function App() {
     }
   }
 
+  /* fechar o histórico vale só para o pilar atual: ao trocar de pilar
+     (Home, Chat com modelos, Vídeos...) o painel volta aberto */
+  const reopenHistory = () => {
+    historyAutoClosedRef.current = false
+    setHistoryCollapsed(false)
+  }
+
   const navigate = (next: AppView) => {
+    if (next !== view) reopenHistory()
     setView(next)
     /* mantém o histórico no último contexto válido (Chat/Imagens) */
     if (showsHistory(next)) setPanelView(next)
@@ -211,6 +220,7 @@ export default function App() {
   /* Home (agente) e Chat são itens separados da sidebar: ambos abrem a view de
      chat, mudando o modo do input e o filtro do histórico. */
   const openChatMode = (mode: 'agente' | 'chat') => {
+    if (view !== 'chat' || mode !== chatMode) reopenHistory()
     setChatMode(mode)
     setView('chat')
     setPanelView('chat')
@@ -266,6 +276,7 @@ export default function App() {
   const editSite = (site: SiteDraft) => {
     const saved = siteChatsRef.current[site.id]
     if (!saved) return
+    reopenHistory()
     setChatMode('agente')
     setActiveProject(null)
     setActiveChatId(saved.chatId)
