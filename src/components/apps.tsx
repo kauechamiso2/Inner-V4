@@ -124,7 +124,7 @@ export const APPS: AppTool[] = [
   { id: 'motivador', label: 'Motivador', icon: lu(Flame), anim: 'flicker' },
 ]
 
-/* Entrada "Chat" — vive dentro do Mais Apps (por último) e é fixável no rail.
+/* Entrada "Chat" — vive dentro do Mais Apps (primeiro da lista) e é fixável no rail.
    Na galeria aparece como "Chat com Modelos"; fixado no rail, vira só "Chat". */
 export const CHAT_APP: AppTool = {
   id: 'chat',
@@ -154,10 +154,10 @@ export const APP_FILL_ICON: Record<string, ReactNode> = {
   chat: <ChatDotsFillIcon size={22} />,
 }
 
-/* Lista completa do Mais Apps (todos os apps + Chat por último). */
-export const FULL_APPS: AppTool[] = [...APPS, CHAT_APP]
+/* Lista completa do Mais Apps (Chat primeiro + todos os apps). */
+export const FULL_APPS: AppTool[] = [CHAT_APP, ...APPS]
 
-/* Variação reduzida (versão "Padrão"): os 8 pilares + Chat por último,
+/* Variação reduzida (versão "Padrão"): Chat primeiro + os 8 pilares,
    sem os "apps novos". */
 const REDUCED_PILLAR_IDS = [
   'imagens',
@@ -170,6 +170,6 @@ const REDUCED_PILLAR_IDS = [
   'prompts',
 ]
 export const REDUCED_APPS: AppTool[] = [
-  ...REDUCED_PILLAR_IDS.map((id) => APP_BY_ID[id]).filter(Boolean),
   CHAT_APP,
+  ...REDUCED_PILLAR_IDS.map((id) => APP_BY_ID[id]).filter(Boolean),
 ]

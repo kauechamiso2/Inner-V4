@@ -1,0 +1,409 @@
+/* ============ Card de perguntas do agente (nasce do input) ============
+   Fechado, é pixel a pixel a pílula do composer (padding 10, borda, raio 28,
+   linha de 36px). Aberto, a parte de cima cresce por altura real e a linha de
+   baixo vira a linha de resposta. */
+
+.qcard {
+  /* atraso-base das entradas: maior na 1ª revelação (o card ainda está
+     crescendo), zero nas trocas de pergunta */
+  --q-base: 170ms;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 10px;
+  background: var(--pop-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: 28px;
+  box-shadow: var(--input-shadow);
+  outline: none;
+  transition: border-radius 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qcard.is-open {
+  border-radius: 24px;
+}
+
+.qcard.has-swapped {
+  --q-base: 0ms;
+}
+
+/* ---------- Parte de cima: cresce pra cima (o dock fica ancorado no rodapé) ---------- */
+
+.qcard-top {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qcard.is-open .qcard-top {
+  grid-template-rows: 1fr;
+}
+
+.qcard-top-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ao recolher, o conteúdo sai rápido antes de a altura fechar */
+.qcard.is-leave .qcard-top-inner {
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+/* ---------- Cabeçalho: agente + pergunta + paginador ---------- */
+
+/* itens ancorados na 1ª linha da pergunta (centros alinhados a 11px):
+   numa linha fica igual a centralizar; com quebra, avatar e paginador
+   não descem pro meio do bloco */
+.qcard-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 42px;
+  padding: 10px 2px 6px 6px;
+}
+
+.qcard-head .qcard-av {
+  margin-top: -1px;
+}
+
+.qcard-head .qcard-pager {
+  margin-top: -3px;
+}
+
+.qcard-av {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  animation: q-rise 460ms cubic-bezier(0.22, 1, 0.36, 1) 140ms backwards;
+}
+
+.qcard-av img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.qcard-q {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  letter-spacing: -0.2px;
+  color: var(--text-strong);
+  animation: q-in 420ms cubic-bezier(0.22, 1, 0.36, 1) var(--q-base) backwards;
+}
+
+.qcard-pager {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  animation: q-rise 460ms cubic-bezier(0.22, 1, 0.36, 1) 180ms backwards;
+}
+
+.qcard-count {
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.qcard-pg {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease;
+}
+
+.qcard-pg:hover:not(:disabled) {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+.qcard-pg:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.qcard-close {
+  margin-left: 4px;
+}
+
+/* ---------- Opções ---------- */
+
+.qcard-opts {
+  display: flex;
+  flex-direction: column;
+  padding: 2px 0 8px;
+}
+
+.qcard-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 0 10px 0 7px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+  color: var(--text-strong);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+  /* cascata: entram uma a uma (na 1ª revelação, enquanto o card cresce) */
+  animation: q-in 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--q-base) + 70ms + var(--i, 0) * 45ms);
+}
+
+.qcard-opt.is-active,
+.qcard-opt:focus-visible {
+  background: var(--hover-04);
+  outline: none;
+}
+
+.qcard-opt.is-picked {
+  background: var(--hover-05);
+}
+
+.qcard-opt-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* tecla do atalho (1-4): vira check ao escolher */
+.qcard-key {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 1px solid var(--ctl-border);
+  border-radius: 6px;
+  background: var(--hover-04);
+  color: var(--text-faint);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.qcard-key-n,
+.qcard-key-c {
+  grid-area: 1 / 1;
+  transition:
+    opacity 160ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qcard-key-c {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.qcard-opt.is-active .qcard-key {
+  color: var(--text-mid);
+}
+
+.qcard-opt.is-picked .qcard-key {
+  background: var(--voice-bg);
+  border-color: var(--voice-bg);
+  color: var(--voice-fg);
+}
+
+.qcard-opt.is-picked .qcard-key-n {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.qcard-opt.is-picked .qcard-key-c {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ---------- Linha de baixo: pílula do input ⇄ linha de resposta ---------- */
+
+.qcard-row {
+  display: grid;
+}
+
+/* mesmas colunas do composer em uma linha: [36] [texto] [mic] [ação] */
+.qcard-layer {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto auto;
+  align-items: center;
+  column-gap: 12px;
+  min-height: 36px;
+}
+
+/* crossfade sobreposto (a linha nunca fica vazia): quem sai usa ease-in
+   (segura no começo), quem entra usa ease-out com 30ms de atraso */
+.qcard-layer.is-input {
+  pointer-events: none;
+  transition: opacity 280ms cubic-bezier(0, 0, 0.58, 1) 30ms;
+}
+
+.qcard.is-open .qcard-layer.is-input {
+  opacity: 0;
+  transition: opacity 260ms cubic-bezier(0.42, 0, 1, 1);
+}
+
+.qcard-layer.is-answer {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 240ms cubic-bezier(0.42, 0, 1, 1),
+    visibility 0s linear 240ms;
+}
+
+.qcard.is-open .qcard-layer.is-answer {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 280ms cubic-bezier(0, 0, 0.58, 1) 30ms,
+    visibility 0s linear 0s;
+}
+
+.qcard-ph {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qcard-pencil {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--text-soft);
+}
+
+.qcard-field {
+  width: 100%;
+  min-width: 0;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-strong);
+}
+
+.qcard-field::placeholder {
+  color: var(--text-faint);
+}
+
+/* "Pular" ⇄ enviar: troca com um pop curto quando o usuário digita */
+.qcard-skip {
+  height: 36px;
+  padding: 0 15px;
+  border: 1px solid var(--ctl-border);
+  border-radius: 999px;
+  background: var(--hover-04);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+  animation: q-pop 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qcard-skip:hover {
+  background: var(--hover-07);
+}
+
+.qcard-skip:active {
+  transform: scale(0.96);
+}
+
+.qcard-send {
+  animation: q-pop 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Keyframes ---------- */
+
+/* entrada da pergunta/opções: sobe na 1ª revelação; desliza na troca */
+@keyframes q-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--q-dx, 0px), var(--q-dy, 8px));
+  }
+}
+
+@keyframes q-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes q-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+}
+
+@media (max-width: 640px) {
+  .qcard-count {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qcard,
+  .qcard-top,
+  .qcard-layer {
+    transition: none !important;
+  }
+
+  .qcard-av,
+  .qcard-q,
+  .qcard-pager,
+  .qcard-opt,
+  .qcard-skip,
+  .qcard-send {
+    animation: none !important;
+  }
+}

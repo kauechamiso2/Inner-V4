@@ -431,6 +431,10 @@ export default function ImagesPage() {
 
       <div className="ip-scroll" ref={scrollRef}>
       <div className={`ip-container${generating ? ' is-generating' : ''}`}>
+        {/* cabeçalho recolhível (título + input + ferramentas): recolhe ao gerar
+            e volta com fluidez ao clicar em voltar, empurrando a grade pra baixo */}
+        <div className="ip-head">
+          <div className="ip-head-inner">
         <h1 className="ip-title">Geração e edição de Imagens</h1>
 
         <div className="ip-prompt-frame">
@@ -510,23 +514,15 @@ export default function ImagesPage() {
             </button>
           </div>
         </section>
+          </div>
+        </div>
 
         {/* ---------- Minhas Gerações ---------- */}
         <section className="ip-section">
+          {/* header só no estado normal; no modo "gerando" os controles
+              viram overlay sobre as próprias gerações */}
           <div className="ip-section-head">
-            <div className="ip-gen-head-left">
-              {generating && (
-                <button
-                  type="button"
-                  className="ip-gen-back"
-                  aria-label="Voltar"
-                  onClick={exitGenerate}
-                >
-                  <ChevronLeft size={18} strokeWidth={2.4} />
-                </button>
-              )}
-              <h2 className="ip-section-title">Minhas Gerações</h2>
-            </div>
+            <h2 className="ip-section-title">Minhas Gerações</h2>
             <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                 <path
@@ -543,39 +539,91 @@ export default function ImagesPage() {
             </button>
           </div>
 
-          {/* linha 16:9 — skeleton enquanto gera, depois o resultado */}
+          {/* linha 16:9 — skeleton enquanto gera, depois o resultado.
+              back + filtro flutuam como overlay sobre a primeira linha */}
           {generating && (
-            <div className="ip-gen-row">
-              {genDone
-                ? GEN_RESULTS.map((src, i) => (
-                    <figure
-                      className="ip-gen-tile"
-                      key={i}
-                      style={{ '--i': i } as CSSProperties}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() =>
-                        openImg({ src, ar: 16 / 9, prompt: genPrompt, model: 'Nano Banana 2' })
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
+            <>
+              {/* controles flutuantes fixos no scroll (sticky) sobre as gerações */}
+              <div className="ip-gen-floatbar">
+                <button
+                  type="button"
+                  className="ip-gen-float is-back"
+                  aria-label="Voltar"
+                  onClick={exitGenerate}
+                >
+                  <ChevronLeft size={18} strokeWidth={2.4} />
+                </button>
+                <button type="button" className="ip-gen-float is-filter" aria-label="Filtrar">
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <path
+                      d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="ip-gen-row">
+                {genDone
+                  ? GEN_RESULTS.map((src, i) => (
+                      <figure
+                        className="ip-gen-tile"
+                        key={i}
+                        style={{ '--i': i } as CSSProperties}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() =>
                           openImg({ src, ar: 16 / 9, prompt: genPrompt, model: 'Nano Banana 2' })
                         }
-                      }}
-                    >
-                      <img src={src} alt="" />
-                    </figure>
-                  ))
-                : [0, 1, 2, 3].map((i) => (
-                    <div
-                      className="ip-gen-skel"
-                      key={i}
-                      style={{ '--i': i } as CSSProperties}
-                      aria-hidden="true"
-                    />
-                  ))}
-            </div>
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            openImg({ src, ar: 16 / 9, prompt: genPrompt, model: 'Nano Banana 2' })
+                          }
+                        }}
+                      >
+                        <img src={src} alt="" />
+                        <figcaption className="ip-mtile-ov">
+                          <p className="ip-mtile-prompt">{genPrompt}</p>
+                          <div className="ip-mtile-foot">
+                            <span className="ip-mtile-model">Nano Banana 2</span>
+                            <span className="ip-mtile-acts">
+                              <button
+                                type="button"
+                                className="ip-mtile-icon"
+                                aria-label="Baixar imagem"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Download size={15} strokeWidth={2} />
+                              </button>
+                              <button
+                                type="button"
+                                className="ip-mtile-use"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  addBase(src)
+                                }}
+                              >
+                                Usar de base
+                              </button>
+                            </span>
+                          </div>
+                        </figcaption>
+                      </figure>
+                    ))
+                  : [0, 1, 2, 3].map((i) => (
+                      <div
+                        className="ip-gen-skel"
+                        key={i}
+                        style={{ '--i': i } as CSSProperties}
+                        aria-hidden="true"
+                      />
+                    ))}
+              </div>
+            </>
           )}
 
           {/* geradas persistidas (home): em linha (grid), acima do masonry */}
@@ -597,6 +645,32 @@ export default function ImagesPage() {
                   }}
                 >
                   <img src={m.src} alt="" />
+                  <figcaption className="ip-mtile-ov">
+                    <p className="ip-mtile-prompt">{m.prompt}</p>
+                    <div className="ip-mtile-foot">
+                      <span className="ip-mtile-model">{m.model}</span>
+                      <span className="ip-mtile-acts">
+                        <button
+                          type="button"
+                          className="ip-mtile-icon"
+                          aria-label="Baixar imagem"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Download size={15} strokeWidth={2} />
+                        </button>
+                        <button
+                          type="button"
+                          className="ip-mtile-use"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            addBase(m.src)
+                          }}
+                        >
+                          Usar de base
+                        </button>
+                      </span>
+                    </div>
+                  </figcaption>
                 </figure>
               ))}
             </div>

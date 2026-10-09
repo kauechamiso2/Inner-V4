@@ -49,9 +49,12 @@ export default function ChatComposer({
   agent = null,
   intro = false,
   showTabs = true,
+  onSend,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
+  /* envia a mensagem (Enter ou botão): entrega o texto ao pai */
+  onSend?: (text: string) => void
   /* sobrescreve o placeholder padrão por modo (ex.: "Conversar em <projeto>") */
   placeholder?: string
   /* repassa ao menu de @ — esconde "Projetos" dentro de um projeto */
@@ -82,6 +85,19 @@ export default function ChatComposer({
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const canSend = value.trim().length > 0
+
+  /* envia: entrega o texto ao pai e limpa o composer */
+  const submit = () => {
+    const text = value.trim()
+    if (!text) return
+    onSend?.(text)
+    setValue('')
+    setCitations([])
+    setAttachments([])
+    setFeature(null)
+    setMention(null)
+    setPlusOpen(false)
+  }
 
   const mentionRe = useMemo(() => buildMentionRe(citations), [citations])
 
@@ -349,6 +365,12 @@ export default function ChatComposer({
               syncMention(v, e.target.selectionStart ?? 0)
             }}
             onKeyDown={(e) => {
+              // Enter envia (Shift+Enter quebra linha); com o menu de @ aberto o Enter é dele
+              if (e.key === 'Enter' && !e.shiftKey && !mention && !plusOpen) {
+                e.preventDefault()
+                submit()
+                return
+              }
               // citação de projeto = token atômico: apaga o @Nome inteiro
               const el = e.currentTarget
               const s = el.selectionStart ?? 0
@@ -496,6 +518,7 @@ export default function ChatComposer({
                 type="button"
                 aria-label="Enviar"
                 disabled={!canSend}
+                onClick={submit}
               >
                 <img src={arrowUp} alt="" aria-hidden="true" />
               </button>

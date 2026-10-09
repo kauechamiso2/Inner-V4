@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Sidebar from './components/Sidebar'
 import HistoryPanel from './components/HistoryPanel'
 import ChatHome from './components/ChatHome'
@@ -25,6 +25,9 @@ export type PinRef = { kind: PinKind; id: string }
 /* projeto ativo no chat da Home: quando setado, o chat entra no "contexto" do
    projeto (ícone + nome, gradiente, sem referência a projetos no @) */
 export type ActiveProject = { id: string; name: string; emoji?: string; color?: string }
+
+/* chat iniciado na Home: vira uma linha no histórico (título = 1ª mensagem) */
+export type StartedChat = { id: string; title: string; source: 'agent' | 'blue' }
 
 /* versões do protótipo (selecionáveis no menu "···"):
    v1 = Padrão (input enxuto + Mais Apps reduzido)
@@ -122,8 +125,38 @@ export default function App() {
     )
   /* projeto ativo no chat da Home (contexto do projeto) */
   const [activeProject, setActiveProject] = useState<ActiveProject | null>(null)
+  /* chats iniciados na Home nesta sessão: entram no histórico com o título da
+     primeira mensagem; o ativo aparece selecionado enquanto a conversa está aberta */
+  const [startedChats, setStartedChats] = useState<StartedChat[]>([])
+  const [activeChatId, setActiveChatId] = useState<string | null>(null)
+  /* remonta a Home (volta ao estado inicial) ao clicar em "Nova tarefa" */
+  const [homeKey, setHomeKey] = useState(0)
+  const startThread = (title: string) => {
+    const id = `started-${Date.now()}`
+    setStartedChats((c) => [{ id, title, source: chatMode === 'agente' ? 'agent' : 'blue' }, ...c])
+    setActiveChatId(id)
+  }
+  /* mensagem vinda de fora da Home (ex.: modal de Nova tarefa em Agendado):
+     a Home remonta e a envia sozinha ao montar */
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null)
+  const startChatFrom = (text: string) => {
+    setChatMode('agente')
+    setActiveProject(null)
+    setActiveChatId(null)
+    setPendingMessage(text)
+    setHomeKey((k) => k + 1)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
+  }
+  const resetHome = () => {
+    setActiveProject(null)
+    setActiveChatId(null)
+    setHomeKey((k) => k + 1)
+  }
   const openProjectChat = (p: ActiveProject) => {
     setActiveProject(p)
+    setActiveChatId(null)
     setView('chat')
     setPanelView('chat')
     setDrawer(null)
@@ -158,6 +191,8 @@ export default function App() {
     setView(next)
     /* mantém o histórico no último contexto válido (Chat/Imagens) */
     if (showsHistory(next)) setPanelView(next)
+    /* sair da Home desmonta a conversa: nada fica selecionado no histórico */
+    if (next !== 'chat') setActiveChatId(null)
     setDrawer(null) // trocar de página fecha qualquer drawer aberto
   }
 
@@ -176,9 +211,39 @@ export default function App() {
     setCollapsed(true)
   }
 
+  /* tarefas criadas pelo agente no chat: entram no topo de "Ativas" */
+  const [createdTasks, setCreatedTasks] = useState<Task[]>([])
+  const addTask = (task: Task) =>
+    setCreatedTasks((list) => (list.some((t) => t.id === task.id) ? list : [task, ...list]))
+
+  /* drawer aberto a partir do chat: o histórico também não coexiste com ele.
+     Recolhemos o painel e o devolvemos ao fechar o drawer. */
+  const historyAutoClosedRef = useRef(false)
+  const openTaskFromChat = (task: Task) => {
+    if (!historyCollapsed) {
+      historyAutoClosedRef.current = true
+      setHistoryCollapsed(true)
+    }
+    openTaskDrawer(task)
+  }
+
   const closeDrawer = () => {
     setDrawer((d) => (d ? { ...d, closing: true } : d))
     window.setTimeout(() => setDrawer(null), 230)
+    if (historyAutoClosedRef.current) {
+      historyAutoClosedRef.current = false
+      setHistoryCollapsed(false)
+    }
+  }
+
+  /* reabrir o histórico com um drawer aberto fecha o drawer */
+  const toggleHistory = () => {
+    const opening = historyCollapsed
+    if (opening && drawer) {
+      historyAutoClosedRef.current = false
+      closeDrawer()
+    }
+    setHistoryCollapsed((c) => !c)
   }
 
   const toggleCollapsed = () => {
@@ -215,7 +280,7 @@ export default function App() {
         chatMode={chatMode}
         onOpenChatMode={openChatMode}
         historyHidden={historyCollapsed}
-        onToggleHistory={() => setHistoryCollapsed((c) => !c)}
+        onToggleHistory={toggleHistory}
         appsReduced={appsReduced}
       />
       <HistoryPanel
@@ -227,12 +292,20 @@ export default function App() {
         togglePin={togglePin}
         activeProject={activeProject}
         onOpenProject={openProjectChat}
-        onNewTask={() => setActiveProject(null)}
+        onNewTask={resetHome}
+        startedChats={startedChats}
+        activeChatId={activeChatId}
         agent={chosenAgent}
         intro={intro}
       />
       {view === 'chat' ? (
         <ChatHome
+          key={homeKey}
+          onThreadStart={startThread}
+          onTaskCreated={addTask}
+          onOpenTask={openTaskFromChat}
+          initialMessage={pendingMessage}
+          onInitialMessageSent={() => setPendingMessage(null)}
           mode={chatMode}
           onModeChange={setChatMode}
           project={activeProject}
@@ -249,7 +322,13 @@ export default function App() {
       ) : view === 'projetos' ? (
         <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} agent={chosenAgent} empty={projectsEmpty} />
       ) : view === 'tarefas' ? (
-        <TarefasPage key="tarefas" onOpenTask={openTaskDrawer} empty={tasksEmpty} />
+        <TarefasPage
+          key="tarefas"
+          onOpenTask={openTaskDrawer}
+          empty={tasksEmpty}
+          createdTasks={createdTasks}
+          onStartChat={startChatFrom}
+        />
       ) : (
         /* pilares desativados por enquanto: página em branco */
         <BlankPage key={view} />

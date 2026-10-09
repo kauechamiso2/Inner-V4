@@ -152,10 +152,6 @@ export default function ImagePromptBar({
             Nano Banana 2
             <ChevronDown size={14} strokeWidth={2} />
           </button>
-          <button type="button" className="ip-pc ip-pc-drop" tabIndex={open ? 0 : -1}>
-            Realista
-            <ChevronDown size={14} strokeWidth={2} />
-          </button>
           <button type="button" className="ip-pc" tabIndex={open ? 0 : -1}>
             <RectangleHorizontal size={14} strokeWidth={2} />
             16:9
@@ -199,7 +195,7 @@ export default function ImagePromptBar({
             className={`ip-prompt-go${canGenerate ? ' is-ready' : ''}`}
             aria-label="Gerar imagem"
             tabIndex={open ? 0 : -1}
-            onClick={canGenerate ? onGenerate : undefined}
+            onClick={canGenerate ? () => onGenerate() : undefined}
           >
             <span className="ip-go-arrow" aria-hidden="true">
               <ArrowUp size={18} strokeWidth={2.4} />

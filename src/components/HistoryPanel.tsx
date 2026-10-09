@@ -23,23 +23,17 @@ import {
 } from './SidebarIcons'
 import { PILLAR_COLORS } from './pillars'
 import type { GenPillarId, PanelView } from './pillars'
-import type { ActiveProject } from '../App'
+import type { ActiveProject, StartedChat } from '../App'
 import type { ChosenAgent } from './agents'
+import { USER_NAME, greetingFor } from './greeting'
 
-/* saudação por período do dia (pt-BR) + nome do usuário (protótipo) */
-const USER_NAME = 'Kauê'
-function greetingFor(d = new Date()): string {
-  const h = d.getHours()
-  if (h < 12) return 'Bom dia'
-  if (h < 18) return 'Boa tarde'
-  return 'Boa noite'
-}
 
 /* ---------- Mock: histórico do Chat ---------- */
 
 type ChatSource = 'agent' | 'blue' | 'avatar' | 'dark' | 'spiral' | 'task' | 'project'
-/* 'task' usa o ícone de Tarefas; 'project' usa o emoji do projeto */
-type Chat = { title: string; source: ChatSource; emoji?: string }
+/* 'task' usa o ícone de Tarefas; 'project' usa o emoji do projeto.
+   id: só nos chats iniciados nesta sessão (para marcar o selecionado) */
+type Chat = { title: string; source: ChatSource; emoji?: string; id?: string }
 type ChatGroup = { label: string; chats: Chat[] }
 
 const CHAT_GROUPS: ChatGroup[] = [
@@ -318,16 +312,23 @@ function ChatRow({
   pinned,
   onTogglePin,
   hideIcon = false,
+  selected = false,
 }: {
   chat: Chat
   pinned: boolean
   onTogglePin: () => void
   /* Home (agente): o histórico fica mais limpo, só títulos */
   hideIcon?: boolean
+  /* conversa aberta agora na Home */
+  selected?: boolean
 }) {
   const isAgent = chat.source === 'agent'
   return (
-    <a className={`chat-row${hideIcon && !pinned ? ' no-icon' : ''}`} href="#conversa">
+    <a
+      className={`chat-row${hideIcon && !pinned ? ' no-icon' : ''}${selected ? ' is-selected' : ''}`}
+      href="#conversa"
+      aria-current={selected ? 'page' : undefined}
+    >
       <span className="chat-row-main">
         {pinned ? (
           <span className="chat-lead-icon" aria-hidden="true">
@@ -540,6 +541,9 @@ type Props = {
   activeProject?: ActiveProject | null
   onOpenProject?: (p: ActiveProject) => void
   onNewTask?: () => void
+  /* chats iniciados nesta sessão (entram no topo de "Hoje") e o que está aberto */
+  startedChats?: StartedChat[]
+  activeChatId?: string | null
   /* personagem escolhido — tinge o botão e exibe a faixa de boas-vindas na Home */
   agent?: ChosenAgent | null
   /* destaque único de "personalização" ao cair na tela */
@@ -556,10 +560,19 @@ export default function HistoryPanel({
   activeProject = null,
   onOpenProject,
   onNewTask,
+  startedChats = [],
+  activeChatId = null,
   agent = null,
   intro = false,
 }: Props) {
   const config = PANEL_CONFIG[view]
+  /* chats iniciados nesta sessão entram no topo do grupo "Hoje" */
+  const chatGroups = useMemo<ChatGroup[]>(() => {
+    if (startedChats.length === 0) return CHAT_GROUPS
+    const started: Chat[] = startedChats.map((s) => ({ id: s.id, title: s.title, source: s.source }))
+    const [today, ...rest] = CHAT_GROUPS
+    return [{ ...today, chats: [...started, ...today.chats] }, ...rest]
+  }, [startedChats])
   const isChat = view === 'chat'
   /* pilar de Imagens: histórico de "Gerações" — título + lupa, sem botão "Nova" */
   const isGen = view === 'imagens'
@@ -727,7 +740,7 @@ export default function HistoryPanel({
           <div className="history-scroll">
             <div className="history-groups">
               {isChat
-                ? CHAT_GROUPS.map((group) => {
+                ? chatGroups.map((group) => {
                     const chats = group.chats.filter(
                       (c) => !pinnedChatIds.has(c.title) && modeSources.includes(c.source),
                     )
@@ -739,9 +752,10 @@ export default function HistoryPanel({
                           {chats.map((chat) => (
                             <ChatRow
                               chat={chat}
-                              key={chat.title}
+                              key={chat.id ?? chat.title}
                               pinned={false}
                               hideIcon={chatMode === 'agente'}
+                              selected={!!chat.id && chat.id === activeChatId}
                               onTogglePin={() => togglePin('chat', chat.title)}
                             />
                           ))}

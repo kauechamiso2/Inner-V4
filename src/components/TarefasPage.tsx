@@ -12,8 +12,14 @@ import type { Task } from './tasks'
 export default function TarefasPage({
   onOpenTask,
   empty = false,
+  onStartChat,
+  createdTasks = [],
 }: {
   onOpenTask: (task: Task) => void
+  /* "Nova tarefa": o texto do modal vira mensagem no chat da Home */
+  onStartChat?: (text: string) => void
+  /* tarefas criadas pelo agente no chat: entram no topo de "Ativas" */
+  createdTasks?: Task[]
   /* protótipo: alterna para o estado vazio (sem tarefas) */
   empty?: boolean
 }) {
@@ -140,7 +146,7 @@ export default function TarefasPage({
           </div>
 
           <div className="tasks-grid">
-            {ACTIVE_TASKS.map((t, i) => (
+            {[...createdTasks, ...ACTIVE_TASKS].map((t, i) => (
               <TaskCard
                 key={t.id}
                 task={t}
@@ -177,7 +183,7 @@ export default function TarefasPage({
         )}
       </div>
 
-      {novaOpen && <NovaTarefaModal onClose={() => setNovaOpen(false)} />}
+      {novaOpen && <NovaTarefaModal onClose={() => setNovaOpen(false)} onSend={onStartChat} />}
     </main>
   )
 }

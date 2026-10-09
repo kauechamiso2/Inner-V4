@@ -116,16 +116,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 8px 8px 10px;
+  padding: 8px;
   border: 1px solid var(--ctl-border);
-  border-radius: 16px;
+  border-radius: 999px;
   background: var(--pop-surface);
   box-shadow: var(--input-shadow);
   transition: border-color 200ms ease, box-shadow 220ms ease;
-}
-
-.nt-input.is-ready {
-  border-color: color-mix(in srgb, #8a74ff 40%, var(--ctl-border));
 }
 
 /* "+" no lugar da estrela do input de imagens */
@@ -133,8 +129,9 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  /* mesmo diâmetro do enviar: os dois círculos ficam concêntricos à pílula */
+  width: 34px;
+  height: 34px;
   padding: 0;
   border: 0;
   border-radius: 999px;

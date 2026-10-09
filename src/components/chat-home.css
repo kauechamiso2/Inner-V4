@@ -657,7 +657,7 @@
   display: block;
 }
 
-/* enviar: cinza enquanto vazio, roxo quando há texto */
+/* enviar: cinza enquanto vazio, preto (adaptativo ao tema) quando há texto */
 .chat-send {
   display: flex;
   align-items: center;
@@ -675,13 +675,18 @@
 }
 
 .chat-send.is-ready {
-  background: #6e62e5;
+  background: var(--voice-bg);
   cursor: pointer;
 }
 
 .chat-send.is-ready:hover {
-  background: #5d50da;
+  background: color-mix(in srgb, var(--voice-bg) 86%, var(--voice-fg));
   transform: scale(1.06);
+}
+
+/* no dark o fundo ativo é claro: a seta (branca no asset) vira escura */
+:root[data-dark] .chat-send.is-ready img {
+  filter: invert(1);
 }
 
 .chat-send.is-ready:active {
@@ -697,8 +702,14 @@
 /* ---------- Responsividade ---------- */
 
 @media (max-width: 640px) {
-  .chat-column {
+  .chat-column,
+  .chat-composer-dock,
+  .chat-thread-col {
     width: calc(100% - 32px);
+  }
+
+  .chat-column,
+  .chat-home {
     gap: 18px;
   }
 
@@ -992,4 +1003,530 @@
 .att-remove-file:hover {
   background: var(--press-09);
   transform: translateY(-50%) scale(1.1);
+}
+
+/* ============ Conversa (abre ao enviar a primeira mensagem) ============ */
+
+/* Home: saudação + input centralizados como grupo (gap igual ao antigo .chat-column) */
+.chat-home {
+  position: relative;
+  gap: 40px;
+}
+
+/* conversa: cabeçalho no topo, mensagens rolando no meio, input no rodapé */
+.chat-home.is-thread {
+  justify-content: flex-start;
+  gap: 0;
+}
+
+/* cabeçalho: Compartilhar e "..." no canto superior direito (fora do fluxo,
+   para não deslocar a Home centralizada) */
+.chat-thread-head {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 52px;
+  padding: 0 20px;
+  /* barra translúcida: a conversa rola por baixo sem colidir com os botões */
+  background: color-mix(in srgb, var(--main-bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease 220ms;
+}
+
+.chat-home.is-thread .chat-thread-head {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+  color: var(--text-strong);
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.cth-btn:hover {
+  background: var(--hover-06);
+}
+
+.cth-btn.is-icon {
+  width: 34px;
+  padding: 0;
+  justify-content: center;
+  color: var(--text-mid);
+}
+
+.cth-btn.is-icon:hover {
+  color: var(--text-strong);
+}
+
+.cth-btn svg {
+  display: block;
+}
+
+/* palco: saudação (Home) ou a conversa (thread) */
+.chat-stage {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.chat-home.is-thread .chat-stage {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.chat-thread {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* mesma largura do input, para a conversa alinhar com ele */
+.chat-thread-col {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: min(820px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 94px 0 28px; /* 52 do cabeçalho + 42 até o balão, como no Figma */
+}
+
+/* mensagem do usuário: balão cinza alinhado à direita */
+.msg-user {
+  align-self: flex-end;
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: var(--card-surface);
+  animation: msg-in 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.msg-user p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.3px;
+  color: var(--text-strong);
+  word-break: break-word;
+}
+
+/* resposta do agente: texto corrido no padrão do GPT (16px / 28px, parágrafos
+   com respiro de 16px, lista com itens espaçados e ênfases em negrito) */
+.msg-agent {
+  position: relative;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28px;
+  letter-spacing: 0;
+  color: var(--text-strong);
+  animation: msg-in 480ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.msg-agent p {
+  margin: 0 0 16px;
+  word-break: break-word;
+}
+
+.msg-agent ul {
+  margin: 0 0 16px;
+  padding-left: 28px;
+}
+
+.msg-agent li {
+  margin: 4px 0;
+  padding-left: 4px;
+}
+
+.msg-agent li::marker {
+  color: var(--text-strong);
+}
+
+.msg-agent p:last-of-type {
+  margin-bottom: 0;
+}
+
+.msg-agent strong {
+  font-weight: 600;
+}
+
+/* ações da resposta: sempre visíveis; compartilhar aparece só no hover */
+.msg-actions {
+  display: flex;
+  align-items: center;
+  margin: 10px 0 0 -6px;
+}
+
+.msg-act {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    opacity 160ms ease,
+    transform 120ms ease;
+}
+
+.msg-act:hover {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+.msg-act:active {
+  transform: scale(0.94);
+}
+
+.msg-act svg {
+  display: block;
+}
+
+.msg-act.is-hover {
+  opacity: 0;
+}
+
+.msg-agent:hover .msg-act.is-hover,
+.msg-act.is-hover:focus-visible {
+  opacity: 1;
+}
+
+/* "pensando": três pontos pulsando antes da resposta */
+.msg-thinking {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding-left: 2px;
+  animation: msg-in 300ms ease;
+}
+
+.msg-thinking span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  animation: think-dot 1.1s ease-in-out infinite;
+}
+
+.msg-thinking span:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.msg-thinking span:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes think-dot {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* saudação some antes de o layout virar conversa */
+.chat-greeting.is-leaving {
+  animation: greeting-out 180ms ease forwards;
+}
+
+@keyframes greeting-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* input: mesmo nó nos dois estados; em conversa fica no rodapé
+   (a descida é animada por FLIP no componente) */
+.chat-composer-dock {
+  flex-shrink: 0;
+  width: min(820px, calc(100% - 64px));
+  will-change: transform;
+}
+
+.chat-home.is-thread .chat-composer-dock {
+  padding: 8px 0 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msg-user,
+  .msg-agent,
+  .msg-thinking,
+  .msg-thinking span,
+  .chat-greeting.is-leaving {
+    animation: none !important;
+  }
+}
+
+/* ============ Input em uma linha (Home e conversa) ============
+   [+ / pills] [texto] [mic · enviar] lado a lado; anexos ocupam a linha de cima.
+   .chat-controls vira "contents" para seus dois lados entrarem no grid do card. */
+.chat-input-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'att att att'
+    'left editor right';
+  align-items: center;
+  column-gap: 12px;
+  /* sem row-gap: a linha de anexos vazia não pode empurrar o topo */
+  row-gap: 0;
+  /* padding igual nos 4 lados: os botões circulares ficam concêntricos ao card */
+  padding: 10px;
+  border-radius: 28px;
+}
+
+.chat-attachments {
+  grid-area: att;
+  margin-bottom: 10px;
+  padding: 4px 2px 0;
+}
+
+.chat-input-editor {
+  grid-area: editor;
+}
+
+.chat-controls {
+  display: contents;
+}
+
+.chat-controls-left {
+  grid-area: left;
+}
+
+.chat-controls-right {
+  grid-area: right;
+}
+
+/* uma linha: altura de 1 linha, rola por dentro se o texto ficar longo */
+.chat-input-field {
+  min-height: 24px;
+  max-height: 24px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  line-height: 24px;
+}
+
+.chat-input-field::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-input-backdrop {
+  line-height: 24px;
+}
+
+/* botões um pouco maiores, centrados na linha */
+.ch-attach,
+.chat-send,
+.ch-voice {
+  width: 36px;
+  height: 36px;
+}
+
+/* ============ Stream da resposta + ajustes da conversa ============ */
+
+/* em conversa o composer já existe: sem a entrada da Home ao reaparecer
+   (ex.: quando o card de perguntas recolhe de volta à pílula) */
+.chat-home.is-thread .chat-input-wrap {
+  animation: none;
+}
+
+/* balão do usuário respeita quebras (respostas do card, uma por linha) */
+.msg-user p {
+  white-space: pre-line;
+}
+
+/* resposta "escrevendo": cada palavra assenta em sequência, com pausa entre
+   blocos; os tempos vêm do componente (--word-ms, --block-ms, --done) */
+.msg-agent.is-stream {
+  animation: none;
+}
+
+.msg-agent.is-stream .sw {
+  display: inline-block;
+  animation: word-in var(--word-fade, 380ms) cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--w) * var(--word-ms) + var(--b, 0) * var(--block-ms));
+}
+
+/* marcador da lista aparece junto com a primeira palavra do item */
+.msg-agent.is-stream li {
+  animation: li-in 300ms ease backwards;
+  animation-delay: calc(var(--w0) * var(--word-ms) + var(--b, 0) * var(--block-ms));
+}
+
+/* ações só depois que o texto assenta */
+.msg-agent.is-stream .msg-actions {
+  animation: actions-in 320ms ease backwards;
+  animation-delay: var(--done);
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(3px);
+  }
+}
+
+@keyframes li-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes actions-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msg-agent.is-stream .sw,
+  .msg-agent.is-stream li,
+  .msg-agent.is-stream .msg-actions {
+    animation: none !important;
+  }
+}
+
+/* ---------- Widget da tarefa criada (fim da resposta) ---------- */
+.msg-task {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 14px 12px 12px;
+  border: 1px solid var(--sb-border);
+  border-radius: 18px;
+  background: var(--pop-surface);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.msg-task:hover {
+  background: color-mix(in srgb, var(--pop-surface) 92%, var(--text-strong));
+}
+
+.msg-task:active {
+  transform: scale(0.995);
+}
+
+.msg-task-ic {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--hover-05);
+  color: var(--text-mid);
+}
+
+.msg-task-ic svg {
+  display: block;
+}
+
+.msg-task-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.msg-task-name {
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msg-task-sub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-faint);
+}
+
+.msg-task-chev {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  transition:
+    color 160ms ease,
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.msg-task:hover .msg-task-chev {
+  color: var(--text-strong);
+  transform: translateX(2px);
+}
+
+/* entra depois que o texto assenta; as ações vêm logo em seguida */
+.msg-agent.is-stream .msg-task {
+  animation: actions-in 360ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: var(--done);
+}
+
+.msg-agent.is-stream .msg-task ~ .msg-actions {
+  animation-delay: calc(var(--done) + 160ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msg-agent.is-stream .msg-task {
+    animation: none !important;
+  }
 }

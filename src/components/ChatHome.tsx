@@ -1,11 +1,252 @@
-import type { CSSProperties } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
+import {
+  Check,
+  ChevronRight,
+  Copy,
+  MoreHorizontal,
+  RefreshCw,
+  Share,
+  ThumbsDown,
+  ThumbsUp,
+} from 'lucide-react'
 import './chat-home.css'
 import AgentOrb from './AgentOrb'
 import ChatComposer from './ChatComposer'
+import QuestionCard from './QuestionCard'
+import type { Question, QuestionAnswer } from './QuestionCard'
+import { USER_NAME, greetingFor } from './greeting'
+import { AgendadoIcon } from './SidebarIcons'
+import type { Task } from './tasks'
 import type { ActiveProject } from '../App'
 import type { ChosenAgent } from './agents'
 
 type InputMode = 'agente' | 'chat'
+
+/* resposta do agente em blocos (parágrafos e listas); **texto** vira negrito */
+type Block = { kind: 'p'; text: string } | { kind: 'ul'; items: string[] }
+
+type Msg =
+  | { id: number; role: 'user'; text: string }
+  | { id: number; role: 'agent'; blocks: Block[]; task?: Task }
+type AgentMsg = Extract<Msg, { role: 'agent' }>
+
+/* tempo de "pensando" antes da resposta mockada aparecer */
+const THINK_MS = 1000
+/* fade da saudação antes do layout virar conversa */
+const LEAVE_MS = 180
+/* stream da resposta: intervalo entre palavras, pausa entre blocos e o fade de
+   cada palavra (repassados ao CSS por variáveis, fonte única de verdade) */
+const WORD_MS = 30
+const BLOCK_MS = 260
+const WORD_FADE_MS = 380
+
+const plain = (text: string) => text.replace(/\*\*/g, '')
+const wordsOf = (text: string) =>
+  text.split('**').flatMap((part) => part.split(/\s+/).filter(Boolean))
+
+/* duração total do stream de uma resposta (até a última palavra assentar) */
+function streamMs(blocks: Block[]) {
+  const words = blocks.reduce(
+    (n, b) =>
+      n +
+      (b.kind === 'p'
+        ? wordsOf(b.text).length
+        : b.items.reduce((m, item) => m + wordsOf(item).length, 0)),
+    0,
+  )
+  return Math.max(0, words - 1) * WORD_MS + Math.max(0, blocks.length - 1) * BLOCK_MS + WORD_FADE_MS
+}
+
+/* blocos com cada palavra num span indexado (--w) e cada bloco com --b:
+   o CSS escalona a entrada palavra a palavra, com pausa entre blocos */
+function renderBlocks(blocks: Block[]): ReactNode[] {
+  let n = 0
+  const words = (text: string) =>
+    text.split('**').map((part, pi) => {
+      const toks = part.split(/(\s+)/).map((tok, ti) => {
+        if (!tok) return null
+        if (/^\s+$/.test(tok)) return tok
+        return (
+          <span className="sw" key={ti} style={{ '--w': n++ } as CSSProperties}>
+            {tok}
+          </span>
+        )
+      })
+      return pi % 2 ? <strong key={pi}>{toks}</strong> : <Fragment key={pi}>{toks}</Fragment>
+    })
+  return blocks.map((b, bi) =>
+    b.kind === 'p' ? (
+      <p key={bi} style={{ '--b': bi } as CSSProperties}>
+        {words(b.text)}
+      </p>
+    ) : (
+      <ul key={bi} style={{ '--b': bi } as CSSProperties}>
+        {b.items.map((item, ii) => (
+          /* --w0: o marcador do item aparece junto com a 1ª palavra dele */
+          <li key={ii} style={{ '--w0': n } as CSSProperties}>
+            {words(item)}
+          </li>
+        ))}
+      </ul>
+    ),
+  )
+}
+
+/* resposta mockada: o agente alinha o foco antes de executar (protótipo) */
+function mockReply(text: string): Block[] {
+  const short = text.length > 72 ? `${text.slice(0, 72).trim()}...` : text
+  return [
+    { kind: 'p', text: `Entendi: **${short}**. Para eu acertar de primeira, me confirma alguns pontos:` },
+    {
+      kind: 'ul',
+      items: [
+        '**Objetivo final:** um resumo rápido, uma análise completa ou algo pronto para enviar?',
+        '**Fontes:** tem algum arquivo, projeto ou base de conhecimento que eu deva usar como referência?',
+        '**Formato:** prefere que eu já execute e traga o resultado, ou que eu mostre um plano antes?',
+      ],
+    },
+    { kind: 'p', text: 'Me diz o foco e eu já começo.' },
+  ]
+}
+
+/* ---------- Cenário mockado: "Monitorar voos Miami" ---------- */
+
+const isFlightTask = (text: string) => /voo/i.test(text) && /miami/i.test(text)
+
+const FLIGHT_QUESTIONS: Question[] = [
+  {
+    question: 'Qual a data da sua viagem?',
+    options: ['Nos próximos 7 dias', 'Nos próximos 15 dias', 'No próximo mês', 'Ainda não sei'],
+  },
+  {
+    question: 'Qual o aeroporto de embarque?',
+    options: [
+      'Aeroporto Internacional de Guarulhos (GRU)',
+      'Aeroporto Internacional de Viracopos (VCP)',
+      'Aeroporto Internacional de São Carlos (QSC)',
+      'Qualquer um',
+    ],
+  },
+  {
+    question: 'Qual a frequência você quer receber o monitoramento dos voos pra Miami?',
+    options: ['Duas vezes ao dia', 'Uma vez ao dia', 'Uma vez na semana', 'A cada 15 dias'],
+  },
+]
+
+const flightIntro = (): Block[] => [
+  { kind: 'p', text: `${greetingFor()}, ${USER_NAME}!` },
+  { kind: 'p', text: 'Claro, vou monitorar voos pra Miami, FL pra você!' },
+]
+
+/* frequência efetiva: se o usuário pular, o agente assume uma vez ao dia */
+const flightFrequency = (answers: QuestionAnswer[]) => answers[2] || 'Uma vez ao dia'
+
+/* tarefa agendada criada a partir das respostas (vira widget e card em Ativas) */
+function flightTask(answers: QuestionAnswer[]): Task {
+  const airport = answers[1] && answers[1] !== 'Qualquer um' ? ` saindo de ${answers[1]}` : ''
+  return {
+    id: `voos-miami-${Date.now()}`,
+    name: 'Monitoramento de voos pra Miami, FL',
+    emoji: '✈️',
+    color: '#2563B8',
+    recurring: true,
+    schedule: flightFrequency(answers),
+    next: 'Hoje, 18:00',
+    last: null,
+    description: `Acompanha os preços das passagens pra Miami, FL${airport} e avisa quando aparecer uma boa oportunidade.`,
+  }
+}
+
+function flightConfirm(answers: QuestionAnswer[]): Block[] {
+  const val = (i: number) => (i === 2 ? flightFrequency(answers) : answers[i] || 'Sem preferência')
+  return [
+    { kind: 'p', text: 'Perfeito! Já deixei o monitoramento configurado:' },
+    {
+      kind: 'ul',
+      items: [
+        '**Destino:** Miami, FL',
+        `**Data da viagem:** ${val(0)}`,
+        `**Embarque:** ${val(1)}`,
+        `**Frequência:** ${val(2)}`,
+      ],
+    },
+    {
+      kind: 'p',
+      text: 'Vou acompanhar os preços e te aviso por aqui sempre que aparecer uma boa oportunidade.',
+    },
+  ]
+}
+
+/* ---------- Mensagem do agente (stream + ações) ---------- */
+
+function AgentMessage({
+  msg,
+  copied,
+  onCopy,
+  onOpenTask,
+}: {
+  msg: AgentMsg
+  copied: boolean
+  onCopy: () => void
+  onOpenTask?: (task: Task) => void
+}) {
+  return (
+    <article
+      className="msg-agent is-stream"
+      style={
+        {
+          '--word-ms': `${WORD_MS}ms`,
+          '--block-ms': `${BLOCK_MS}ms`,
+          '--word-fade': `${WORD_FADE_MS}ms`,
+          '--done': `${streamMs(msg.blocks)}ms`,
+        } as CSSProperties
+      }
+    >
+      {renderBlocks(msg.blocks)}
+      {/* tarefa criada: widget que abre o drawer da tarefa */}
+      {msg.task && (
+        <button
+          type="button"
+          className="msg-task"
+          onClick={() => msg.task && onOpenTask?.(msg.task)}
+        >
+          <span className="msg-task-ic" aria-hidden="true">
+            <AgendadoIcon size={20} />
+          </span>
+          <span className="msg-task-text">
+            <span className="msg-task-name">{msg.task.name}</span>
+            <span className="msg-task-sub">{msg.task.schedule}</span>
+          </span>
+          <ChevronRight className="msg-task-chev" size={18} strokeWidth={2} aria-hidden="true" />
+        </button>
+      )}
+      {/* ações: copiar, avaliar, gerar de novo; compartilhar só no hover */}
+      <div className="msg-actions">
+        <button
+          type="button"
+          className="msg-act"
+          aria-label={copied ? 'Copiado' : 'Copiar'}
+          onClick={onCopy}
+        >
+          {copied ? <Check size={16} strokeWidth={2.2} /> : <Copy size={16} strokeWidth={2} />}
+        </button>
+        <button type="button" className="msg-act" aria-label="Boa resposta">
+          <ThumbsUp size={16} strokeWidth={2} />
+        </button>
+        <button type="button" className="msg-act" aria-label="Resposta ruim">
+          <ThumbsDown size={16} strokeWidth={2} />
+        </button>
+        <button type="button" className="msg-act" aria-label="Gerar de novo">
+          <RefreshCw size={16} strokeWidth={2} />
+        </button>
+        <button type="button" className="msg-act is-hover" aria-label="Compartilhar">
+          <Share size={16} strokeWidth={2} />
+        </button>
+      </div>
+    </article>
+  )
+}
 
 export default function ChatHome({
   mode,
@@ -16,6 +257,11 @@ export default function ChatHome({
   agent = null,
   intro = false,
   showTabs = true,
+  onThreadStart,
+  initialMessage = null,
+  onInitialMessageSent,
+  onTaskCreated,
+  onOpenTask,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -30,10 +276,235 @@ export default function ChatHome({
   intro?: boolean
   /* abas Agente/Chat do input — ocultadas no redesign */
   showTabs?: boolean
+  /* primeira mensagem enviada: o App registra o chat no histórico */
+  onThreadStart?: (title: string) => void
+  /* mensagem vinda de outra tela (ex.: Nova tarefa em Agendado): enviada ao montar */
+  initialMessage?: string | null
+  onInitialMessageSent?: () => void
+  /* tarefa agendada criada pelo agente (entra em Agendado > Ativas) */
+  onTaskCreated?: (task: Task) => void
+  /* clique no widget da tarefa: abre o drawer da tarefa */
+  onOpenTask?: (task: Task) => void
 }) {
+  /* conversa: abre ao enviar a primeira mensagem */
+  const [messages, setMessages] = useState<Msg[]>([])
+  const [thread, setThread] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [thinking, setThinking] = useState(false)
+  const [copiedId, setCopiedId] = useState<number | null>(null)
+  /* perguntas do agente: o input vira o card de perguntas enquanto houver */
+  const [questions, setQuestions] = useState<Question[] | null>(null)
+  const idRef = useRef(0)
+  const dockRef = useRef<HTMLDivElement>(null)
+  const threadRef = useRef<HTMLDivElement>(null)
+  /* FLIP: onde o input estava (centro da Home) antes de descer ao rodapé */
+  const dockTopRef = useRef<number | null>(null)
+  const timersRef = useRef<number[]>([])
+
+  useEffect(() => () => timersRef.current.forEach((t) => window.clearTimeout(t)), [])
+
+  const later = (fn: () => void, ms: number) => {
+    timersRef.current.push(window.setTimeout(fn, ms))
+  }
+
+  /* "pensando" e depois a resposta em stream; `after` recebe os blocos para
+     encadear o próximo passo depois que o texto assentar */
+  const agentSays = (
+    blocks: Block[],
+    thinkMs: number,
+    after?: (b: Block[]) => void,
+    task?: Task,
+  ) => {
+    setThinking(true)
+    later(() => {
+      setThinking(false)
+      setMessages((m) => [...m, { id: ++idRef.current, role: 'agent', blocks, task }])
+      after?.(blocks)
+    }, thinkMs)
+  }
+
+  const reply = (text: string) => {
+    if (mode === 'agente' && isFlightTask(text)) {
+      /* o agente confirma em dois passos e, quando o texto assenta, o input
+         cresce e vira o card de perguntas */
+      agentSays(flightIntro(), 1400, (blocks) =>
+        later(() => setQuestions(FLIGHT_QUESTIONS), streamMs(blocks) + 450),
+      )
+      return
+    }
+    agentSays(mockReply(text), THINK_MS)
+  }
+
+  /* respostas enviadas: viram um balão do usuário e o agente confirma */
+  const finishQuestions = (answers: QuestionAnswer[] | null) => {
+    if (!answers) return
+    later(() => {
+      const given = answers.filter((a): a is string => !!a)
+      setMessages((m) => [
+        ...m,
+        {
+          id: ++idRef.current,
+          role: 'user',
+          text: given.length ? given.join('\n') : 'Pode seguir sem essas preferências.',
+        },
+      ])
+      /* a tarefa nasce junto com a confirmação: widget no chat + card em Ativas */
+      const task = flightTask(answers)
+      later(() => agentSays(flightConfirm(answers), 1200, () => onTaskCreated?.(task), task), 320)
+    }, 240)
+  }
+
+  const send = (text: string) => {
+    const userMsg: Msg = { id: ++idRef.current, role: 'user', text }
+    if (thread) {
+      setMessages((m) => [...m, userMsg])
+      reply(text)
+      return
+    }
+    /* primeira mensagem: a saudação some, o input desce e a conversa abre */
+    onThreadStart?.(text)
+    setLeaving(true)
+    later(() => {
+      dockTopRef.current = dockRef.current?.getBoundingClientRect().top ?? null
+      setMessages([userMsg])
+      setThread(true)
+      setLeaving(false)
+      reply(text)
+    }, LEAVE_MS)
+  }
+
+  /* mensagem pendente: a Home aparece por um instante e a conversa abre
+     (guard por ref: o StrictMode monta duas vezes em dev) */
+  const initialSentRef = useRef(false)
+  useEffect(() => {
+    if (!initialMessage || initialSentRef.current) return
+    initialSentRef.current = true
+    const t = window.setTimeout(() => {
+      send(initialMessage)
+      onInitialMessageSent?.()
+    }, 260)
+    return () => {
+      window.clearTimeout(t)
+      initialSentRef.current = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage])
+
+  /* FLIP do input: parte da posição antiga e desliza até o rodapé, sem pulo */
+  useLayoutEffect(() => {
+    const el = dockRef.current
+    const from = dockTopRef.current
+    dockTopRef.current = null
+    if (!thread || !el || from == null) return
+    const delta = from - el.getBoundingClientRect().top
+    if (!delta) return
+    el.style.transition = 'none'
+    el.style.transform = `translateY(${delta}px)`
+    void el.offsetHeight
+    requestAnimationFrame(() => {
+      el.style.transition = 'transform 620ms cubic-bezier(0.22, 1, 0.36, 1)'
+      el.style.transform = 'translateY(0)'
+    })
+  }, [thread])
+
+  /* mantém a conversa rolada até o fim conforme as mensagens chegam */
+  useEffect(() => {
+    const el = threadRef.current
+    if (!el) return
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+  }, [messages, thinking])
+
+  /* gruda no fim enquanto a área da conversa encolhe (o card de perguntas
+     crescendo pra cima), a menos que o usuário tenha rolado pra cima */
+  useEffect(() => {
+    const el = threadRef.current
+    if (!thread || !el) return
+    let stick = true
+    const onScroll = () => {
+      stick = el.scrollHeight - el.scrollTop - el.clientHeight < 48
+    }
+    const ro = new ResizeObserver(() => {
+      if (stick) el.scrollTop = el.scrollHeight
+    })
+    el.addEventListener('scroll', onScroll, { passive: true })
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', onScroll)
+      ro.disconnect()
+    }
+  }, [thread])
+
+  const copyMsg = (m: AgentMsg) => {
+    const text = m.blocks
+      .map((b) =>
+        b.kind === 'p' ? plain(b.text) : b.items.map((item) => `- ${plain(item)}`).join('\n'),
+      )
+      .join('\n\n')
+    try {
+      navigator.clipboard?.writeText(text)
+    } catch {
+      /* clipboard indisponível */
+    }
+    setCopiedId(m.id)
+    later(() => setCopiedId((c) => (c === m.id ? null : c)), 1500)
+  }
+
+  const composerPlaceholder = project ? `Conversar em ${project.name}` : undefined
+
+  const greeting = (
+    <div
+      className={`chat-greeting${leaving ? ' is-leaving' : ''}`}
+      key={project ? `proj-${project.id}` : mode}
+    >
+      {project ? (
+        <>
+          <span
+            className="greeting-proj-icon"
+            aria-hidden="true"
+            style={
+              project.color
+                ? { background: `color-mix(in srgb, ${project.color} 16%, var(--card-surface))` }
+                : undefined
+            }
+          >
+            {project.emoji}
+          </span>
+          <h1 className="greeting-text">{project.name}</h1>
+        </>
+      ) : mode === 'agente' ? (
+        <>
+          {agent && !agent.orb ? (
+            <span
+              className={`greeting-face${intro ? ' is-intro' : ''}`}
+              style={{ '--accent': agent.accent } as CSSProperties}
+              aria-hidden="true"
+            >
+              <img src={agent.img} alt="" draggable={false} />
+            </span>
+          ) : (
+            <span className="greeting-orb">
+              <span className="greeting-orb-glow">
+                <AgentOrb size={26} />
+              </span>
+              <span className="greeting-orb-core">
+                <AgentOrb size={26} />
+              </span>
+            </span>
+          )}
+          <span className="greeting-text-col">
+            {agent && <span className="greeting-agent-name">{agent.name}</span>}
+            <h1 className="greeting-text">Me dê uma tarefa...</h1>
+          </span>
+        </>
+      ) : (
+        <h1 className="greeting-text">Converse com modelos de IA</h1>
+      )}
+    </div>
+  )
+
   return (
     <main
-      className="chat-home"
+      className={`chat-home${thread ? ' is-thread' : ''}`}
       style={
         project?.color
           ? {
@@ -42,65 +513,87 @@ export default function ChatHome({
           : undefined
       }
     >
-      <div className="chat-column">
-        <div className="chat-greeting" key={project ? `proj-${project.id}` : mode}>
-          {project ? (
-            <>
-              <span
-                className="greeting-proj-icon"
-                aria-hidden="true"
-                style={
-                  project.color
-                    ? { background: `color-mix(in srgb, ${project.color} 16%, var(--card-surface))` }
-                    : undefined
-                }
-              >
-                {project.emoji}
-              </span>
-              <h1 className="greeting-text">{project.name}</h1>
-            </>
-          ) : mode === 'agente' ? (
-            <>
-              {agent && !agent.orb ? (
-                <span
-                  className={`greeting-face${intro ? ' is-intro' : ''}`}
-                  style={{ '--accent': agent.accent } as CSSProperties}
-                  aria-hidden="true"
-                >
-                  <img src={agent.img} alt="" draggable={false} />
-                </span>
-              ) : (
-                <span className="greeting-orb">
-                  <span className="greeting-orb-glow">
-                    <AgentOrb size={26} />
-                  </span>
-                  <span className="greeting-orb-core">
-                    <AgentOrb size={26} />
-                  </span>
-                </span>
-              )}
-              <span className="greeting-text-col">
-                {agent && <span className="greeting-agent-name">{agent.name}</span>}
-                <h1 className="greeting-text">Me dê uma tarefa...</h1>
-              </span>
-            </>
-          ) : (
-            <h1 className="greeting-text">Converse com modelos de IA</h1>
-          )}
-        </div>
+      {/* cabeçalho da conversa: Compartilhar e mais opções, canto superior direito */}
+      <header className="chat-thread-head" aria-hidden={!thread}>
+        <button type="button" className="cth-btn" tabIndex={thread ? 0 : -1}>
+          <Share size={16} strokeWidth={2} />
+          Compartilhar
+        </button>
+        <button
+          type="button"
+          className="cth-btn is-icon"
+          aria-label="Mais opções"
+          tabIndex={thread ? 0 : -1}
+        >
+          <MoreHorizontal size={18} strokeWidth={2} />
+        </button>
+      </header>
 
-        <ChatComposer
-          mode={mode}
-          onModeChange={onModeChange}
-          placeholder={project ? `Conversar em ${project.name}` : undefined}
-          excludeProjects={!!project}
-          onPickProject={onOpenProject}
-          project={project}
-          onClearProject={onClearProject}
-          agent={agent}
-          intro={intro}
-          showTabs={showTabs}
-        />
+      {/* palco: saudação na Home, conversa depois do primeiro envio */}
+      <div className="chat-stage">
+        {thread ? (
+          <div className="chat-thread" ref={threadRef}>
+            <div className="chat-thread-col">
+              {messages.map((m) =>
+                m.role === 'user' ? (
+                  <div className="msg-user" key={m.id}>
+                    <p>{m.text}</p>
+                  </div>
+                ) : (
+                  <AgentMessage
+                    key={m.id}
+                    msg={m}
+                    copied={copiedId === m.id}
+                    onCopy={() => copyMsg(m)}
+                    onOpenTask={onOpenTask}
+                  />
+                ),
+              )}
+              {thinking && (
+                <div
+                  className="msg-thinking"
+                  role="status"
+                  aria-label={`${agent?.name ?? 'Agente'} está pensando`}
+                >
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          greeting
+        )}
+      </div>
+
+      {/* o input é o mesmo nó nos dois estados: desce ao rodapé via FLIP.
+          Com perguntas, ele dá lugar ao card, que nasce idêntico à pílula */}
+      <div className="chat-composer-dock" ref={dockRef}>
+        <div className="composer-slot" hidden={!!questions}>
+          <ChatComposer
+            mode={mode}
+            onModeChange={onModeChange}
+            placeholder={composerPlaceholder}
+            excludeProjects={!!project}
+            onPickProject={onOpenProject}
+            project={project}
+            onClearProject={onClearProject}
+            agent={agent}
+            intro={intro}
+            showTabs={showTabs}
+            onSend={send}
+          />
+        </div>
+        {questions && (
+          <QuestionCard
+            agent={agent}
+            questions={questions}
+            placeholder={composerPlaceholder ?? 'Diga o que devo fazer'}
+            onFinish={finishQuestions}
+            onClosed={() => setQuestions(null)}
+          />
+        )}
       </div>
     </main>
   )

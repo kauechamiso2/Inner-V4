@@ -22,7 +22,14 @@ const SUGGESTIONS = [
   },
 ]
 
-export default function NovaTarefaModal({ onClose }: { onClose: () => void }) {
+export default function NovaTarefaModal({
+  onClose,
+  onSend,
+}: {
+  onClose: () => void
+  /* envia o pedido como mensagem do chat na Home */
+  onSend?: (text: string) => void
+}) {
   const [value, setValue] = useState('')
   const [closing, setClosing] = useState(false)
   const canSend = value.trim().length > 0
@@ -30,6 +37,17 @@ export default function NovaTarefaModal({ onClose }: { onClose: () => void }) {
   const close = () => {
     setClosing(true)
     window.setTimeout(onClose, 190)
+  }
+
+  /* fecha o modal e, ao fim da saída, leva o texto pro chat da Home */
+  const submit = () => {
+    const text = value.trim()
+    if (!text) return
+    setClosing(true)
+    window.setTimeout(() => {
+      onClose()
+      onSend?.(text)
+    }, 190)
   }
 
   useEffect(() => {
@@ -71,7 +89,7 @@ export default function NovaTarefaModal({ onClose }: { onClose: () => void }) {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && canSend) {
                 e.preventDefault()
-                close()
+                submit()
               }
             }}
             autoFocus
@@ -82,7 +100,7 @@ export default function NovaTarefaModal({ onClose }: { onClose: () => void }) {
             className={`nt-send${canSend ? ' is-ready' : ''}`}
             aria-label="Criar tarefa"
             disabled={!canSend}
-            onClick={canSend ? close : undefined}
+            onClick={canSend ? submit : undefined}
           >
             <ArrowUp size={18} strokeWidth={2.4} />
           </button>
