@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { CalendarClock, MoreHorizontal, Pause, Pencil, Play, Repeat, Trash2, X, Zap } from 'lucide-react'
+import { MessageSquare } from 'lucide-react'
 import type { Task } from './tasks'
+import { CONTENT_BRIEFING } from './taskBriefing'
 import './task-drawer.css'
 
 type Props = {
@@ -13,6 +15,8 @@ type Props = {
 export default function TaskDrawer({ task, closing, onClose }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const inactive = !!task.status
+  /* esta tarefa tem um resultado real (briefing) prototipado */
+  const briefing = task.id === 'conteudo-semanal' ? CONTENT_BRIEFING : null
 
   const iconStyle: CSSProperties = inactive
     ? { background: 'var(--lib-tile-neutral)' }
@@ -99,17 +103,55 @@ export default function TaskDrawer({ task, closing, onClose }: Props) {
           )}
         </div>
 
-        <div className="td-body">
-          <p className="td-desc">{task.description}</p>
-          <p className="td-last">
-            {task.last ? `Última execução ${task.last}` : 'Ainda não executada'}
-          </p>
-          <div className="td-result">
-            <span className="td-result-label">Resultado</span>
-            <div className="td-result-empty">O resultado da próxima execução aparecerá aqui.</div>
-          </div>
+        <div className={`td-body${briefing ? ' has-dock' : ''}`}>
+          {briefing ? (
+            <article className="td-brief">
+              <div className="td-brief-meta">
+                <span className="td-brief-time">{briefing.ranAt}</span>
+                <span className="td-brief-date">{briefing.date}</span>
+              </div>
+              <h2 className="td-brief-title">{briefing.title}</h2>
+              <p className="td-brief-intro">{briefing.intro}</p>
+              <p className="td-brief-window">{briefing.window}</p>
+
+              <div className="td-news-list">
+                {briefing.items.map((it) => (
+                  <article className="td-news" key={it.index}>
+                    <div className="td-news-head">
+                      <span className="td-news-kicker">
+                        {it.index} / {it.topic} · {it.date}
+                      </span>
+                      {it.badge && <span className="td-news-badge">{it.badge}</span>}
+                    </div>
+                    <h3 className="td-news-headline">{it.headline}</h3>
+                    {it.image && <div className="td-news-thumb" aria-hidden="true" />}
+                    <p className="td-news-body">{it.body}</p>
+                  </article>
+                ))}
+              </div>
+            </article>
+          ) : (
+            <>
+              <p className="td-last">
+                {task.last ? `Última execução ${task.last}` : 'Ainda não executada'}
+              </p>
+              <div className="td-result">
+                <span className="td-result-label">Resultado</span>
+                <div className="td-result-empty">O resultado da próxima execução aparecerá aqui.</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {briefing && (
+        <div className="td-chat-dock">
+          <button type="button" className="td-chat-btn">
+            <MessageSquare size={16} strokeWidth={2} />
+            Abrir chat
+          </button>
+        </div>
+      )}
     </aside>
   )
 }

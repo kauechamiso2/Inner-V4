@@ -725,6 +725,49 @@
   pointer-events: none;
 }
 
+/* cluster de ações da linha ("..." + pin) */
+.chat-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* "..." de ações (aparece no hover da linha, à esquerda do pin) */
+.chat-more {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 130ms ease,
+    background-color 130ms ease,
+    color 130ms ease;
+}
+
+.chat-row:hover .chat-more {
+  opacity: 1;
+}
+
+.chat-more:hover {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+.chat-more svg {
+  display: block;
+}
+
 /* ícone de projeto nas linhas */
 .proj-row-icon {
   display: flex;

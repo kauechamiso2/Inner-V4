@@ -11,6 +11,385 @@
   transition: background-color 420ms ease;
 }
 
+/* shell da página de Imagens: flex row (drawer + scroll), sem scroll próprio.
+   (classe extra só na página de Imagens — Projetos/Sites seguem usando
+   .images-page como container de scroll normal) */
+.images-page.ip-shell {
+  display: flex;
+  overflow: hidden;
+}
+
+/* container de scroll (ao lado do drawer da ferramenta) */
+.ip-scroll {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100dvh;
+  overflow-y: auto;
+}
+
+/* ---------- Drawer de ferramenta (abre à esquerda, como o histórico) ---------- */
+.ip-tool-drawer {
+  flex-shrink: 0;
+  width: 0;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--panel-surface);
+  border-right: 1px solid transparent;
+  contain: layout paint;
+  transition:
+    width 480ms cubic-bezier(0.32, 0.72, 0, 1),
+    border-right-color 480ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ip-tool-drawer.is-open {
+  width: 320px;
+  border-right-color: var(--panel-border);
+}
+
+/* largura fixa: o conteúdo desliza em vez de espremer durante a animação */
+.ip-tool-inner {
+  width: 320px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 260ms ease 120ms,
+    transform 480ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ip-tool-drawer:not(.is-open) .ip-tool-inner {
+  opacity: 0;
+  transform: translateX(-40px);
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    transform 480ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ip-tool-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 52px;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+.ip-tool-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background-color 130ms ease, color 130ms ease;
+}
+
+.ip-tool-close:hover {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+.ip-tool-close svg {
+  display: block;
+}
+
+/* ---------- Conteúdo do drawer (campos do template) ---------- */
+.ip-tool-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 2px 20px 16px;
+}
+
+.ip-tool-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ip-tool-intro-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text-strong);
+}
+
+.ip-tool-intro-desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.ip-tf {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* rótulo discreto (pills e modelo) */
+.ip-tf-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+}
+
+/* upload grande (estilo da ref): caixa pontilhada com ícone + nome */
+.ip-tf-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 26px 16px;
+  border: 1.5px dashed var(--sb-border);
+  border-radius: 16px;
+  background: var(--card-surface);
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.ip-tf-upload:hover {
+  border-color: var(--text-ghost);
+  background: var(--hover-05);
+}
+
+.ip-tf-upload-ic {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--pop-surface);
+  color: var(--text-soft);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.ip-tf-upload-ic svg {
+  display: block;
+}
+
+.ip-tf-upload-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.ip-tf-upload-hint {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* arquivo anexado */
+.ip-tf-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+  padding: 6px 8px 6px 6px;
+  border: 1px solid var(--sb-border);
+  border-radius: 12px;
+  background: var(--pop-surface);
+}
+
+.ip-tf-file img {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--thumb-ph);
+}
+
+.ip-tf-file-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ip-tf-file-x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background-color 130ms ease, color 130ms ease;
+}
+
+.ip-tf-file-x:hover {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+/* textarea */
+.ip-tf-textarea {
+  min-height: 92px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--card-surface);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-strong);
+  resize: vertical;
+  outline: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.ip-tf-textarea:focus {
+  border-color: var(--ctl-border);
+  background: var(--pop-surface);
+}
+
+.ip-tf-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+/* pills */
+.ip-tf-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ip-tf-pill {
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--card-surface);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.ip-tf-pill:hover {
+  background: var(--hover-06);
+}
+
+.ip-tf-pill.is-active {
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+}
+
+/* modelo (pré-populado, sem ícone) */
+.ip-tf-model {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--card-surface);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.ip-tf-model:hover {
+  background: var(--hover-06);
+}
+
+.ip-tf-model-name {
+  flex: 1 1 auto;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+}
+
+.ip-tf-model svg {
+  color: var(--text-faint);
+}
+
+/* rodapé: botão Gerar (glow quando tudo preenchido) */
+.ip-tool-foot {
+  flex-shrink: 0;
+  padding: 12px 20px 20px;
+  border-top: 1px solid var(--pop-divider);
+}
+
+.ip-tool-gen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--send-idle);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: default;
+  transition: background-color 220ms ease, transform 150ms ease;
+}
+
+.ip-tool-gen.is-ready {
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  cursor: pointer;
+  animation: ip-go-pulse 2.6s ease-in-out infinite;
+}
+
+.ip-tool-gen.is-ready:active {
+  transform: scale(0.98);
+}
+
+.ip-tool-gen-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.82;
+}
+
+.ip-tool-gen-cost img {
+  width: 14px;
+  height: 16px;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-tool-drawer,
+  .ip-tool-inner {
+    transition: none;
+  }
+
+  .ip-tool-gen.is-ready {
+    animation: none;
+  }
+}
+
 .ip-container {
   --ip-gutter: 40px;
   width: 100%;
@@ -35,7 +414,6 @@
 
 .ip-prompt {
   width: min(720px, 100%);
-  margin-bottom: 44px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -57,6 +435,111 @@
   box-shadow: var(--input-shadow);
 }
 
+/* após a expansão, libera o overflow para o glow do botão "escapar" */
+.ip-prompt.is-settled,
+.ip-prompt.is-settled .ip-prompt-bar {
+  overflow: visible;
+}
+
+/* sentinela logo abaixo do input: dispara a fixação no rodapé ao sair de vista */
+.ip-prompt-sentinel {
+  width: 100%;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* input fixado no rodapé — fixed relativo a .images-page (contain: paint),
+   então acompanha o scroll sem cobrir a sidebar/histórico */
+.ip-dock {
+  position: fixed;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  /* gradiente maior no topo + input mais alto no rodapé (mais destaque) */
+  padding: 100px 24px 34px;
+  background: linear-gradient(to bottom, transparent 0%, var(--main-bg) 60%);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 240ms ease,
+    transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ip-dock.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* frame glassy em volta do input (destaque, estilo da referência).
+   Usado tanto no input do topo quanto no fixado no rodapé. */
+.ip-prompt-frame {
+  position: relative;
+  width: min(760px, 100%);
+  pointer-events: auto;
+  padding: 8px;
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--pop-surface) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sb-border) 70%, transparent);
+  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 2px 10px rgba(0, 0, 0, 0.05),
+    0 30px 72px -20px rgba(28, 38, 86, 0.36),
+    0 0 0 6px rgba(150, 170, 255, 0.06);
+}
+
+/* input do topo: espaçamento até a seção abaixo */
+.ip-container > .ip-prompt-frame {
+  margin-bottom: 44px;
+}
+
+/* glints sutis no topo e na base, como na referência */
+.ip-prompt-frame::before,
+.ip-prompt-frame::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 140px;
+  height: 3px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  filter: blur(4px);
+  opacity: 0.85;
+}
+
+.ip-prompt-frame::before {
+  top: -1px;
+  background: linear-gradient(90deg, transparent, rgba(150, 170, 255, 0.75), transparent);
+}
+
+.ip-prompt-frame::after {
+  bottom: -1px;
+  background: linear-gradient(90deg, transparent, rgba(140, 205, 255, 0.65), transparent);
+}
+
+/* o input dentro do frame: a elevação vem do frame */
+.ip-prompt-frame .ip-prompt {
+  width: 100%;
+  margin-bottom: 0;
+  pointer-events: auto;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.ip-prompt-frame .ip-prompt.is-open {
+  border-color: transparent;
+}
+
+/* imagens anexadas como base, acima da linha do input */
+.ip-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 18px 0;
+}
+
 .ip-prompt-top {
   display: flex;
   align-items: flex-start;
@@ -75,25 +558,44 @@
   justify-content: center;
   flex-shrink: 0;
   margin-top: 1px;
-  color: var(--text-faint);
-  transition: color 240ms ease;
 }
 
-.ip-prompt.is-open .ip-prompt-spark {
-  color: var(--text-strong);
+/* estrela com glow pulsando devagar */
+.ip-spark-svg {
+  display: block;
+  animation: ip-spark-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes ip-spark-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 1.5px rgba(124, 108, 255, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px rgba(150, 110, 255, 0.72));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-spark-svg {
+    animation: none;
+  }
 }
 
 .ip-prompt-input {
   flex: 1 0 0;
   min-width: 0;
-  height: 20px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
   border: 0;
   outline: none;
   resize: none;
   background: transparent;
   font-family: inherit;
   font-size: 15px;
-  line-height: 20px;
+  line-height: 22px;
   color: var(--text-strong);
   overflow: hidden;
   transition: height 300ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -173,6 +675,17 @@
   color: var(--text-soft);
 }
 
+/* "+" para adicionar referência (ícone, mesmo padrão dos controles) */
+.ip-pc-add {
+  width: 30px;
+  padding: 0;
+  justify-content: center;
+}
+
+.ip-pc-add svg {
+  color: var(--text-mid);
+}
+
 .ip-pc-drop {
   padding-right: 8px;
 }
@@ -226,11 +739,46 @@
   color: var(--text-mid);
 }
 
-/* gerar: cinza enquanto vazio, roxo quando há prompt (igual ao Chat) */
-.ip-prompt-go {
+/* cluster de envio: indicativo de créditos + botão Gerar */
+.ip-prompt-send {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* créditos que a geração vai consumir (aparece no estado ativo) */
+.ip-credits {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-faint);
+  white-space: nowrap;
+  animation: ip-credits-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes ip-credits-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.ip-credits img {
+  width: 15px;
+  height: 17px;
+  display: block;
+}
+
+/* gerar: seta (idle) → pill "Gerar" (ativo), com morph suave de largura */
+.ip-prompt-go {
+  position: relative;
   flex-shrink: 0;
   width: 34px;
   height: 34px;
@@ -239,16 +787,71 @@
   border-radius: 999px;
   background: var(--send-idle);
   color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
   cursor: default;
   transition:
-    background-color 220ms ease,
+    width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 300ms ease,
     transform 150ms ease;
 }
 
 .ip-prompt-go.is-ready {
+  width: 104px;
   background: var(--voice-bg);
   color: var(--voice-fg);
   cursor: pointer;
+  animation: ip-go-pulse 2.6s ease-in-out infinite;
+}
+
+/* seta (idle) e rótulo "Gerar" (ativo) sobrepostos, com cross-fade */
+.ip-go-arrow,
+.ip-go-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 220ms ease;
+}
+
+.ip-go-text {
+  gap: 6px;
+  opacity: 0;
+}
+
+/* dica de teclado: Enter gera */
+.ip-go-enter {
+  opacity: 0.6;
+  margin-right: -2px;
+}
+
+.ip-prompt-go.is-ready .ip-go-arrow {
+  opacity: 0;
+}
+
+.ip-prompt-go.is-ready .ip-go-text {
+  opacity: 1;
+}
+
+/* mesmo glow pulsante da estrela, no botão ativo */
+@keyframes ip-go-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 2px 0 rgba(150, 110, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(150, 110, 255, 0.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-prompt-go.is-ready {
+    animation: none;
+  }
 }
 
 .ip-prompt-go.is-ready:hover {
@@ -423,20 +1026,160 @@
   gap: 6px;
 }
 
+/* ---------- Modo "gerando" (clicou em Gerar) ---------- */
+/* esconde título, input do topo e ferramentas; Minhas Gerações sobe */
+.ip-container.is-generating > .ip-title,
+.ip-container.is-generating > .ip-prompt-frame,
+.ip-container.is-generating > .ip-prompt-sentinel,
+.ip-container.is-generating > .ip-tools {
+  display: none;
+}
+
+/* Minhas Gerações sobe, com espaço generoso e igual acima e abaixo do título */
+.ip-container.is-generating {
+  padding-top: 40px;
+}
+
+/* a seção oculta de ferramentas ainda é irmã anterior, então anulamos o
+   margin-top herdado de ".ip-section + .ip-section" (senão o topo dobra) */
+.ip-container.is-generating .ip-section {
+  margin-top: 0;
+}
+
+.ip-container.is-generating .ip-section-head {
+  margin-bottom: 40px;
+}
+
+.ip-container.is-generating .ip-section-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.ip-gen-head-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ip-gen-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: var(--hover-04);
+  color: var(--text-strong);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.ip-gen-back:hover {
+  background: var(--hover-06);
+}
+
+.ip-gen-back svg {
+  display: block;
+}
+
+/* linha de skeletons 16:9 (geração em andamento) */
+.ip-gen-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.ip-gen-skel {
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  background: linear-gradient(
+    100deg,
+    var(--thumb-ph) 30%,
+    color-mix(in srgb, var(--thumb-ph) 55%, var(--pop-surface)) 50%,
+    var(--thumb-ph) 70%
+  );
+  background-size: 220% 100%;
+  animation: ip-skel-shimmer 1.5s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 140ms);
+}
+
+@keyframes ip-skel-shimmer {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -180% 0;
+  }
+}
+
+/* resultado da geração (substitui os skeletons) */
+.ip-gen-tile {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--thumb-ph);
+  cursor: pointer;
+  animation: ip-gen-pop 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ip-gen-tile:hover {
+  transform: translateY(-2px);
+}
+
+.ip-gen-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes ip-gen-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 720px) {
+  .ip-gen-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-gen-skel {
+    animation: none;
+  }
+}
+
 /* ---------- Grid orgânico (Pinterest) ---------- */
 
 .ip-masonry {
   columns: 320px;
-  column-gap: 18px;
-  margin-top: 24px;
+  column-gap: 8px;
+  margin-top: 4px;
 }
 
 .ip-mtile {
   position: relative;
   break-inside: avoid;
   width: 100%;
-  margin: 0 0 18px;
-  border-radius: 16px;
+  margin: 0 0 8px;
+  border-radius: 14px;
   overflow: hidden;
   background: var(--thumb-ph);
   cursor: pointer;

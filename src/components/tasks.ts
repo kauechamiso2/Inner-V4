@@ -26,7 +26,7 @@ export const ACTIVE_TASKS: Task[] = [
     recurring: true,
     schedule: 'Toda segunda, 09:00',
     next: 'Seg, 09:00',
-    last: 'há 3 dias',
+    last: 'há 4 horas',
     description:
       'Compila o desempenho dos posts da semana (alcance, engajamento e cliques) e sugere ajustes de pauta para o calendário editorial.',
     project: { id: 'col-mkt', name: 'Marketing & Conteúdo', emoji: '📣' },

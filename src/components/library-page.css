@@ -12,7 +12,7 @@
 }
 
 .lib-container {
-  max-width: 960px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 52px 32px 48px;
   display: flex;
@@ -98,6 +98,11 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--text-strong);
+}
+
+/* sem subtítulo: o título ocupa a linha inteira e alinha com os botões */
+.lib-section-title h2:only-child {
+  margin-bottom: 0;
 }
 
 .lib-section-title p {

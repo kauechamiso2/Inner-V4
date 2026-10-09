@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import { ChevronRight, Pin, Search as SearchIcon, SquarePen } from 'lucide-react'
+import { ChevronRight, MoreHorizontal, Pin, Search as SearchIcon, SquarePen } from 'lucide-react'
 import './history.css'
 import magnifyingGlass from '../assets/magnifying-glass.svg'
 import { COLLECTIONS as LIB_COLLECTIONS } from './libraryEntries'
@@ -273,6 +273,26 @@ const PROJECT_ENTRIES: ProjectEntry[] = LIB_COLLECTIONS.map((c) => ({
 }))
 const findProject = (id: string) => PROJECT_ENTRIES.find((p) => p.id === id) ?? null
 
+/* "..." de ações da conversa (sem ação por ora) — à esquerda do pin */
+function MoreButton() {
+  return (
+    <button
+      type="button"
+      className="chat-more"
+      aria-label="Mais opções"
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+    >
+      <MoreHorizontal size={15} strokeWidth={2} />
+      <span className="pill-tooltip chat-pin-tip" role="tooltip" aria-hidden="true">
+        Mais
+      </span>
+    </button>
+  )
+}
+
 function PinButton({ pinned, onToggle }: { pinned: boolean; onToggle: () => void }) {
   return (
     <button
@@ -319,7 +339,10 @@ function ChatRow({
         <span className={`chat-row-title${isAgent ? '' : ' is-model'}`}>{chat.title}</span>
       </span>
       {isAgent && !pinned && !hideIcon && <span className="chat-chip">Agent</span>}
-      <PinButton pinned={pinned} onToggle={onTogglePin} />
+      <span className="chat-actions">
+        <MoreButton />
+        <PinButton pinned={pinned} onToggle={onTogglePin} />
+      </span>
     </a>
   )
 }

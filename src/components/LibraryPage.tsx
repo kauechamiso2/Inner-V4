@@ -1,22 +1,10 @@
-import { useEffect, useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import './library-page.css'
 import KnowledgeBaseDetail from './KnowledgeBaseDetail'
 import { KNOWLEDGE_BASES } from './knowledgeBases'
-import search from '../assets/library/search.svg'
 import plus from '../assets/library/plus.svg'
 import icDotsActions from '../assets/library/dots-actions.svg'
-import { StickyNote } from 'lucide-react'
-import {
-  FileTextIcon,
-  FolderSimpleIcon,
-  ImageIcon,
-  PresentationChartIcon,
-  SlidesIcon,
-  SpeakerHighIcon,
-  UploadSimpleIcon,
-  VideoCameraIcon,
-} from './SidebarIcons'
 import fPdf from '../assets/library/file-pdf.svg'
 import fImage from '../assets/library/file-image.svg'
 import fText from '../assets/library/file-text.svg'
@@ -27,32 +15,6 @@ import fWave from '../assets/library/waveform.svg'
 import fGlobe from '../assets/library/globe-file.svg'
 import fZip from '../assets/library/filezip.svg'
 
-/* menu do botão "Novo": Adicionar (upload/pasta/nota) + Gerar (pilares) */
-type NovoItem = { id: string; label: string; icon: ReactNode }
-type NovoSection = { label: string; items: NovoItem[] }
-
-const NOVO_SECTIONS: NovoSection[] = [
-  {
-    label: 'Adicionar',
-    items: [
-      { id: 'upload', label: 'Fazer upload de arquivos', icon: <UploadSimpleIcon /> },
-      { id: 'pasta', label: 'Criar pasta', icon: <FolderSimpleIcon /> },
-      { id: 'nota', label: 'Nota', icon: <StickyNote size={17} strokeWidth={1.7} /> },
-    ],
-  },
-  {
-    label: 'Gerar',
-    items: [
-      { id: 'imagem', label: 'Imagem', icon: <ImageIcon /> },
-      { id: 'video', label: 'Vídeo', icon: <VideoCameraIcon size={17} /> },
-      { id: 'reuniao', label: 'Reunião', icon: <PresentationChartIcon size={17} /> },
-      { id: 'audio', label: 'Áudio', icon: <SpeakerHighIcon size={17} /> },
-      { id: 'documento', label: 'Documento', icon: <FileTextIcon size={17} /> },
-      { id: 'apresentacao', label: 'Apresentação', icon: <SlidesIcon size={17} /> },
-    ],
-  },
-]
-
 const FILE_FILTERS = ['Todos', 'Texto e PDF', 'Slides', 'Planilhas', 'Imagens', 'Vídeos', 'Áudio', 'Outros']
 
 type FileRow = { name: string; type: string; modified: string; icon: string; color: string; thumb?: string }
@@ -62,42 +24,25 @@ const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/80/80`
 const FILES: FileRow[] = [
   { name: 'Guia de marca Inner 2026', type: 'PDF', modified: 'há 2 horas', icon: fPdf, color: '#C0392B' },
   { name: 'Hero 3D do site novo', type: 'Imagem', modified: 'há 3 horas', icon: fImage, color: '#7C4DC0', thumb: thumb('lib-hero') },
-  { name: 'Roteiro — vídeo institucional', type: 'Documento', modified: 'há 5 horas', icon: fText, color: '#3E63C4' },
+  { name: 'Roteiro: vídeo institucional', type: 'Documento', modified: 'há 5 horas', icon: fText, color: '#3E63C4' },
   { name: 'Deck de vendas Q4', type: 'Slides', modified: 'ontem', icon: fPpt, color: '#C15A2B' },
-  { name: 'Planilha de criativos — outubro', type: 'Planilha', modified: 'ontem', icon: fExcel, color: '#1F7A4D' },
+  { name: 'Planilha de criativos: outubro', type: 'Planilha', modified: 'ontem', icon: fExcel, color: '#1F7A4D' },
   { name: 'Banner da Black Friday', type: 'Imagem', modified: 'ontem', icon: fImage, color: '#7C4DC0', thumb: thumb('lib-banner') },
   { name: 'Teaser do lançamento V4.mp4', type: 'Vídeo', modified: '2 dias atrás', icon: fVideo, color: '#4C52C4' },
   { name: 'Jingle da campanha de verão', type: 'Áudio', modified: '2 dias atrás', icon: fWave, color: '#C98A2D' },
   { name: 'Pesquisa de concorrentes', type: 'Website', modified: '3 dias atrás', icon: fGlobe, color: '#2563B8' },
   { name: 'Contrato de parceria.pdf', type: 'PDF', modified: '3 dias atrás', icon: fPdf, color: '#C0392B' },
   { name: 'Fotos do ensaio de produto', type: 'Imagem', modified: '4 dias atrás', icon: fImage, color: '#7C4DC0', thumb: thumb('lib-ensaio') },
-  { name: 'Export de assets — marca.zip', type: 'Arquivo', modified: '4 dias atrás', icon: fZip, color: '#8A8A82' },
+  { name: 'Export de assets: marca.zip', type: 'Arquivo', modified: '4 dias atrás', icon: fZip, color: '#8A8A82' },
   { name: 'Narração do onboarding', type: 'Áudio', modified: '5 dias atrás', icon: fWave, color: '#C98A2D' },
-  { name: 'Relatório de métricas — setembro', type: 'Planilha', modified: '5 dias atrás', icon: fExcel, color: '#1F7A4D' },
+  { name: 'Relatório de métricas: setembro', type: 'Planilha', modified: '5 dias atrás', icon: fExcel, color: '#1F7A4D' },
   { name: 'Apresentação para investidores', type: 'Slides', modified: '1 semana atrás', icon: fPpt, color: '#C15A2B' },
 ]
 
 export default function LibraryPage() {
   const [filter, setFilter] = useState('Todos')
-  /* switcher de visualização — apenas visual (não altera o layout por ora) */
-  const [view, setView] = useState<'grid' | 'list'>('list')
-  /* dropdown do botão "Novo" */
-  const [novoOpen, setNovoOpen] = useState(false)
   /* base de conhecimento aberta (nível de navegação dentro da Biblioteca) */
   const [openBase, setOpenBase] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!novoOpen) return
-    const onDown = (e: PointerEvent) => {
-      const t = e.target as HTMLElement
-      if (!t.closest('.lib-novo')) setNovoOpen(false)
-    }
-    const id = window.setTimeout(() => document.addEventListener('pointerdown', onDown), 0)
-    return () => {
-      window.clearTimeout(id)
-      document.removeEventListener('pointerdown', onDown)
-    }
-  }, [novoOpen])
 
   const base = openBase ? KNOWLEDGE_BASES.find((b) => b.id === openBase) : null
   if (base) {
@@ -108,11 +53,6 @@ export default function LibraryPage() {
     <main className="library-page">
       <div className="lib-container">
         <h1 className="lib-title">Biblioteca</h1>
-
-        <div className="lib-search">
-          <img src={search} alt="" aria-hidden="true" />
-          <input type="text" placeholder="Buscar em toda a Biblioteca" spellCheck={false} />
-        </div>
 
         {/* Bases de conhecimento */}
         <section className="lib-section">
@@ -179,79 +119,15 @@ export default function LibraryPage() {
                   Filtrar
                 </span>
               </button>
-              <div className="lib-view-switch" role="group" aria-label="Visualização">
-                <button
-                  className={`lib-view-opt${view === 'grid' ? ' is-active' : ''}`}
-                  type="button"
-                  aria-label="Ver em grade"
-                  aria-pressed={view === 'grid'}
-                  onClick={() => setView('grid')}
-                >
-                  <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
-                    <rect x="2.6" y="2.6" width="5.4" height="5.4" rx="1.5" />
-                    <rect x="10" y="2.6" width="5.4" height="5.4" rx="1.5" />
-                    <rect x="2.6" y="10" width="5.4" height="5.4" rx="1.5" />
-                    <rect x="10" y="10" width="5.4" height="5.4" rx="1.5" />
-                  </svg>
-                  <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                    Ver em grade
-                  </span>
-                </button>
-                <button
-                  className={`lib-view-opt${view === 'list' ? ' is-active' : ''}`}
-                  type="button"
-                  aria-label="Ver em lista"
-                  aria-pressed={view === 'list'}
-                  onClick={() => setView('list')}
-                >
-                  <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
-                    <rect x="2" y="3.5" width="2.4" height="2.4" rx="0.8" />
-                    <rect x="6.3" y="3.95" width="9.7" height="1.5" rx="0.75" />
-                    <rect x="2" y="7.8" width="2.4" height="2.4" rx="0.8" />
-                    <rect x="6.3" y="8.25" width="9.7" height="1.5" rx="0.75" />
-                    <rect x="2" y="12.1" width="2.4" height="2.4" rx="0.8" />
-                    <rect x="6.3" y="12.55" width="9.7" height="1.5" rx="0.75" />
-                  </svg>
-                  <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                    Ver em lista
-                  </span>
-                </button>
-              </div>
-              <div className="lib-novo">
-                <button
-                  className={`lib-new-cta${novoOpen ? ' is-open' : ''}`}
-                  type="button"
-                  aria-haspopup="menu"
-                  aria-expanded={novoOpen}
-                  onClick={() => setNovoOpen((o) => !o)}
-                >
-                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                  </svg>
-                  Novo
-                </button>
-                {novoOpen && (
-                  <div className="lib-novo-menu" role="menu">
-                    {NOVO_SECTIONS.map((section) => (
-                      <div className="lib-novo-section" key={section.label}>
-                        <div className="lib-novo-label">{section.label}</div>
-                        {section.items.map((it) => (
-                          <button
-                            key={it.id}
-                            type="button"
-                            className="lib-novo-item"
-                            role="menuitem"
-                            onClick={() => setNovoOpen(false)}
-                          >
-                            <span className="lib-novo-icon">{it.icon}</span>
-                            <span className="lib-novo-text">{it.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button className="lib-new is-ghost" type="button" aria-label="Buscar">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                  <circle cx="8.2" cy="8.2" r="5" stroke="#3D3D3D" strokeWidth="1.2" />
+                  <path d="M12 12l3.4 3.4" stroke="#3D3D3D" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                  Buscar
+                </span>
+              </button>
             </div>
           </div>
 

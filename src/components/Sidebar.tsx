@@ -19,6 +19,7 @@ import {
   HomeFillIcon,
   HomeNavIcon,
   PacksIcon,
+  QuestionIcon,
   SidebarSimpleIcon,
   TicketIcon,
 } from './SidebarIcons'
@@ -55,6 +56,13 @@ const BOTTOM_ITEMS: Item[] = [
   { label: 'Indique e ganhe', href: '#indique', icon: <TicketIcon /> },
   { label: 'Packs', href: '#packs', icon: <PacksIcon /> },
   { label: 'Educação', href: '#educacao', icon: <GraduationCapIcon /> },
+]
+
+/* ícones utilitários acima do avatar no rail (só ícone + tooltip no hover) */
+const RAIL_UTILS = [
+  { id: 'indique', label: 'Indique e ganhe', href: '#indique', icon: <TicketIcon /> },
+  { id: 'educacao', label: 'Educação', href: '#educacao', icon: <GraduationCapIcon /> },
+  { id: 'ajuda', label: 'Ajuda', href: '#ajuda', icon: <QuestionIcon /> },
 ]
 
 function NavItem({
@@ -147,7 +155,7 @@ export default function Sidebar({
   const toggleProfile = (rect: DOMRect) =>
     setProfileAnchor((cur) => (cur ? null : rect))
   /* apps fixados pelo usuário no rail (abaixo do divisor). Vazio por padrão. */
-  const [railPinned, setRailPinned] = useState<string[]>([])
+  const [railPinned, setRailPinned] = useState<string[]>(['imagens'])
   const toggleRailPin = (id: string) =>
     setRailPinned((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   /* "Mais Apps" fica ativo quando a view atual é um app com ação */
@@ -450,6 +458,17 @@ export default function Sidebar({
           </nav>
 
           <div className="rl-flex" />
+
+          <div className="rl-util-group">
+            {RAIL_UTILS.map((u) => (
+              <a key={u.id} className="rl-util" href={u.href} aria-label={u.label}>
+                {u.icon}
+                <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+                  {u.label}
+                </span>
+              </a>
+            ))}
+          </div>
 
           <button
             type="button"

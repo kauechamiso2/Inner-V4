@@ -2,24 +2,17 @@ import { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import HistoryPanel from './components/HistoryPanel'
 import ChatHome from './components/ChatHome'
-import PageView from './components/PageView'
 import ImagesPage from './components/ImagesPage'
-import VideosPage from './components/VideosPage'
-import AudioPage from './components/AudioPage'
-import DocumentsPage from './components/DocumentsPage'
 import ProjectsPage from './components/ProjectsPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
-import SitesPage from './components/SitesPage'
-import AssistentesPage from './components/AssistentesPage'
-import PromptsPage from './components/PromptsPage'
+import BlankPage from './components/BlankPage'
 import TaskDrawer from './components/TaskDrawer'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import Onboarding from './components/Onboarding'
-import { PILLAR_BY_ID } from './components/pillars'
 import { AGENT_BY_ID, ORB_ACCENT, ORB_NAME } from './components/agents'
 import type { AgentId, ChosenAgent } from './components/agents'
-import type { AppView, PanelView, PillarId, SidebarLayout } from './components/pillars'
+import type { AppView, PanelView, SidebarLayout } from './components/pillars'
 import type { Task } from './components/tasks'
 
 type Drawer = { kind: 'task'; task: Task; closing?: boolean } | null
@@ -55,19 +48,10 @@ function readSavedLayout(): SidebarLayout {
   return 'e'
 }
 
-const GRID_VIEWS = ['library', 'tarefas', 'sites', 'prompts', 'assistentes', 'projetos'] as const
-
-function isGridView(
-  view: AppView,
-): view is 'library' | 'tarefas' | 'sites' | 'prompts' | 'assistentes' | 'projetos' {
-  return (GRID_VIEWS as readonly string[]).includes(view)
-}
-
-function titleFor(view: Exclude<AppView, 'chat'>): string {
-  if (view === 'library') return 'Biblioteca'
-  if (view === 'tarefas') return 'Tarefas'
-  if (view === 'sites') return 'Sites'
-  return PILLAR_BY_ID[view as PillarId].label
+/* Views que abrem o painel de histórico (apenas Chat/Home).
+   Imagens deixou de ter painel lateral; os demais pilares estão desativados. */
+function showsHistory(view: AppView): view is 'chat' {
+  return view === 'chat'
 }
 
 export default function App() {
@@ -103,6 +87,9 @@ export default function App() {
   const showTabs = version === 'v3'
   const appsReduced = version === 'v1'
   const [view, setView] = useState<AppView>('chat')
+  /* protótipo: alterna Tarefas e Projetos entre conteúdo e empty state */
+  const [tasksEmpty, setTasksEmpty] = useState(false)
+  const [projectsEmpty, setProjectsEmpty] = useState(false)
   /* última view com painel de histórico: mantém o conteúdo durante o colapso */
   const [panelView, setPanelView] = useState<PanelView>('chat')
   const [layout, setLayout] = useState<SidebarLayout>(readSavedLayout)
@@ -169,7 +156,8 @@ export default function App() {
 
   const navigate = (next: AppView) => {
     setView(next)
-    if (!isGridView(next)) setPanelView(next)
+    /* mantém o histórico no último contexto válido (Chat/Imagens) */
+    if (showsHistory(next)) setPanelView(next)
     setDrawer(null) // trocar de página fecha qualquer drawer aberto
   }
 
@@ -232,7 +220,7 @@ export default function App() {
       />
       <HistoryPanel
         view={panelView}
-        hidden={isGridView(view) || historyCollapsed}
+        hidden={!showsHistory(view) || historyCollapsed}
         chatMode={chatMode}
         pins={pins}
         isPinned={isPinned}
@@ -256,26 +244,15 @@ export default function App() {
         />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
-      ) : view === 'videos' ? (
-        <VideosPage key="videos" />
-      ) : view === 'audio' ? (
-        <AudioPage key="audio" />
-      ) : view === 'documentos' ? (
-        <DocumentsPage key="documentos" />
       ) : view === 'library' ? (
         <LibraryPage key="library" />
       ) : view === 'projetos' ? (
-        <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} agent={chosenAgent} />
+        <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} agent={chosenAgent} empty={projectsEmpty} />
       ) : view === 'tarefas' ? (
-        <TarefasPage key="tarefas" onOpenTask={openTaskDrawer} />
-      ) : view === 'sites' ? (
-        <SitesPage key="sites" />
-      ) : view === 'assistentes' ? (
-        <AssistentesPage key="assistentes" />
-      ) : view === 'prompts' ? (
-        <PromptsPage key="prompts" />
+        <TarefasPage key="tarefas" onOpenTask={openTaskDrawer} empty={tasksEmpty} />
       ) : (
-        <PageView key={view} title={titleFor(view)} />
+        /* pilares desativados por enquanto: página em branco */
+        <BlankPage key={view} />
       )}
       {drawer?.kind === 'task' && (
         <TaskDrawer task={drawer.task} closing={!!drawer.closing} onClose={closeDrawer} />
@@ -287,6 +264,11 @@ export default function App() {
         onCoachToggle={changeCoach}
         version={version}
         onVersionChange={changeVersion}
+        view={view}
+        tasksEmpty={tasksEmpty}
+        onTasksEmptyToggle={setTasksEmpty}
+        projectsEmpty={projectsEmpty}
+        onProjectsEmptyToggle={setProjectsEmpty}
       />
     </div>
     {showOnboarding && (

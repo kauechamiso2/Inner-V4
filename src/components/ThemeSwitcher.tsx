@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './theme-switcher.css'
-import type { SidebarLayout } from './pillars'
+import type { AppView, SidebarLayout } from './pillars'
 import type { ProtoVersion } from '../App'
 
 /* Versões do protótipo (selecionáveis no topo do menu). */
@@ -40,6 +40,12 @@ type Props = {
   onCoachToggle: (open: boolean) => void
   version: ProtoVersion
   onVersionChange: (v: ProtoVersion) => void
+  /* view atual: o controle de empty state aparece em Tarefas e Projetos */
+  view: AppView
+  tasksEmpty: boolean
+  onTasksEmptyToggle: (empty: boolean) => void
+  projectsEmpty: boolean
+  onProjectsEmptyToggle: (empty: boolean) => void
 }
 
 const DARK_KEY = 'inner-v4-dark'
@@ -56,6 +62,11 @@ export default function ThemeSwitcher({
   onCoachToggle,
   version,
   onVersionChange,
+  view,
+  tasksEmpty,
+  onTasksEmptyToggle,
+  projectsEmpty,
+  onProjectsEmptyToggle,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [dark, setDark] = useState(false)
@@ -147,6 +158,48 @@ export default function ThemeSwitcher({
               {layout === l.id && <Check />}
             </button>
           ))}
+
+          {view === 'tarefas' && (
+            <>
+              <div className="theme-pop-header is-section">Tarefas</div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={tasksEmpty}
+                className="theme-option"
+                onClick={() => onTasksEmptyToggle(!tasksEmpty)}
+              >
+                <span className="theme-name">
+                  Empty state
+                  <span className="theme-hint">Mostra o estado sem tarefas</span>
+                </span>
+                <span className={`mini-switch${tasksEmpty ? ' is-on' : ''}`} aria-hidden="true">
+                  <span className="mini-switch-knob" />
+                </span>
+              </button>
+            </>
+          )}
+
+          {view === 'projetos' && (
+            <>
+              <div className="theme-pop-header is-section">Projetos</div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={projectsEmpty}
+                className="theme-option"
+                onClick={() => onProjectsEmptyToggle(!projectsEmpty)}
+              >
+                <span className="theme-name">
+                  Empty state
+                  <span className="theme-hint">Mostra o estado sem projetos</span>
+                </span>
+                <span className={`mini-switch${projectsEmpty ? ' is-on' : ''}`} aria-hidden="true">
+                  <span className="mini-switch-knob" />
+                </span>
+              </button>
+            </>
+          )}
 
           <div className="theme-pop-header is-section">Overlays</div>
           <button

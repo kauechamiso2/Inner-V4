@@ -11,7 +11,7 @@ import {
   Zap,
 } from 'lucide-react'
 import './profile-menu.css'
-import { GraduationCapIcon, PacksIcon, TicketIcon } from './SidebarIcons'
+import { PacksIcon } from './SidebarIcons'
 
 type Props = {
   anchor: DOMRect
@@ -158,18 +158,6 @@ export default function ProfileMenu({ anchor, onClose }: Props) {
           <PacksIcon />
         </span>
         <span className="pf-row-label">Packs</span>
-      </button>
-      <button type="button" className="pf-row" role="menuitem">
-        <span className="pf-row-ic pf-row-ic-ph">
-          <TicketIcon />
-        </span>
-        <span className="pf-row-label">Indique e ganhe</span>
-      </button>
-      <button type="button" className="pf-row" role="menuitem">
-        <span className="pf-row-ic pf-row-ic-ph">
-          <GraduationCapIcon />
-        </span>
-        <span className="pf-row-label">Educação</span>
       </button>
 
       <div className="pf-divider" role="separator">

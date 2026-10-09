@@ -1,9 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { CSSProperties } from 'react'
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react'
 import './images-page.css'
 import ImagePromptBar from './ImagePromptBar'
-import artImageGeneration from '../assets/tools/image-generation.png'
+import type { BaseAttachment } from './ImagePromptBar'
+import ToolDrawer from './ToolDrawer'
+import ImageModal from './ImageModal'
+import type { ModalImg } from './ImageModal'
 import artRemoveBackground from '../assets/tools/remove-background.png'
 import artGenerateCartoon from '../assets/tools/generate-cartoon.png'
 import artClothingShoot from '../assets/tools/clothing-shoot.png'
@@ -24,28 +28,30 @@ import mLandscapeLake from '../assets/masonry/landscape-lake.webp'
 import mLandscapeDesert from '../assets/masonry/landscape-desert.webp'
 import mFoodPoke from '../assets/masonry/food-poke.webp'
 import mTechRobot from '../assets/masonry/tech-robot.webp'
+import mFashionEditorial from '../assets/masonry/fashion-editorial.webp'
+import mColorsPaint from '../assets/masonry/colors-paint.webp'
+import mCharRobotpet from '../assets/masonry/char-robotpet.webp'
+import mFoodPancakes from '../assets/masonry/food-pancakes.webp'
+import mPeopleCurly from '../assets/masonry/people-curly.webp'
+import mLandscapeForest from '../assets/masonry/landscape-forest.webp'
+import mFashionAccessories from '../assets/masonry/fashion-accessories.webp'
+import mPeopleElderly from '../assets/masonry/people-elderly.webp'
+import mColorsGradient from '../assets/masonry/colors-gradient.webp'
+import mCharFoxwarrior from '../assets/masonry/char-foxwarrior.webp'
+import mInteriorMinimal from '../assets/masonry/interior-minimal.webp'
+import mTechSneaker from '../assets/masonry/tech-sneaker.webp'
+import genDog1 from '../assets/gen/dog-1.webp'
+import genDog2 from '../assets/gen/dog-2.webp'
+import genDog3 from '../assets/gen/dog-3.webp'
 
-/* Filtros = modelos disponíveis (espelham o seletor de modelos, sem ícones) */
-const MODELS = [
-  'Todos os modelos',
-  'Automático',
-  'Flux Schnell 1.0',
-  'Playground 2.5',
-  'Nano Banana',
-  'Nano Banana 2',
-  'Nano Banana Pro',
-  'GPT Image 2',
-]
+/* resultado mockado da geração (3 cachorros + 1 duplicado = 4) */
+const GEN_RESULTS = [genDog1, genDog2, genDog3, genDog1]
+/* tempo de "loading" antes de mostrar o resultado */
+const GEN_MS = 2800
 
-type Tool = { id: string; title: string; desc: string; art: string }
+export type Tool = { id: string; title: string; desc: string; art: string }
 
 const TOOLS: Tool[] = [
-  {
-    id: 'image-generation',
-    title: 'Image Generation',
-    desc: 'Produce images in various sizes and styles from text prompts.',
-    art: artImageGeneration,
-  },
   {
     id: 'remove-background',
     title: 'Remove Background',
@@ -98,7 +104,7 @@ const TOOLS: Tool[] = [
 
 /* grid orgânico (Pinterest) — imagens geradas, intercaladas por tema/proporção.
    prompt/model aparecem no overlay ao passar o mouse. */
-type MasonryImg = { src: string; ar: number; prompt: string; model: string }
+type MasonryImg = { src: string; ar: number; prompt: string; model: string; uid?: string }
 const MASONRY: MasonryImg[] = [
   {
     src: mCharMonster,
@@ -172,24 +178,210 @@ const MASONRY: MasonryImg[] = [
     prompt: 'Retrato documental de artesão idoso trabalhando a madeira, mãos marcadas, luz quente',
     model: 'Playground 2.5',
   },
+  {
+    src: mFashionEditorial,
+    ar: 0.747,
+    prompt: 'Editorial de moda, look estruturado avant-garde, luz dramática de estúdio, fundo minimalista',
+    model: 'Nano Banana Pro',
+  },
+  {
+    src: mColorsPaint,
+    ar: 1.34,
+    prompt: 'Respingo de tinta em macro, cores saturadas se misturando, líquido brilhante, abstrato',
+    model: 'Flux Schnell 1.0',
+  },
+  {
+    src: mCharRobotpet,
+    ar: 0.747,
+    prompt: 'Pet robô 3D fofo, branco e verde-menta brilhante, olhos expressivos, render estilo Pixar',
+    model: 'Nano Banana 2',
+  },
+  {
+    src: mFoodPancakes,
+    ar: 1,
+    prompt: 'Pilha de panquecas fofas com frutas vermelhas e mel, vista de cima, luz natural',
+    model: 'Nano Banana 2',
+  },
+  {
+    src: mPeopleCurly,
+    ar: 0.747,
+    prompt: 'Retrato editorial de rapaz de cabelo cacheado, fundo verde-azulado de estúdio, luz suave',
+    model: 'GPT Image 2',
+  },
+  {
+    src: mLandscapeForest,
+    ar: 1.792,
+    prompt: 'Trilha de floresta na névoa ao amanhecer, pinheiros altos, clima cinematográfico, verdes suaves',
+    model: 'Nano Banana 2',
+  },
+  {
+    src: mFashionAccessories,
+    ar: 1,
+    prompt: 'Flat lay de acessórios de luxo: relógio, óculos e perfume sobre mármore creme, sombras suaves',
+    model: 'Nano Banana Pro',
+  },
+  {
+    src: mPeopleElderly,
+    ar: 0.747,
+    prompt: 'Retrato documental de senhora sorrindo, luz natural quente de janela, tons suaves',
+    model: 'Playground 2.5',
+  },
+  {
+    src: mColorsGradient,
+    ar: 1,
+    prompt: 'Ondas de gradiente vibrante, campo de cor fluido, magenta, roxo e ciano, render 3D suave',
+    model: 'Flux Schnell 1.0',
+  },
+  {
+    src: mCharFoxwarrior,
+    ar: 0.747,
+    prompt: 'Raposa guerreira de fantasia ilustrada, arte vetorial plana, cores vibrantes, pose confiante',
+    model: 'Flux Schnell 1.0',
+  },
+  {
+    src: mInteriorMinimal,
+    ar: 1.34,
+    prompt: 'Interior minimalista iluminado pelo sol, tons de madeira e bege, janela ampla, sombras suaves',
+    model: 'GPT Image 2',
+  },
+  {
+    src: mTechSneaker,
+    ar: 1,
+    prompt: 'Tênis futurista em foto de produto, flutuando sobre gradiente pastel, luz de estúdio, detalhe nítido',
+    model: 'Nano Banana Pro',
+  },
 ]
 
 const SKELETON_MS = 950
 
 export default function ImagesPage() {
   const [loading, setLoading] = useState(true)
-  const [model, setModel] = useState('Todos os modelos')
-  const [favs, setFavs] = useState<Record<string, boolean>>({})
   const railRef = useRef<HTMLDivElement>(null)
   const [railEdge, setRailEdge] = useState<{ start: boolean; end: boolean }>({
     start: true,
     end: false,
   })
 
+  /* estado do input de prompt — compartilhado entre a barra do topo e a fixa */
+  const [promptValue, setPromptValue] = useState('')
+  const [promptCount, setPromptCount] = useState(1)
+  /* imagens anexadas como base ("Usar de base"), compartilhadas pelos inputs */
+  const [attachments, setAttachments] = useState<BaseAttachment[]>([])
+  const addBase = (src: string) =>
+    setAttachments((list) =>
+      list.some((a) => a.src === src)
+        ? list
+        : [...list, { uid: `base-${list.length}-${src.slice(-12)}`, src }],
+    )
+  const removeBase = (uid: string) =>
+    setAttachments((list) => list.filter((a) => a.uid !== uid))
+
+  /* modo "gerando": ao clicar em Gerar, foca nas gerações com skeletons;
+     após alguns segundos, os skeletons viram o resultado */
+  const [generating, setGenerating] = useState(false)
+  const [genDone, setGenDone] = useState(false)
+  const [genPrompt, setGenPrompt] = useState('')
+  const genTimerRef = useRef<number | null>(null)
+  const genCountRef = useRef(0)
+  /* gerações concluídas, adicionadas ao topo do grid ao voltar pra home */
+  const [generated, setGenerated] = useState<MasonryImg[]>([])
+  /* ferramenta aberta (Remove Background, etc.): abre um drawer à esquerda */
+  const [tool, setTool] = useState<Tool | null>(null)
+  /* mantém o conteúdo do drawer durante a animação de fechar */
+  const lastToolRef = useRef<Tool | null>(null)
+  if (tool) lastToolRef.current = tool
+  const startGenerate = (prompt?: string) => {
+    if (genTimerRef.current) window.clearTimeout(genTimerRef.current)
+    setGenPrompt((prompt ?? promptValue).trim() || 'Geração de imagem')
+    setGenerating(true)
+    setGenDone(false)
+    setPromptValue('')
+    setAttachments([])
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    genTimerRef.current = window.setTimeout(() => setGenDone(true), GEN_MS)
+  }
+  const exitGenerate = () => {
+    if (genTimerRef.current) window.clearTimeout(genTimerRef.current)
+    /* se a geração terminou, as imagens entram no topo do grid */
+    if (genDone) {
+      const n = genCountRef.current++
+      const items: MasonryImg[] = GEN_RESULTS.map((src, i) => ({
+        uid: `gen-${n}-${i}`,
+        src,
+        ar: 16 / 9,
+        prompt: genPrompt,
+        model: 'Nano Banana 2',
+      }))
+      setGenerated((prev) => [...items, ...prev])
+    }
+    setGenerating(false)
+    setGenDone(false)
+  }
+  /* a barra fixa o input no rodapé quando o input do topo sai de vista */
+  const [docked, setDocked] = useState(false)
+  /* geometria da área principal para alinhar a barra fixa (portal no body) */
+  const [dockBox, setDockBox] = useState<{ left: number; width: number } | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  /* imagem aberta no modal de detalhe (com estado de saída para animar) */
+  const [imgModal, setImgModal] = useState<{ img: ModalImg; closing: boolean } | null>(null)
+  const openImg = (img: ModalImg) => setImgModal({ img, closing: false })
+  const closeImg = () => {
+    setImgModal((m) => (m ? { ...m, closing: true } : m))
+    window.setTimeout(() => setImgModal(null), 200)
+  }
+
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), SKELETON_MS)
     return () => window.clearTimeout(t)
   }, [])
+
+  /* clicar fora do drawer (input, grid, etc.) fecha a ferramenta */
+  useEffect(() => {
+    if (!tool) return
+    const onDown = (e: PointerEvent) => {
+      if (!(e.target as HTMLElement).closest('.ip-tool-drawer')) setTool(null)
+    }
+    const id = window.setTimeout(() => document.addEventListener('pointerdown', onDown), 0)
+    return () => {
+      window.clearTimeout(id)
+      document.removeEventListener('pointerdown', onDown)
+    }
+  }, [tool])
+
+  /* observa a sentinela logo abaixo do input: quando ela sai pela parte de
+     cima da área de scroll, fixamos o input no rodapé */
+  useEffect(() => {
+    const root = scrollRef.current
+    const sentinel = sentinelRef.current
+    if (!root || !sentinel) return
+    const io = new IntersectionObserver(([entry]) => setDocked(!entry.isIntersecting), {
+      root,
+      threshold: 0,
+    })
+    io.observe(sentinel)
+    return () => io.disconnect()
+  }, [])
+
+  /* mede left/width da área principal para a barra fixa (atualiza em resize) */
+  useLayoutEffect(() => {
+    if (!docked && !generating) return
+    const measure = () => {
+      const el = scrollRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      setDockBox({ left: r.left, width: r.width })
+    }
+    measure()
+    /* re-mede após a animação do drawer (a largura do scroll muda) */
+    const t = window.setTimeout(measure, 500)
+    window.addEventListener('resize', measure)
+    return () => {
+      window.clearTimeout(t)
+      window.removeEventListener('resize', measure)
+    }
+  }, [docked, generating, tool])
 
   const updateRailEdge = () => {
     const el = railRef.current
@@ -209,21 +401,53 @@ export default function ImagesPage() {
     el.scrollBy({ left: dir * Math.max(el.clientWidth * 0.8, 320), behavior: 'smooth' })
   }
 
-  const toggleFav = (id: string) => setFavs((f) => ({ ...f, [id]: !f[id] }))
-
   return (
-    <main className="images-page">
-      <div className="ip-container">
+    <main className="images-page ip-shell">
+      {/* drawer da ferramenta (Remove Background, etc.) — abre à esquerda */}
+      <aside className={`ip-tool-drawer${tool ? ' is-open' : ''}`} aria-hidden={!tool}>
+        <div className="ip-tool-inner">
+          <header className="ip-tool-head">
+            <button
+              type="button"
+              className="ip-tool-close"
+              aria-label="Fechar"
+              onClick={() => setTool(null)}
+            >
+              <X size={18} strokeWidth={2} />
+            </button>
+          </header>
+          {lastToolRef.current && (
+            <ToolDrawer
+              key={lastToolRef.current.id}
+              tool={lastToolRef.current}
+              onGenerate={() => {
+                startGenerate(lastToolRef.current?.title)
+                setTool(null)
+              }}
+            />
+          )}
+        </div>
+      </aside>
+
+      <div className="ip-scroll" ref={scrollRef}>
+      <div className={`ip-container${generating ? ' is-generating' : ''}`}>
         <h1 className="ip-title">Geração e edição de Imagens</h1>
 
-        <ImagePromptBar />
+        <div className="ip-prompt-frame">
+          <ImagePromptBar
+            value={promptValue}
+            onValueChange={setPromptValue}
+            count={promptCount}
+            onCountChange={setPromptCount}
+            attachments={attachments}
+            onRemoveAttachment={removeBase}
+            onGenerate={startGenerate}
+          />
+        </div>
+        <div ref={sentinelRef} className="ip-prompt-sentinel" aria-hidden="true" />
 
-        {/* ---------- Ferramentas de Imagem (carrossel) ---------- */}
-        <section className="ip-section">
-          <div className="ip-section-head">
-            <h2 className="ip-section-title">Ferramentas de Imagem</h2>
-          </div>
-
+        {/* ---------- Ferramentas de Imagem (carrossel, sem título) ---------- */}
+        <section className="ip-section ip-tools">
           <div className="ip-rail-wrap">
             <button
               type="button"
@@ -248,40 +472,30 @@ export default function ImagesPage() {
                       <div className="sk-art" />
                     </div>
                   ))
-                : TOOLS.map((tool, i) => (
+                : TOOLS.map((t, i) => (
                     <article
                       className="tool-card"
-                      key={tool.id}
+                      key={t.id}
                       style={
                         { '--i': i, '--tilt': i % 2 === 0 ? '-1.5deg' : '1.5deg' } as CSSProperties
                       }
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setTool(t)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setTool(t)
+                        }
+                      }}
                     >
                       <div className="tool-card-header">
-                        <h3>{tool.title}</h3>
-                        <p>{tool.desc}</p>
+                        <h3>{t.title}</h3>
+                        <p>{t.desc}</p>
                       </div>
                       <div className="tool-card-art">
-                        <img src={tool.art} alt="" loading="lazy" />
+                        <img src={t.art} alt="" loading="lazy" />
                       </div>
-                      <button
-                        type="button"
-                        className={`tool-fav${favs[tool.id] ? ' is-on' : ''}`}
-                        aria-label={
-                          favs[tool.id] ? `Desfavoritar ${tool.title}` : `Favoritar ${tool.title}`
-                        }
-                        aria-pressed={!!favs[tool.id]}
-                        onClick={() => toggleFav(tool.id)}
-                      >
-                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
-                          <path
-                            d="M5.5 0.9 6.94 3.82l3.22.47-2.33 2.27.55 3.21L5.5 8.26 2.62 9.77l.55-3.21L0.84 4.29l3.22-.47L5.5 0.9Z"
-                            fill={favs[tool.id] ? '#f2b544' : 'none'}
-                            stroke={favs[tool.id] ? '#f2b544' : 'currentColor'}
-                            strokeWidth="0.9"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </button>
                     </article>
                   ))}
             </div>
@@ -297,24 +511,96 @@ export default function ImagesPage() {
           </div>
         </section>
 
-        {/* ---------- Explorar (apenas filtros por enquanto) ---------- */}
+        {/* ---------- Minhas Gerações ---------- */}
         <section className="ip-section">
           <div className="ip-section-head">
-            <h2 className="ip-section-title">Explorar</h2>
+            <div className="ip-gen-head-left">
+              {generating && (
+                <button
+                  type="button"
+                  className="ip-gen-back"
+                  aria-label="Voltar"
+                  onClick={exitGenerate}
+                >
+                  <ChevronLeft size={18} strokeWidth={2.4} />
+                </button>
+              )}
+              <h2 className="ip-section-title">Minhas Gerações</h2>
+            </div>
+            <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path
+                  d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
+                  stroke="#3D3D3D"
+                  strokeWidth="1.125"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                Filtrar
+              </span>
+            </button>
           </div>
 
-          <div className="ip-models">
-            {MODELS.map((m) => (
-              <button
-                key={m}
-                type="button"
-                className={`ip-pill is-model${model === m ? ' is-active' : ''}`}
-                onClick={() => setModel(m)}
-              >
-                {m}
-              </button>
-            ))}
-          </div>
+          {/* linha 16:9 — skeleton enquanto gera, depois o resultado */}
+          {generating && (
+            <div className="ip-gen-row">
+              {genDone
+                ? GEN_RESULTS.map((src, i) => (
+                    <figure
+                      className="ip-gen-tile"
+                      key={i}
+                      style={{ '--i': i } as CSSProperties}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() =>
+                        openImg({ src, ar: 16 / 9, prompt: genPrompt, model: 'Nano Banana 2' })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          openImg({ src, ar: 16 / 9, prompt: genPrompt, model: 'Nano Banana 2' })
+                        }
+                      }}
+                    >
+                      <img src={src} alt="" />
+                    </figure>
+                  ))
+                : [0, 1, 2, 3].map((i) => (
+                    <div
+                      className="ip-gen-skel"
+                      key={i}
+                      style={{ '--i': i } as CSSProperties}
+                      aria-hidden="true"
+                    />
+                  ))}
+            </div>
+          )}
+
+          {/* geradas persistidas (home): em linha (grid), acima do masonry */}
+          {!generating && generated.length > 0 && (
+            <div className="ip-gen-row">
+              {generated.map((m, i) => (
+                <figure
+                  className="ip-gen-tile"
+                  key={m.uid}
+                  style={{ '--i': i } as CSSProperties}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openImg(m)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      openImg(m)
+                    }
+                  }}
+                >
+                  <img src={m.src} alt="" />
+                </figure>
+              ))}
+            </div>
+          )}
 
           {/* grid orgânico (Pinterest) — imagens geradas; overlay com prompt no hover */}
           <div className="ip-masonry">
@@ -323,6 +609,15 @@ export default function ImagesPage() {
                 className="ip-mtile"
                 key={m.src}
                 style={{ aspectRatio: String(m.ar), '--i': i } as CSSProperties}
+                role="button"
+                tabIndex={0}
+                onClick={() => openImg(m)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    openImg(m)
+                  }
+                }}
               >
                 <img src={m.src} alt="" loading="lazy" />
                 <figcaption className="ip-mtile-ov">
@@ -330,10 +625,22 @@ export default function ImagesPage() {
                   <div className="ip-mtile-foot">
                     <span className="ip-mtile-model">{m.model}</span>
                     <span className="ip-mtile-acts">
-                      <button type="button" className="ip-mtile-icon" aria-label="Baixar imagem">
+                      <button
+                        type="button"
+                        className="ip-mtile-icon"
+                        aria-label="Baixar imagem"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Download size={15} strokeWidth={2} />
                       </button>
-                      <button type="button" className="ip-mtile-use">
+                      <button
+                        type="button"
+                        className="ip-mtile-use"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          addBase(m.src)
+                        }}
+                      >
                         Usar de base
                       </button>
                     </span>
@@ -344,6 +651,43 @@ export default function ImagesPage() {
           </div>
         </section>
       </div>
+      </div>
+
+      {/* input fixado no rodapé — portal no body para ficar fixo ao viewport,
+          alinhado à área principal (aparece quando o input do topo sai de vista) */}
+      {createPortal(
+        <div
+          className={`ip-dock${docked || generating ? ' is-visible' : ''}`}
+          style={dockBox ? ({ left: dockBox.left, width: dockBox.width } as CSSProperties) : undefined}
+          aria-hidden={!(docked || generating)}
+        >
+          <div className="ip-prompt-frame">
+            <ImagePromptBar
+              docked
+              value={promptValue}
+              onValueChange={setPromptValue}
+              count={promptCount}
+              onCountChange={setPromptCount}
+              attachments={attachments}
+              onRemoveAttachment={removeBase}
+              onGenerate={startGenerate}
+            />
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {imgModal && (
+        <ImageModal
+          img={imgModal.img}
+          closing={imgModal.closing}
+          onClose={closeImg}
+          onUseAsBase={() => {
+            addBase(imgModal.img.src)
+            closeImg()
+          }}
+        />
+      )}
     </main>
   )
 }

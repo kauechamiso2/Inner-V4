@@ -1,0 +1,330 @@
+/* ============ Modal "Nova tarefa" ============ */
+.nt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 9vh 20px 48px;
+  overflow-y: auto;
+  background: rgba(15, 17, 22, 0.44);
+  backdrop-filter: blur(4px);
+  animation: nt-overlay-in 200ms ease;
+}
+
+.nt-overlay.is-closing {
+  animation: nt-overlay-out 190ms ease forwards;
+}
+
+@keyframes nt-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nt-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.nt-modal {
+  width: min(660px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 16px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 22px;
+  background: var(--pop-surface);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.08),
+    0 28px 64px -20px rgba(0, 0, 0, 0.42);
+  animation: nt-modal-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nt-overlay.is-closing .nt-modal {
+  animation: nt-modal-out 190ms ease forwards;
+}
+
+@keyframes nt-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nt-modal-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+}
+
+/* ---------- Cabeçalho ---------- */
+.nt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 2px 0 8px;
+}
+
+.nt-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text-strong);
+}
+
+.nt-close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.nt-close:hover {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+/* ---------- Input (estilo geração de imagem, uma única linha) ---------- */
+.nt-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 10px;
+  border: 1px solid var(--ctl-border);
+  border-radius: 16px;
+  background: var(--pop-surface);
+  box-shadow: var(--input-shadow);
+  transition: border-color 200ms ease, box-shadow 220ms ease;
+}
+
+.nt-input.is-ready {
+  border-color: color-mix(in srgb, #8a74ff 40%, var(--ctl-border));
+}
+
+/* "+" no lugar da estrela do input de imagens */
+.nt-add {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--hover-06);
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.nt-add:hover {
+  background: var(--hover-07);
+  color: var(--text-strong);
+}
+
+.nt-field {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 32px;
+  color: var(--text-strong);
+}
+
+.nt-field::placeholder {
+  color: var(--text-faint);
+}
+
+/* botão de envio: seta pra cima (sem morph) */
+.nt-send {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--send-idle);
+  color: var(--text-ghost);
+  cursor: default;
+  transition: background-color 240ms ease, color 240ms ease, transform 150ms ease;
+}
+
+.nt-send.is-ready {
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  cursor: pointer;
+  animation: nt-send-pulse 2.6s ease-in-out infinite;
+}
+
+.nt-send.is-ready:hover {
+  transform: scale(1.06);
+}
+
+.nt-send.is-ready:active {
+  transform: scale(0.94);
+}
+
+@keyframes nt-send-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 2px 0 rgba(150, 110, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(150, 110, 255, 0.7);
+  }
+}
+
+/* ---------- Sugestões ---------- */
+.nt-sugg {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+  padding: 0 2px 2px;
+}
+
+.nt-sugg-head {
+  padding: 0 10px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+}
+
+.nt-sugg-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.nt-sugg-item::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 1px;
+  background: var(--sb-border);
+  transition: opacity 140ms ease;
+}
+
+.nt-sugg-item:last-child::after {
+  opacity: 0;
+}
+
+.nt-sugg-item:hover {
+  background: var(--hover-04);
+}
+
+.nt-sugg-item:hover::after {
+  opacity: 0;
+}
+
+.nt-sugg-emoji {
+  flex-shrink: 0;
+  width: 24px;
+  font-size: 19px;
+  line-height: 1;
+  text-align: center;
+}
+
+.nt-sugg-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.nt-sugg-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  color: var(--text-strong);
+}
+
+.nt-sugg-desc {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
+.nt-sugg-add {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  color: var(--text-ghost);
+  transition: color 140ms ease;
+}
+
+.nt-sugg-item:hover .nt-sugg-add {
+  color: var(--text-mid);
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 560px) {
+  .nt-overlay {
+    padding: 5vh 14px 32px;
+  }
+  .nt-sugg-desc {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nt-overlay,
+  .nt-modal {
+    animation: none !important;
+  }
+  .nt-send.is-ready {
+    animation: none;
+  }
+}

@@ -1,14 +1,25 @@
 import { useEffect, useState } from 'react'
+import type { CSSProperties } from 'react'
 import './library-page.css'
 import './tasks-page.css'
-import searchIcon from '../assets/library/search.svg'
+import { Play } from 'lucide-react'
+import tutorialThumb from '../assets/task-tutorial.webp'
 import TaskCard from './TaskCard'
+import NovaTarefaModal from './NovaTarefaModal'
 import { ACTIVE_TASKS, INACTIVE_TASKS } from './tasks'
 import type { Task } from './tasks'
 
-export default function TarefasPage({ onOpenTask }: { onOpenTask: (task: Task) => void }) {
-  const [view, setView] = useState<'grid' | 'list'>('grid')
+export default function TarefasPage({
+  onOpenTask,
+  empty = false,
+}: {
+  onOpenTask: (task: Task) => void
+  /* protótipo: alterna para o estado vazio (sem tarefas) */
+  empty?: boolean
+}) {
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  /* modal "Nova tarefa" (input estilo geração de imagem) */
+  const [novaOpen, setNovaOpen] = useState(false)
 
   useEffect(() => {
     if (!openMenu) return
@@ -26,21 +37,74 @@ export default function TarefasPage({ onOpenTask }: { onOpenTask: (task: Task) =
   const toggle = (id: string) => setOpenMenu((cur) => (cur === id ? null : id))
 
   return (
-    <main className="tasks-page">
+    <main className={`tasks-page${empty ? ' is-empty' : ''}`}>
       <div className="lib-container">
-        <h1 className="lib-title">Automações</h1>
+        <h1 className="lib-title">Tarefas Agendadas</h1>
 
-        <div className="lib-search">
-          <img src={searchIcon} alt="" aria-hidden="true" />
-          <input type="text" placeholder="Buscar automações" spellCheck={false} />
-        </div>
-
+        {empty ? (
+          <div className="tasks-empty">
+            {/* Card-tutorial: o que é uma tarefa agendada (texto + vídeo mockado) */}
+            <article className="te-tutorial" style={{ '--d': '40ms' } as CSSProperties}>
+              <div className="te-tutorial-text">
+                <h3 className="te-tutorial-title">Automatize tarefas para seu agente executar.</h3>
+                <ol className="te-steps">
+                  <li className="te-step">
+                    <span className="te-step-num">1</span>
+                    <span className="te-step-text">
+                      <strong>Diga o que você quer</strong> uma vez, do seu jeito.
+                    </span>
+                  </li>
+                  <li className="te-step">
+                    <span className="te-step-num">2</span>
+                    <span className="te-step-text">
+                      <strong>Escolha a frequência e o horário</strong>: todo dia, toda semana ou
+                      quando quiser.
+                    </span>
+                  </li>
+                  <li className="te-step">
+                    <span className="te-step-num">3</span>
+                    <span className="te-step-text">
+                      <strong>Receba o resultado pronto</strong>, sem precisar pedir de novo.
+                    </span>
+                  </li>
+                </ol>
+                <button
+                  type="button"
+                  className="lib-new-cta te-tutorial-cta"
+                  onClick={() => setNovaOpen(true)}
+                >
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path
+                      d="M8 3.1v9.8M3.1 8h9.8"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Nova Tarefa
+                </button>
+              </div>
+              <button type="button" className="te-tutorial-video" aria-label="Assistir: Como funcionam as tarefas agendadas">
+                <img src={tutorialThumb} alt="" aria-hidden="true" />
+                <span className="te-tutorial-grad" aria-hidden="true" />
+                <span className="te-tutorial-caption">Como funcionam as tarefas agendadas</span>
+                <span className="te-tutorial-dur">
+                  <Play size={11} strokeWidth={0} fill="currentColor" aria-hidden="true" />
+                  1:34
+                </span>
+                <span className="te-tutorial-play" aria-hidden="true">
+                  <Play size={20} strokeWidth={0} fill="currentColor" />
+                </span>
+              </button>
+            </article>
+          </div>
+        ) : (
+          <>
         {/* Ativas */}
         <section className="lib-section">
           <div className="lib-section-head">
             <div className="lib-section-title">
               <h2>Ativas</h2>
-              <p>Automações em execução ou agendadas</p>
             </div>
             <div className="lib-files-actions">
               <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
@@ -57,45 +121,16 @@ export default function TarefasPage({ onOpenTask }: { onOpenTask: (task: Task) =
                   Filtrar
                 </span>
               </button>
-              <div className="lib-view-switch" role="group" aria-label="Visualização">
-                <button
-                  className={`lib-view-opt${view === 'grid' ? ' is-active' : ''}`}
-                  type="button"
-                  aria-label="Ver em grade"
-                  aria-pressed={view === 'grid'}
-                  onClick={() => setView('grid')}
-                >
-                  <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
-                    <rect x="2.6" y="2.6" width="5.4" height="5.4" rx="1.5" />
-                    <rect x="10" y="2.6" width="5.4" height="5.4" rx="1.5" />
-                    <rect x="2.6" y="10" width="5.4" height="5.4" rx="1.5" />
-                    <rect x="10" y="10" width="5.4" height="5.4" rx="1.5" />
-                  </svg>
-                  <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                    Ver em grade
-                  </span>
-                </button>
-                <button
-                  className={`lib-view-opt${view === 'list' ? ' is-active' : ''}`}
-                  type="button"
-                  aria-label="Ver em lista"
-                  aria-pressed={view === 'list'}
-                  onClick={() => setView('list')}
-                >
-                  <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
-                    <rect x="2" y="3.5" width="2.4" height="2.4" rx="0.8" />
-                    <rect x="6.3" y="3.95" width="9.7" height="1.5" rx="0.75" />
-                    <rect x="2" y="7.8" width="2.4" height="2.4" rx="0.8" />
-                    <rect x="6.3" y="8.25" width="9.7" height="1.5" rx="0.75" />
-                    <rect x="2" y="12.1" width="2.4" height="2.4" rx="0.8" />
-                    <rect x="6.3" y="12.55" width="9.7" height="1.5" rx="0.75" />
-                  </svg>
-                  <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                    Ver em lista
-                  </span>
-                </button>
-              </div>
-              <button className="lib-new-cta" type="button">
+              <button className="lib-new is-ghost" type="button" aria-label="Buscar">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                  <circle cx="8.2" cy="8.2" r="5" stroke="#3D3D3D" strokeWidth="1.2" />
+                  <path d="M12 12l3.4 3.4" stroke="#3D3D3D" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                  Buscar
+                </span>
+              </button>
+              <button className="lib-new-cta" type="button" onClick={() => setNovaOpen(true)}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
@@ -122,7 +157,6 @@ export default function TarefasPage({ onOpenTask }: { onOpenTask: (task: Task) =
         <section className="lib-section">
           <div className="lib-section-title">
             <h2>Inativas</h2>
-            <p>Pausadas ou já concluídas</p>
           </div>
 
           <div className="tasks-grid">
@@ -139,7 +173,11 @@ export default function TarefasPage({ onOpenTask }: { onOpenTask: (task: Task) =
             ))}
           </div>
         </section>
+          </>
+        )}
       </div>
+
+      {novaOpen && <NovaTarefaModal onClose={() => setNovaOpen(false)} />}
     </main>
   )
 }
