@@ -1,0 +1,516 @@
+/* ============ Drawer do Site (prévia do site criado no chat) ============
+   Mesmo shell do drawer de tarefa, mais largo: a prévia pede espaço. */
+
+.app-drawer.is-site {
+  --sd-w: min(720px, 56vw);
+  width: var(--sd-w);
+  animation: sd-in 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-drawer.is-site.is-closing {
+  animation: sd-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes sd-in {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--sd-w);
+  }
+}
+
+@keyframes sd-out {
+  from {
+    width: var(--sd-w);
+  }
+  to {
+    width: 0;
+  }
+}
+
+.app-drawer.is-site .sd-inner {
+  width: var(--sd-w);
+  overflow: hidden;
+}
+
+/* ---------- tela cheia ---------- */
+.sd-inner {
+  background: var(--pop-surface);
+}
+
+.sd-inner.is-fixed {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  height: auto;
+  transition: width 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-drawer.is-site .sd-inner.is-full {
+  width: 100vw;
+}
+
+/* ---------- header (ref.: título central, ações em pílulas nas laterais) ---------- */
+.sd-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--pop-divider);
+}
+
+.sd-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sd-side.is-end {
+  justify-content: flex-end;
+}
+
+.sd-pill {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 3px;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.sd-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 16px 0 14px;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+  cursor: pointer;
+  transition:
+    background-color 130ms ease,
+    transform 120ms ease;
+}
+
+.sd-edit:hover {
+  background: var(--hover-05);
+}
+
+.sd-edit:active {
+  transform: scale(0.97);
+}
+
+.sd-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-strong);
+  cursor: pointer;
+  transition:
+    background-color 130ms ease,
+    transform 120ms ease;
+}
+
+.sd-btn:hover {
+  background: var(--hover-05);
+}
+
+.sd-btn:active {
+  transform: scale(0.94);
+}
+
+.sd-btn svg {
+  display: block;
+}
+
+.sd-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.sd-name {
+  max-width: 100%;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sd-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-soft);
+  text-decoration: none;
+}
+
+.sd-url span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-decoration-color: var(--text-ghost);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 140ms ease;
+}
+
+.sd-url:hover span {
+  text-decoration-color: currentColor;
+}
+
+.sd-url svg {
+  flex-shrink: 0;
+}
+
+/* ---------- prévia ---------- */
+.sd-viewport {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: #ffffff;
+  animation: sd-frame-in 520ms cubic-bezier(0.22, 1, 0.36, 1) 120ms backwards;
+}
+
+@keyframes sd-frame-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* em tela cheia o site respira: conteúdo centralizado numa coluna */
+.sd-inner.is-full .sp-site {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+/* ============ Site gerado (sempre claro: é o site do usuário, não a UI) ============ */
+.sp-site {
+  --sp-ink: #141414;
+  --sp-mid: #555555;
+  --sp-soft: #8a8a8a;
+  --sp-line: #ececec;
+  color: var(--sp-ink);
+  background: #ffffff;
+  font-family: inherit;
+}
+
+.sp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+}
+
+.sp-logo {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.sp-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font-size: 13px;
+  color: var(--sp-mid);
+}
+
+.sp-cta {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--sp-ink);
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.sp-hero {
+  padding: 44px 32px 40px;
+}
+
+.sp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px 5px 9px;
+  border: 1px solid var(--sp-line);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--sp-mid);
+}
+
+.sp-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22b573;
+  box-shadow: 0 0 0 3px rgba(34, 181, 115, 0.16);
+}
+
+.sp-h1 {
+  margin: 20px 0 0;
+  max-width: 560px;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -1px;
+}
+
+.sp-h1 em {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.sp-lead {
+  margin: 18px 0 0;
+  max-width: 480px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--sp-mid);
+}
+
+.sp-section {
+  padding: 8px 32px 40px;
+}
+
+.sp-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--sp-line);
+  margin-bottom: 20px;
+}
+
+.sp-section-head h2,
+.sp-about h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sp-section-head span {
+  font-size: 12px;
+  color: var(--sp-soft);
+}
+
+.sp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 18px;
+}
+
+.sp-card {
+  animation: sp-card-in 520ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(360ms + var(--i, 0) * 70ms);
+}
+
+@keyframes sp-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.sp-cover {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.sp-cover-mark {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* "tela" estilizada do projeto */
+.sp-cover-ui {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -8%;
+  height: 62%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 10px 10px 0 0;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.25);
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sp-cover-ui span {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.sp-cover-ui span:first-child {
+  width: 46%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.sp-cover-ui span:last-child {
+  width: 70%;
+}
+
+.sp-card:hover .sp-cover-ui {
+  transform: translateY(-6px);
+}
+
+.sp-card-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sp-card-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sp-card-tag {
+  font-size: 12px;
+  color: var(--sp-soft);
+}
+
+.sp-card-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--sp-mid);
+}
+
+.sp-about {
+  margin: 0 32px;
+  padding: 32px 0 36px;
+  border-top: 1px solid var(--sp-line);
+}
+
+.sp-about p {
+  margin: 12px 0 0;
+  max-width: 520px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sp-mid);
+}
+
+.sp-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--sp-soft);
+}
+
+.sp-stats strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  color: var(--sp-ink);
+}
+
+.sp-foot {
+  margin: 0 16px 16px;
+  padding: 36px 28px;
+  border-radius: 16px;
+  background: #141414;
+  color: #ffffff;
+}
+
+.sp-foot h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+}
+
+.sp-mail {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ---------- miniatura no card do pilar ---------- */
+.sd-mini {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #ffffff;
+  pointer-events: none;
+}
+
+.sd-mini-page {
+  transform-origin: top left;
+}
+
+.sd-mini .sp-card {
+  animation: none;
+}
+
+.sd-mini .sp-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 920px) {
+  .app-drawer.is-site {
+    --sd-w: min(560px, 70vw);
+  }
+
+  .sp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-drawer.is-site,
+  .sd-viewport,
+  .sd-inner.is-fixed,
+  .sp-card {
+    animation: none;
+  }
+}

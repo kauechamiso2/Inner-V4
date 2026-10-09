@@ -10,6 +10,9 @@ import TarefasPage from './components/TarefasPage'
 import SitesPage from './components/SitesPage'
 import BlankPage from './components/BlankPage'
 import TaskDrawer from './components/TaskDrawer'
+import SiteDrawer from './components/SiteDrawer'
+import type { SiteDraft } from './components/sites'
+import type { ChatMsg } from './components/ChatHome'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import Onboarding from './components/Onboarding'
 import { AGENT_BY_ID, ORB_ACCENT, ORB_NAME } from './components/agents'
@@ -17,7 +20,10 @@ import type { AgentId, ChosenAgent } from './components/agents'
 import type { AppView, PanelView, SidebarLayout } from './components/pillars'
 import type { Task } from './components/tasks'
 
-type Drawer = { kind: 'task'; task: Task; closing?: boolean } | null
+type Drawer =
+  | { kind: 'task'; task: Task; closing?: boolean }
+  | { kind: 'site'; site: SiteDraft; closing?: boolean; fromPillar?: boolean }
+  | null
 
 /* Pins do histórico da Home — elevados ao App para que a página de um Projeto
    (ex.: HR Stuff) consiga fixar/desafixar e refletir no painel Home. */
@@ -131,6 +137,8 @@ export default function App() {
      primeira mensagem; o ativo aparece selecionado enquanto a conversa está aberta */
   const [startedChats, setStartedChats] = useState<StartedChat[]>([])
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
+  const activeChatIdRef = useRef<string | null>(null)
+  activeChatIdRef.current = activeChatId
   /* remonta a Home (volta ao estado inicial) ao clicar em "Nova tarefa" */
   const [homeKey, setHomeKey] = useState(0)
   const startThread = (title: string) => {
@@ -146,12 +154,14 @@ export default function App() {
     setActiveProject(null)
     setActiveChatId(null)
     setPendingMessage(text)
+    setRestoreThread(null)
     setHomeKey((k) => k + 1)
     setView('chat')
     setPanelView('chat')
     setDrawer(null)
   }
   const resetHome = () => {
+    setRestoreThread(null)
     setActiveProject(null)
     setActiveChatId(null)
     setHomeKey((k) => k + 1)
@@ -222,7 +232,7 @@ export default function App() {
   const [taskEdits, setTaskEdits] = useState<Record<string, Task>>({})
   const saveTask = (task: Task) => {
     setTaskEdits((m) => ({ ...m, [task.id]: task }))
-    setDrawer((d) => (d && d.task.id === task.id ? { ...d, task } : d))
+    setDrawer((d) => (d?.kind === 'task' && d.task.id === task.id ? { ...d, task } : d))
   }
 
   /* drawer aberto a partir do chat: o histórico também não coexiste com ele.
@@ -234,6 +244,47 @@ export default function App() {
       setHistoryCollapsed(true)
     }
     openTaskDrawer(taskEdits[task.id] ?? task)
+  }
+
+  /* sites criados pelo agente no chat: entram no topo do pilar de Sites */
+  const [createdSites, setCreatedSites] = useState<SiteDraft[]>([])
+  /* conversa onde cada site nasceu (e a linha dela no histórico): "Editar" volta pra ela */
+  const siteChatsRef = useRef<Record<string, { chatId: string | null; messages: ChatMsg[] }>>({})
+  const addSite = (site: SiteDraft, messages: ChatMsg[]) => {
+    siteChatsRef.current[site.id] = { chatId: activeChatIdRef.current, messages }
+    setCreatedSites((list) => (list.some((s) => s.id === site.id) ? list : [site, ...list]))
+  }
+
+  /* card do site no pilar: abre a prévia (drawer e sidebar não coexistem) */
+  const openSiteDrawer = (site: SiteDraft) => {
+    setDrawer({ kind: 'site', site, fromPillar: true })
+    setCollapsed(true)
+  }
+
+  /* "Editar" no drawer: reabre o chat onde o site foi criado */
+  const [restoreThread, setRestoreThread] = useState<ChatMsg[] | null>(null)
+  const editSite = (site: SiteDraft) => {
+    const saved = siteChatsRef.current[site.id]
+    if (!saved) return
+    setChatMode('agente')
+    setActiveProject(null)
+    setActiveChatId(saved.chatId)
+    setPendingMessage(null)
+    setRestoreThread(saved.messages)
+    setHomeKey((k) => k + 1)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
+  }
+
+  /* site criado no chat: mesmo comportamento do drawer de tarefa */
+  const openSiteFromChat = (site: SiteDraft) => {
+    if (!historyCollapsed) {
+      historyAutoClosedRef.current = true
+      setHistoryCollapsed(true)
+    }
+    setDrawer({ kind: 'site', site })
+    setCollapsed(true)
   }
 
   const closeDrawer = () => {
@@ -313,9 +364,12 @@ export default function App() {
           onThreadStart={startThread}
           onTaskCreated={addTask}
           onOpenTask={openTaskFromChat}
+          onOpenSite={openSiteFromChat}
+          onSiteCreated={addSite}
           taskEdits={taskEdits}
           initialMessage={pendingMessage}
           onInitialMessageSent={() => setPendingMessage(null)}
+          initialThread={restoreThread}
           mode={chatMode}
           onModeChange={setChatMode}
           project={activeProject}
@@ -343,7 +397,12 @@ export default function App() {
           onStartChat={startChatFrom}
         />
       ) : view === 'sites' ? (
-        <SitesPage key="sites" />
+        <SitesPage
+          key="sites"
+          onStartChat={startChatFrom}
+          createdSites={createdSites}
+          onOpenSite={openSiteDrawer}
+        />
       ) : (
         /* pilares desativados por enquanto: página em branco */
         <BlankPage key={view} />
@@ -354,6 +413,14 @@ export default function App() {
           closing={!!drawer.closing}
           onClose={closeDrawer}
           onSave={saveTask}
+        />
+      )}
+      {drawer?.kind === 'site' && (
+        <SiteDrawer
+          site={drawer.site}
+          closing={!!drawer.closing}
+          onClose={closeDrawer}
+          onEdit={drawer.fromPillar ? () => editSite(drawer.site) : undefined}
         />
       )}
       <ThemeSwitcher

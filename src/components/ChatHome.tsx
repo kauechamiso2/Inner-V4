@@ -4,6 +4,8 @@ import {
   Check,
   ChevronRight,
   Copy,
+  Globe,
+  Lock,
   MoreHorizontal,
   RefreshCw,
   Share,
@@ -18,6 +20,8 @@ import type { Question, QuestionAnswer } from './QuestionCard'
 import { USER_NAME, greetingFor } from './greeting'
 import { AgendadoIcon } from './SidebarIcons'
 import type { Task } from './tasks'
+import { PORTFOLIO_SITE } from './sites'
+import type { SiteDraft } from './sites'
 import type { ActiveProject } from '../App'
 import type { ChosenAgent } from './agents'
 
@@ -28,7 +32,9 @@ type Block = { kind: 'p'; text: string } | { kind: 'ul'; items: string[] }
 
 type Msg =
   | { id: number; role: 'user'; text: string }
-  | { id: number; role: 'agent'; blocks: Block[]; task?: Task }
+  | { id: number; role: 'agent'; blocks: Block[]; task?: Task; site?: SiteDraft; restored?: boolean }
+/* conversa salva (ex.: chat onde o site foi criado) para reabrir em "Editar" */
+export type ChatMsg = Msg
 type AgentMsg = Extract<Msg, { role: 'agent' }>
 
 /* tempo de "pensando" antes da resposta mockada aparecer */
@@ -203,6 +209,24 @@ function flightConfirm(answers: QuestionAnswer[]): Block[] {
   ]
 }
 
+/* ---------- Cenário mockado: "Novo site" de portfólio ---------- */
+
+const isPortfolioSite = (text: string) => /portf[oó]lio/i.test(text)
+
+const siteIntro = (): Block[] => [
+  { kind: 'p', text: `Certo, ${USER_NAME}!` },
+  { kind: 'p', text: 'Vamos criar seu site de portfólio.' },
+  { kind: 'p', text: 'Você já tem os projetos que você quer expor?' },
+  { kind: 'p', text: 'Pode me enviar em documento, foto, pdf... como tiver aí!' },
+]
+
+const siteConfirm = (): Block[] => [
+  {
+    kind: 'p',
+    text: 'Sem problemas! Vou criar projetos fictícios para a primeira versão do seu site e depois a gente troca pelos seus, pode ser?',
+  },
+]
+
 /* ---------- Mensagem do agente (stream + ações) ---------- */
 
 function AgentMessage({
@@ -210,19 +234,21 @@ function AgentMessage({
   copied,
   onCopy,
   onOpenTask,
+  onOpenSite,
   taskEdits,
 }: {
   msg: AgentMsg
   copied: boolean
   onCopy: () => void
   onOpenTask?: (task: Task) => void
+  onOpenSite?: (site: SiteDraft) => void
   /* edições salvas no modal: o widget mostra sempre a versão atual da tarefa */
   taskEdits?: Record<string, Task>
 }) {
   const task = msg.task ? (taskEdits?.[msg.task.id] ?? msg.task) : null
   return (
     <article
-      className="msg-agent is-stream"
+      className={`msg-agent${msg.restored ? '' : ' is-stream'}`}
       style={
         {
           '--word-ms': `${WORD_MS}ms`,
@@ -242,6 +268,22 @@ function AgentMessage({
           <span className="msg-task-text">
             <span className="msg-task-name">{task.name}</span>
             <span className="msg-task-sub">{task.schedule}</span>
+          </span>
+          <ChevronRight className="msg-task-chev" size={18} strokeWidth={2} aria-hidden="true" />
+        </button>
+      )}
+      {/* site criado: widget que abre o drawer com a prévia */}
+      {msg.site && (
+        <button type="button" className="msg-task" onClick={() => onOpenSite?.(msg.site!)}>
+          <span className="msg-task-ic" aria-hidden="true">
+            <Globe size={20} strokeWidth={1.8} />
+          </span>
+          <span className="msg-task-text">
+            <span className="msg-task-name">{msg.site.name}</span>
+            <span className="msg-task-sub msg-site-sub">
+              <Lock size={13} strokeWidth={2.2} aria-hidden="true" />
+              Não publicado · Visível apenas pra você
+            </span>
           </span>
           <ChevronRight className="msg-task-chev" size={18} strokeWidth={2} aria-hidden="true" />
         </button>
@@ -287,6 +329,9 @@ export default function ChatHome({
   onInitialMessageSent,
   onTaskCreated,
   onOpenTask,
+  onOpenSite,
+  onSiteCreated,
+  initialThread = null,
   taskEdits,
 }: {
   mode: InputMode
@@ -313,16 +358,28 @@ export default function ChatHome({
   onOpenTask?: (task: Task) => void
   /* edições salvas no modal "Editar tarefa" (widget reflete a versão atual) */
   taskEdits?: Record<string, Task>
+  /* clique no widget do site criado: abre o drawer com a prévia */
+  onOpenSite?: (site: SiteDraft) => void
+  /* site criado pelo agente (entra no topo do pilar de Sites) + a conversa até ali */
+  onSiteCreated?: (site: SiteDraft, messages: ChatMsg[]) => void
+  /* reabre uma conversa salva já em modo conversa, sem animar as respostas */
+  initialThread?: ChatMsg[] | null
 }) {
   /* conversa: abre ao enviar a primeira mensagem */
-  const [messages, setMessages] = useState<Msg[]>([])
-  const [thread, setThread] = useState(false)
+  const [messages, setMessages] = useState<Msg[]>(() =>
+    (initialThread ?? []).map((m) => (m.role === 'agent' ? { ...m, restored: true } : m)),
+  )
+  const [thread, setThread] = useState(!!initialThread?.length)
+  const messagesRef = useRef(messages)
+  messagesRef.current = messages
   const [leaving, setLeaving] = useState(false)
   const [thinking, setThinking] = useState(false)
+  /* rótulo do "pensando" quando o agente está trabalhando (ex.: Construindo site) */
+  const [thinkLabel, setThinkLabel] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<number | null>(null)
   /* perguntas do agente: o input vira o card de perguntas enquanto houver */
   const [questions, setQuestions] = useState<Question[] | null>(null)
-  const idRef = useRef(0)
+  const idRef = useRef(Math.max(0, ...(initialThread ?? []).map((m) => m.id)))
   const dockRef = useRef<HTMLDivElement>(null)
   const threadRef = useRef<HTMLDivElement>(null)
   /* FLIP: onde o input estava (centro da Home) antes de descer ao rodapé */
@@ -342,16 +399,42 @@ export default function ChatHome({
     thinkMs: number,
     after?: (b: Block[]) => void,
     task?: Task,
+    site?: SiteDraft,
+    label?: string,
   ) => {
     setThinking(true)
+    setThinkLabel(label ?? null)
     later(() => {
       setThinking(false)
-      setMessages((m) => [...m, { id: ++idRef.current, role: 'agent', blocks, task }])
+      setMessages((m) => [...m, { id: ++idRef.current, role: 'agent', blocks, task, site }])
       after?.(blocks)
     }, thinkMs)
   }
 
+  /* cenário do site: depois da pergunta sobre os projetos, a próxima
+     resposta do usuário (qualquer que seja) gera o rascunho do site */
+  const siteStepRef = useRef<'idle' | 'asked' | 'done'>(initialThread ? 'done' : 'idle')
+
   const reply = (text: string) => {
+    if (siteStepRef.current === 'asked') {
+      siteStepRef.current = 'done'
+      /* "Construindo site" por alguns segundos: dá a sensação de que o site está sendo feito */
+      agentSays(
+        siteConfirm(),
+        5200,
+        /* depois do render: a conversa salva já inclui a resposta com o widget */
+        () => later(() => onSiteCreated?.(PORTFOLIO_SITE, messagesRef.current), 0),
+        undefined,
+        PORTFOLIO_SITE,
+        'Construindo site',
+      )
+      return
+    }
+    if (mode === 'agente' && siteStepRef.current === 'idle' && isPortfolioSite(text)) {
+      siteStepRef.current = 'asked'
+      agentSays(siteIntro(), 1300)
+      return
+    }
     if (mode === 'agente' && isFlightTask(text)) {
       /* o agente confirma em dois passos e, quando o texto assenta, o input
          cresce e vira o card de perguntas */
@@ -574,11 +657,17 @@ export default function ChatHome({
                     copied={copiedId === m.id}
                     onCopy={() => copyMsg(m)}
                     onOpenTask={onOpenTask}
+                    onOpenSite={onOpenSite}
                     taskEdits={taskEdits}
                   />
                 ),
               )}
-              {thinking && (
+              {thinking && thinkLabel && (
+                <div className="msg-building" role="status">
+                  {thinkLabel}
+                </div>
+              )}
+              {thinking && !thinkLabel && (
                 <div
                   className="msg-thinking"
                   role="status"
@@ -611,6 +700,7 @@ export default function ChatHome({
             agent={agent}
             intro={intro}
             showTabs={showTabs}
+            collapsible={mode === 'chat'}
             onSend={send}
           />
         </div>

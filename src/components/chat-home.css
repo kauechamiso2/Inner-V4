@@ -398,7 +398,9 @@
   border: 1px solid var(--sb-border);
   border-radius: 24px;
   box-shadow: var(--input-shadow);
-  transition: background-color 420ms ease;
+  transition:
+    background-color 420ms ease,
+    border-radius 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes input-in {
@@ -1222,6 +1224,37 @@
 }
 
 /* "pensando": três pontos pulsando antes da resposta */
+/* agente trabalhando: texto cinza com um brilho que atravessa (ref. "Criando tarefa agendada") */
+.msg-building {
+  align-self: flex-start;
+  font-size: 16px;
+  line-height: 28px;
+  color: transparent;
+  background: linear-gradient(
+      90deg,
+      var(--text-ghost) 0%,
+      var(--text-ghost) 35%,
+      color-mix(in srgb, var(--text-ghost) 22%, var(--main-bg)) 50%,
+      var(--text-ghost) 65%,
+      var(--text-ghost) 100%
+    )
+    0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation:
+    msg-in 300ms ease,
+    building-shine 1.8s linear infinite;
+}
+
+@keyframes building-shine {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
 .msg-thinking {
   display: flex;
   align-items: center;
@@ -1304,10 +1337,11 @@
   }
 }
 
-/* ============ Input em uma linha (só Home no modo Agente; Projeto e Chat com modelos mantêm o input alto) ============
+/* ============ Input em uma linha (Home no modo Agente; Chat com modelos enquanto recolhido) ============
    [+ / pills] [texto] [mic · enviar] lado a lado; anexos ocupam a linha de cima.
    .chat-controls vira "contents" para seus dois lados entrarem no grid do card. */
-.chat-home.is-agent .chat-input-card {
+.chat-home.is-agent .chat-input-card,
+.chat-input-wrap.is-compact .chat-input-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas:
@@ -1322,30 +1356,36 @@
   border-radius: 28px;
 }
 
-.chat-home.is-agent .chat-attachments {
+.chat-home.is-agent .chat-attachments,
+.chat-input-wrap.is-compact .chat-attachments {
   grid-area: att;
   margin-bottom: 10px;
   padding: 4px 2px 0;
 }
 
-.chat-home.is-agent .chat-input-editor {
+.chat-home.is-agent .chat-input-editor,
+.chat-input-wrap.is-compact .chat-input-editor {
   grid-area: editor;
 }
 
-.chat-home.is-agent .chat-controls {
+.chat-home.is-agent .chat-controls,
+.chat-input-wrap.is-compact .chat-controls {
   display: contents;
 }
 
-.chat-home.is-agent .chat-controls-left {
+.chat-home.is-agent .chat-controls-left,
+.chat-input-wrap.is-compact .chat-controls-left {
   grid-area: left;
 }
 
-.chat-home.is-agent .chat-controls-right {
+.chat-home.is-agent .chat-controls-right,
+.chat-input-wrap.is-compact .chat-controls-right {
   grid-area: right;
 }
 
 /* uma linha: altura de 1 linha, rola por dentro se o texto ficar longo */
-.chat-home.is-agent .chat-input-field {
+.chat-home.is-agent .chat-input-field,
+.chat-input-wrap.is-compact .chat-input-field {
   min-height: 24px;
   max-height: 24px;
   overflow-y: auto;
@@ -1353,20 +1393,41 @@
   line-height: 24px;
 }
 
-.chat-home.is-agent .chat-input-field::-webkit-scrollbar {
+.chat-home.is-agent .chat-input-field::-webkit-scrollbar,
+.chat-input-wrap.is-compact .chat-input-field::-webkit-scrollbar {
   display: none;
 }
 
-.chat-home.is-agent .chat-input-backdrop {
+.chat-home.is-agent .chat-input-backdrop,
+.chat-input-wrap.is-compact .chat-input-backdrop {
   line-height: 24px;
 }
 
 /* botões um pouco maiores, centrados na linha */
 .chat-home.is-agent .ch-attach,
+.chat-input-wrap.is-compact .ch-attach,
 .chat-home.is-agent .chat-send,
-.chat-home.is-agent .ch-voice {
+.chat-input-wrap.is-compact .chat-send,
+.chat-home.is-agent .ch-voice,
+.chat-input-wrap.is-compact .ch-voice {
   width: 36px;
   height: 36px;
+}
+
+/* Chat com modelos recolhível: o "+" fica sempre à esquerda (só desce ao
+   expandir) e o seletor de modelo entra logo depois dele */
+.chat-input-wrap.is-collapsible .ch-model {
+  order: 1;
+  transform-origin: left center;
+}
+
+.chat-input-wrap.is-collapsible .feature-pill {
+  order: 2;
+}
+
+/* recolhido: sem seletor de modelo até expandir */
+.chat-input-wrap.is-compact .ch-model {
+  display: none;
 }
 
 /* ============ Stream da resposta + ajustes da conversa ============ */
@@ -1500,6 +1561,16 @@
   font-size: 14px;
   line-height: 20px;
   color: var(--text-faint);
+}
+
+.msg-site-sub {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.msg-site-sub svg {
+  flex-shrink: 0;
 }
 
 .msg-task-chev {

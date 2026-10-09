@@ -3,8 +3,10 @@ import { createPortal } from 'react-dom'
 import { ArrowUp, Plus, X } from 'lucide-react'
 import './nova-tarefa.css'
 
+export type Suggestion = { emoji: string; title: string; desc: string }
+
 /* sugestões de tarefas prontas (antes ficavam no empty state) */
-const SUGGESTIONS = [
+const SUGGESTIONS: Suggestion[] = [
   {
     emoji: '📨',
     title: 'Fica de olho nos e-mails',
@@ -22,13 +24,23 @@ const SUGGESTIONS = [
   },
 ]
 
+/* modal de criação reaproveitado por outros pilares (ex.: Novo site):
+   título, placeholder e sugestões vêm por props */
 export default function NovaTarefaModal({
   onClose,
   onSend,
+  title = 'Nova tarefa',
+  placeholder = 'Descreva a tarefa que seu agente vai executar...',
+  sendLabel = 'Criar tarefa',
+  suggestions = SUGGESTIONS,
 }: {
   onClose: () => void
   /* envia o pedido como mensagem do chat na Home */
   onSend?: (text: string) => void
+  title?: string
+  placeholder?: string
+  sendLabel?: string
+  suggestions?: Suggestion[]
 }) {
   const [value, setValue] = useState('')
   const [closing, setClosing] = useState(false)
@@ -64,12 +76,12 @@ export default function NovaTarefaModal({
       className={`nt-overlay${closing ? ' is-closing' : ''}`}
       role="dialog"
       aria-modal="true"
-      aria-label="Nova tarefa"
+      aria-label={title}
       onClick={close}
     >
       <div className="nt-modal" onClick={(e) => e.stopPropagation()}>
         <header className="nt-head">
-          <h2 className="nt-title">Nova tarefa</h2>
+          <h2 className="nt-title">{title}</h2>
           <button type="button" className="nt-close" aria-label="Fechar" onClick={close}>
             <X size={18} strokeWidth={2.2} />
           </button>
@@ -83,7 +95,7 @@ export default function NovaTarefaModal({
           <input
             type="text"
             className="nt-field"
-            placeholder="Descreva a tarefa que seu agente vai executar..."
+            placeholder={placeholder}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
@@ -98,7 +110,7 @@ export default function NovaTarefaModal({
           <button
             type="button"
             className={`nt-send${canSend ? ' is-ready' : ''}`}
-            aria-label="Criar tarefa"
+            aria-label={sendLabel}
             disabled={!canSend}
             onClick={canSend ? submit : undefined}
           >
@@ -109,7 +121,7 @@ export default function NovaTarefaModal({
         {/* sugestões abaixo do input */}
         <div className="nt-sugg">
           <span className="nt-sugg-head">Sugestões</span>
-          {SUGGESTIONS.map((s) => (
+          {suggestions.map((s) => (
             <button
               key={s.title}
               type="button"

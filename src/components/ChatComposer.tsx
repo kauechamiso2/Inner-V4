@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import './chat-home.css'
 import AgentOrb from './AgentOrb'
 import { CaretDownIcon, PlusIcon, VoiceWaveIcon } from './SidebarIcons'
@@ -49,6 +49,7 @@ export default function ChatComposer({
   agent = null,
   intro = false,
   showTabs = true,
+  collapsible = false,
   onSend,
 }: {
   mode: InputMode
@@ -71,6 +72,8 @@ export default function ChatComposer({
   intro?: boolean
   /* abas Agente/Chat — ocultadas no redesign (só o input) */
   showTabs?: boolean
+  /* começa em uma linha (sem seletor de modelo) e expande ao clicar */
+  collapsible?: boolean
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
@@ -85,6 +88,84 @@ export default function ChatComposer({
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const canSend = value.trim().length > 0
+
+  /* uma linha ⇄ expandido: as posições antes da troca viram um FLIP
+     (altura do card + deslocamento de cada bloco), tudo na mesma curva */
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [expanded, setExpanded] = useState(false)
+  const compact = collapsible && !expanded
+  const flipRef = useRef<{ card: DOMRect; items: Map<Element, DOMRect> } | null>(null)
+  const flipAnims = useRef<Animation[]>([])
+  const isEmpty = !canSend && attachments.length === 0 && !feature
+
+  const toggleExpanded = (open: boolean) => {
+    if (!collapsible || open === expanded) return
+    const card = wrapRef.current?.querySelector('.chat-input-card')
+    if (card) {
+      const items = new Map<Element, DOMRect>()
+      card
+        .querySelectorAll('.chat-input-editor, .ch-attach-wrap, .feature-pill, .chat-controls-right')
+        .forEach((el) => items.set(el, el.getBoundingClientRect()))
+      flipRef.current = { card: card.getBoundingClientRect(), items }
+    }
+    setExpanded(open)
+  }
+
+  useLayoutEffect(() => {
+    const first = flipRef.current
+    const card = wrapRef.current?.querySelector('.chat-input-card')
+    flipRef.current = null
+    if (!first || !card) return
+    /* trocou no meio da animação: parte da posição visível (já medida) e
+       descarta a animação anterior para ela não sobrescrever a nova */
+    flipAnims.current.forEach((a) => a.cancel())
+    const anims: Animation[] = []
+    flipAnims.current = anims
+    const opts = { duration: 480, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+    const now = card.getBoundingClientRect()
+    if (Math.abs(first.card.height - now.height) > 0.5) {
+      anims.push(card.animate([{ height: `${first.card.height}px` }, { height: `${now.height}px` }], opts))
+    }
+    /* deltas relativos ao card: o topo dele também se move enquanto a altura anima */
+    first.items.forEach((r, el) => {
+      if (!el.isConnected) return
+      const n = el.getBoundingClientRect()
+      const dx = r.left - first.card.left - (n.left - now.left)
+      const dy = r.top - first.card.top - (n.top - now.top)
+      if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return
+      anims.push(el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], opts))
+    })
+    /* o seletor de modelo surge à direita do "+" (que só desce, sem atravessar) */
+    const model = card.querySelector('.ch-model')
+    if (expanded && model) {
+      const a = model.animate(
+        [
+          { opacity: 0, transform: 'translateX(-10px) scale(0.94)' },
+          { opacity: 1, transform: 'none' },
+        ],
+        { ...opts, delay: 90, fill: 'backwards' },
+      )
+      anims.push(a)
+    }
+  }, [expanded])
+
+  /* recolhe ao sair (clique fora ou foco fora) se não houver nada digitado/anexado */
+  useEffect(() => {
+    if (!collapsible || !expanded) return
+    const outside = (t: EventTarget | null) => !!t && !wrapRef.current?.contains(t as Node)
+    const onDown = (e: PointerEvent) => {
+      if (outside(e.target) && isEmpty && !plusOpen && !mention) toggleExpanded(false)
+    }
+    const onFocus = (e: FocusEvent) => {
+      if (outside(e.target) && isEmpty) toggleExpanded(false)
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('focusin', onFocus)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('focusin', onFocus)
+    }
+  })
 
   /* envia: entrega o texto ao pai e limpa o composer */
   const submit = () => {
@@ -244,7 +325,12 @@ export default function ChatComposer({
   }, [value, mentionRe])
 
   return (
-    <div className="chat-input-wrap">
+    <div
+      className={`chat-input-wrap${collapsible ? ' is-collapsible' : ''}${compact ? ' is-compact' : ''}`}
+      ref={wrapRef}
+      onPointerDown={() => toggleExpanded(true)}
+      onFocus={() => toggleExpanded(true)}
+    >
       {showTabs && (
       <div className="chat-tabs" role="tablist" aria-label="Modo do input">
         <button

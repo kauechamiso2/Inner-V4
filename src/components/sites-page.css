@@ -45,6 +45,10 @@
     box-shadow 150ms ease;
 }
 
+.site-card.is-clickable {
+  cursor: pointer;
+}
+
 .site-card:hover {
   border-color: var(--card-border-hover);
   transform: translateY(-2px);
