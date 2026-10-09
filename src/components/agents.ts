@@ -52,11 +52,13 @@ export const ORB_ACCENT = '#6366f1'
 export const ORB_TILE = '236,233,255'
 export const ORB_GLOW = ['#8b9bff', '#6366f1', '#b48bff']
 
-/* Ordem: cima-esq, cima-dir, baixo-esq, baixo-dir. */
+/* Ordem: cima-esq, cima-dir, baixo-esq, baixo-dir.
+   Personagens: golem de pedra (rock), alien-cérebro de óculos (octopus),
+   dragãozinho no ovo (orange) e alien de 3 olhos (purple). */
 export const AGENTS: Agent[] = [
-  { id: 'rock', img: rock, world: worldRock, name: 'Bento', accent: '#4fb050', tileTo: '249,255,233', glow: ['#7bd14a', '#4fb050', '#b4e26b'], banner: rockBust },
+  { id: 'rock', img: rock, world: worldRock, name: 'Rocco', accent: '#7c9a45', tileTo: '244,248,232', glow: ['#a8c46c', '#7c9a45', '#c9db94'], banner: rockBust },
   { id: 'octopus', img: octopus, world: worldOctopus, name: 'Otto', accent: '#3b82f6', tileTo: '231,239,255', glow: ['#5b9bff', '#3b82f6', '#4cc2f0'], banner: octopusBust },
-  { id: 'orange', img: orangeImg, world: worldOrange, name: 'Zuzu', accent: '#fb8c3c', tileTo: '255,241,238', glow: ['#ffb060', '#fb8c3c', '#ffcf72'], banner: orangeBust },
+  { id: 'orange', img: orangeImg, world: worldOrange, name: 'Zuzu', accent: '#ef7a5c', tileTo: '255,241,238', glow: ['#ffb060', '#fb8c3c', '#ffcf72'], banner: orangeBust },
   { id: 'purple', img: purple, world: worldPurple, name: 'Lila', accent: '#8b5cf6', tileTo: '236,230,255', glow: ['#b393ff', '#8b5cf6', '#c98dff'], banner: purpleBust },
 ]
 

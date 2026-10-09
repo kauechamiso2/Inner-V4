@@ -369,13 +369,13 @@ export default function Sidebar({
           <button
             type="button"
             className="rl-toggle"
-            aria-label={historyHidden ? 'Abrir histórico' : 'Fechar histórico'}
+            aria-label={historyHidden ? 'Abrir painel' : 'Fechar painel'}
             aria-pressed={!historyHidden}
             onClick={onToggleHistory}
           >
             <SidebarSimpleIcon />
             <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-              {historyHidden ? 'Abrir histórico' : 'Fechar histórico'}
+              {historyHidden ? 'Abrir painel' : 'Fechar painel'}
             </span>
           </button>
 

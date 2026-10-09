@@ -3,9 +3,11 @@ import Sidebar from './components/Sidebar'
 import HistoryPanel from './components/HistoryPanel'
 import ChatHome from './components/ChatHome'
 import ImagesPage from './components/ImagesPage'
+import VideosPage from './components/VideosPage'
 import ProjectsPage from './components/ProjectsPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
+import SitesPage from './components/SitesPage'
 import BlankPage from './components/BlankPage'
 import TaskDrawer from './components/TaskDrawer'
 import ThemeSwitcher from './components/ThemeSwitcher'
@@ -216,6 +218,13 @@ export default function App() {
   const addTask = (task: Task) =>
     setCreatedTasks((list) => (list.some((t) => t.id === task.id) ? list : [task, ...list]))
 
+  /* edições feitas no modal "Editar tarefa" (vale para qualquer tarefa) */
+  const [taskEdits, setTaskEdits] = useState<Record<string, Task>>({})
+  const saveTask = (task: Task) => {
+    setTaskEdits((m) => ({ ...m, [task.id]: task }))
+    setDrawer((d) => (d && d.task.id === task.id ? { ...d, task } : d))
+  }
+
   /* drawer aberto a partir do chat: o histórico também não coexiste com ele.
      Recolhemos o painel e o devolvemos ao fechar o drawer. */
   const historyAutoClosedRef = useRef(false)
@@ -224,7 +233,7 @@ export default function App() {
       historyAutoClosedRef.current = true
       setHistoryCollapsed(true)
     }
-    openTaskDrawer(task)
+    openTaskDrawer(taskEdits[task.id] ?? task)
   }
 
   const closeDrawer = () => {
@@ -304,6 +313,7 @@ export default function App() {
           onThreadStart={startThread}
           onTaskCreated={addTask}
           onOpenTask={openTaskFromChat}
+          taskEdits={taskEdits}
           initialMessage={pendingMessage}
           onInitialMessageSent={() => setPendingMessage(null)}
           mode={chatMode}
@@ -317,6 +327,8 @@ export default function App() {
         />
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
+      ) : view === 'videos' ? (
+        <VideosPage key="videos" panelOpen={!historyCollapsed} />
       ) : view === 'library' ? (
         <LibraryPage key="library" />
       ) : view === 'projetos' ? (
@@ -327,14 +339,22 @@ export default function App() {
           onOpenTask={openTaskDrawer}
           empty={tasksEmpty}
           createdTasks={createdTasks}
+          taskEdits={taskEdits}
           onStartChat={startChatFrom}
         />
+      ) : view === 'sites' ? (
+        <SitesPage key="sites" />
       ) : (
         /* pilares desativados por enquanto: página em branco */
         <BlankPage key={view} />
       )}
       {drawer?.kind === 'task' && (
-        <TaskDrawer task={drawer.task} closing={!!drawer.closing} onClose={closeDrawer} />
+        <TaskDrawer
+          task={drawer.task}
+          closing={!!drawer.closing}
+          onClose={closeDrawer}
+          onSave={saveTask}
+        />
       )}
       <ThemeSwitcher
         layout={layout}

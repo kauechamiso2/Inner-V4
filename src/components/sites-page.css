@@ -11,6 +11,11 @@
   transition: background-color 420ms ease;
 }
 
+/* grid mais largo que os demais pilares: as prévias de site pedem espaço */
+.sites-page .lib-container {
+  max-width: 1280px;
+}
+
 /* ---------- Grid de sites ---------- */
 .sites-grid {
   display: grid;

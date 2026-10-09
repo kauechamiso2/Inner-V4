@@ -1304,10 +1304,10 @@
   }
 }
 
-/* ============ Input em uma linha (Home e conversa) ============
+/* ============ Input em uma linha (só Home no modo Agente; Projeto e Chat com modelos mantêm o input alto) ============
    [+ / pills] [texto] [mic · enviar] lado a lado; anexos ocupam a linha de cima.
    .chat-controls vira "contents" para seus dois lados entrarem no grid do card. */
-.chat-input-card {
+.chat-home.is-agent .chat-input-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas:
@@ -1322,30 +1322,30 @@
   border-radius: 28px;
 }
 
-.chat-attachments {
+.chat-home.is-agent .chat-attachments {
   grid-area: att;
   margin-bottom: 10px;
   padding: 4px 2px 0;
 }
 
-.chat-input-editor {
+.chat-home.is-agent .chat-input-editor {
   grid-area: editor;
 }
 
-.chat-controls {
+.chat-home.is-agent .chat-controls {
   display: contents;
 }
 
-.chat-controls-left {
+.chat-home.is-agent .chat-controls-left {
   grid-area: left;
 }
 
-.chat-controls-right {
+.chat-home.is-agent .chat-controls-right {
   grid-area: right;
 }
 
 /* uma linha: altura de 1 linha, rola por dentro se o texto ficar longo */
-.chat-input-field {
+.chat-home.is-agent .chat-input-field {
   min-height: 24px;
   max-height: 24px;
   overflow-y: auto;
@@ -1353,18 +1353,18 @@
   line-height: 24px;
 }
 
-.chat-input-field::-webkit-scrollbar {
+.chat-home.is-agent .chat-input-field::-webkit-scrollbar {
   display: none;
 }
 
-.chat-input-backdrop {
+.chat-home.is-agent .chat-input-backdrop {
   line-height: 24px;
 }
 
 /* botões um pouco maiores, centrados na linha */
-.ch-attach,
-.chat-send,
-.ch-voice {
+.chat-home.is-agent .ch-attach,
+.chat-home.is-agent .chat-send,
+.chat-home.is-agent .ch-voice {
   width: 36px;
   height: 36px;
 }

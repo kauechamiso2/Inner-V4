@@ -15,6 +15,8 @@ export type Task = {
   status?: string
   /* quando a tarefa pertence a um projeto da Biblioteca */
   project?: { id: string; name: string; emoji: string }
+  /* fuso horário das execuções (padrão: America/Sao_Paulo) */
+  timezone?: string
 }
 
 export const ACTIVE_TASKS: Task[] = [

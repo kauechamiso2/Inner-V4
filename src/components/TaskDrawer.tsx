@@ -4,16 +4,20 @@ import { CalendarClock, MoreHorizontal, Pause, Pencil, Play, Repeat, Trash2, X, 
 import { MessageSquare } from 'lucide-react'
 import type { Task } from './tasks'
 import { CONTENT_BRIEFING } from './taskBriefing'
+import EditTaskModal from './EditTaskModal'
 import './task-drawer.css'
 
 type Props = {
   task: Task
   closing: boolean
   onClose: () => void
+  /* "Editar tarefa": salva nome, ícone, descrição, frequência e fuso */
+  onSave?: (task: Task) => void
 }
 
-export default function TaskDrawer({ task, closing, onClose }: Props) {
+export default function TaskDrawer({ task, closing, onClose, onSave }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   const inactive = !!task.status
   /* esta tarefa tem um resultado real (briefing) prototipado */
   const briefing = task.id === 'conteudo-semanal' ? CONTENT_BRIEFING : null
@@ -22,14 +26,15 @@ export default function TaskDrawer({ task, closing, onClose }: Props) {
     ? { background: 'var(--lib-tile-neutral)' }
     : { background: `color-mix(in srgb, ${task.color} 16%, var(--pop-surface))` }
 
-  // Esc fecha o drawer
+  // Esc fecha o drawer (com o modal de edição aberto, o Esc é dele)
   useEffect(() => {
+    if (editOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [onClose, editOpen])
 
   // clique fora fecha o menu "..."
   useEffect(() => {
@@ -57,7 +62,12 @@ export default function TaskDrawer({ task, closing, onClose }: Props) {
           </span>
 
           <div className="td-actions">
-            <button type="button" className="td-icon-btn" aria-label="Editar tarefa">
+            <button
+              type="button"
+              className="td-icon-btn"
+              aria-label="Editar tarefa"
+              onClick={() => setEditOpen(true)}
+            >
               <Pencil size={16} strokeWidth={1.9} />
             </button>
             <button type="button" className="td-icon-btn" aria-label={inactive ? 'Retomar' : 'Pausar'}>
@@ -151,6 +161,13 @@ export default function TaskDrawer({ task, closing, onClose }: Props) {
             Abrir chat
           </button>
         </div>
+      )}
+      {editOpen && (
+        <EditTaskModal
+          task={task}
+          onClose={() => setEditOpen(false)}
+          onSave={(t) => onSave?.(t)}
+        />
       )}
     </aside>
   )

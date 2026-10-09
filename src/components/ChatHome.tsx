@@ -143,8 +143,32 @@ const flightIntro = (): Block[] => [
 const flightFrequency = (answers: QuestionAnswer[]) => answers[2] || 'Uma vez ao dia'
 
 /* tarefa agendada criada a partir das respostas (vira widget e card em Ativas) */
+/* origem e período em linguagem de instrução, a partir das respostas */
+const ORIGINS: Record<string, string> = {
+  'Aeroporto Internacional de Guarulhos (GRU)': 'saindo de Guarulhos, São Paulo (GRU)',
+  'Aeroporto Internacional de Viracopos (VCP)': 'saindo de Viracopos, Campinas (VCP)',
+  'Aeroporto Internacional de São Carlos (QSC)': 'saindo de São Carlos (QSC)',
+}
+const PERIODS: Record<string, string> = {
+  'Nos próximos 7 dias': 'Considere viagens com ida nos próximos 7 dias.',
+  'Nos próximos 15 dias': 'Considere viagens com ida nos próximos 15 dias.',
+  'No próximo mês': 'Considere viagens com ida no próximo mês.',
+}
+
+function flightDescription(answers: QuestionAnswer[]) {
+  const from = answers[1]
+    ? ORIGINS[answers[1]] ?? (answers[1] === 'Qualquer um' ? 'saindo de São Paulo (considere GRU, CGH e VCP)' : `saindo de ${answers[1]}`)
+    : 'saindo de São Paulo (considere GRU, CGH e VCP)'
+  const when = answers[0]
+    ? PERIODS[answers[0]] ??
+      (answers[0] === 'Ainda não sei'
+        ? 'Como ainda não há datas definidas, procure oportunidades futuras com datas variadas e destaque a necessidade de confirmar o período.'
+        : `Considere o período informado: ${answers[0]}.`)
+    : 'Como ainda não há datas definidas, procure oportunidades futuras com datas variadas e destaque a necessidade de confirmar o período.'
+  return `Pesquise passagens aéreas de ida e volta ${from} para Miami, Flórida (MIA). Identifique promoções e quedas de preço realmente relevantes em relação às tarifas usuais, informando datas, companhia aérea, aeroportos, preço total e link da oferta verificável. Notifique somente se houver oportunidade especialmente boa; caso contrário, não envie alerta. ${when}`
+}
+
 function flightTask(answers: QuestionAnswer[]): Task {
-  const airport = answers[1] && answers[1] !== 'Qualquer um' ? ` saindo de ${answers[1]}` : ''
   return {
     id: `voos-miami-${Date.now()}`,
     name: 'Monitoramento de voos pra Miami, FL',
@@ -154,7 +178,8 @@ function flightTask(answers: QuestionAnswer[]): Task {
     schedule: flightFrequency(answers),
     next: 'Hoje, 18:00',
     last: null,
-    description: `Acompanha os preços das passagens pra Miami, FL${airport} e avisa quando aparecer uma boa oportunidade.`,
+    description: flightDescription(answers),
+    timezone: 'America/Sao_Paulo',
   }
 }
 
@@ -185,12 +210,16 @@ function AgentMessage({
   copied,
   onCopy,
   onOpenTask,
+  taskEdits,
 }: {
   msg: AgentMsg
   copied: boolean
   onCopy: () => void
   onOpenTask?: (task: Task) => void
+  /* edições salvas no modal: o widget mostra sempre a versão atual da tarefa */
+  taskEdits?: Record<string, Task>
 }) {
+  const task = msg.task ? (taskEdits?.[msg.task.id] ?? msg.task) : null
   return (
     <article
       className="msg-agent is-stream"
@@ -205,18 +234,14 @@ function AgentMessage({
     >
       {renderBlocks(msg.blocks)}
       {/* tarefa criada: widget que abre o drawer da tarefa */}
-      {msg.task && (
-        <button
-          type="button"
-          className="msg-task"
-          onClick={() => msg.task && onOpenTask?.(msg.task)}
-        >
+      {task && (
+        <button type="button" className="msg-task" onClick={() => onOpenTask?.(task)}>
           <span className="msg-task-ic" aria-hidden="true">
             <AgendadoIcon size={20} />
           </span>
           <span className="msg-task-text">
-            <span className="msg-task-name">{msg.task.name}</span>
-            <span className="msg-task-sub">{msg.task.schedule}</span>
+            <span className="msg-task-name">{task.name}</span>
+            <span className="msg-task-sub">{task.schedule}</span>
           </span>
           <ChevronRight className="msg-task-chev" size={18} strokeWidth={2} aria-hidden="true" />
         </button>
@@ -262,6 +287,7 @@ export default function ChatHome({
   onInitialMessageSent,
   onTaskCreated,
   onOpenTask,
+  taskEdits,
 }: {
   mode: InputMode
   onModeChange: (m: InputMode) => void
@@ -285,6 +311,8 @@ export default function ChatHome({
   onTaskCreated?: (task: Task) => void
   /* clique no widget da tarefa: abre o drawer da tarefa */
   onOpenTask?: (task: Task) => void
+  /* edições salvas no modal "Editar tarefa" (widget reflete a versão atual) */
+  taskEdits?: Record<string, Task>
 }) {
   /* conversa: abre ao enviar a primeira mensagem */
   const [messages, setMessages] = useState<Msg[]>([])
@@ -504,7 +532,7 @@ export default function ChatHome({
 
   return (
     <main
-      className={`chat-home${thread ? ' is-thread' : ''}`}
+      className={`chat-home${thread ? ' is-thread' : ''}${mode === 'agente' ? ' is-agent' : ''}`}
       style={
         project?.color
           ? {
@@ -546,6 +574,7 @@ export default function ChatHome({
                     copied={copiedId === m.id}
                     onCopy={() => copyMsg(m)}
                     onOpenTask={onOpenTask}
+                    taskEdits={taskEdits}
                   />
                 ),
               )}
