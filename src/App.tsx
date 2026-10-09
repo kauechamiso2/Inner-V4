@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Sidebar from './components/Sidebar'
 import HistoryPanel from './components/HistoryPanel'
 import ChatHome from './components/ChatHome'
@@ -296,13 +296,21 @@ export default function App() {
     }
   }
 
-  /* reabrir o histórico com um drawer aberto fecha o drawer */
+  /* drawer sumiu sem passar pelo closeDrawer (trocou de página, Editar, etc.):
+     devolve o histórico que o drawer recolheu e zera a marca, para ela não
+     reabrir o painel depois que o usuário o fechar por conta própria */
+  useEffect(() => {
+    if (drawer || !historyAutoClosedRef.current) return
+    historyAutoClosedRef.current = false
+    setHistoryCollapsed(false)
+  }, [drawer])
+
+  /* reabrir o histórico com um drawer aberto fecha o drawer.
+     Abrir/fechar à mão é escolha do usuário: nada reabre o painel sozinho depois */
   const toggleHistory = () => {
     const opening = historyCollapsed
-    if (opening && drawer) {
-      historyAutoClosedRef.current = false
-      closeDrawer()
-    }
+    historyAutoClosedRef.current = false
+    if (opening && drawer) closeDrawer()
     setHistoryCollapsed((c) => !c)
   }
 
