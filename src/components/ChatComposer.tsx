@@ -50,6 +50,7 @@ export default function ChatComposer({
   intro = false,
   showTabs = true,
   collapsible = false,
+  oneLine = false,
   onSend,
 }: {
   mode: InputMode
@@ -74,6 +75,8 @@ export default function ChatComposer({
   showTabs?: boolean
   /* começa em uma linha (sem seletor de modelo) e expande ao clicar */
   collapsible?: boolean
+  /* sempre em uma linha, como o input da Home (ex.: dentro de um Projeto) */
+  oneLine?: boolean
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
@@ -93,7 +96,7 @@ export default function ChatComposer({
      (altura do card + deslocamento de cada bloco), tudo na mesma curva */
   const wrapRef = useRef<HTMLDivElement>(null)
   const [expanded, setExpanded] = useState(false)
-  const compact = collapsible && !expanded
+  const compact = oneLine || (collapsible && !expanded)
   const flipRef = useRef<{ card: DOMRect; items: Map<Element, DOMRect> } | null>(null)
   const flipAnims = useRef<Animation[]>([])
   const isEmpty = !canSend && attachments.length === 0 && !feature

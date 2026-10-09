@@ -54,7 +54,6 @@ export default function ProjectHome({
   const projectTasks = [...ACTIVE_TASKS, ...INACTIVE_TASKS].filter(
     (t) => t.project?.id === projectId,
   )
-  const [mode, setMode] = useState<'agente' | 'chat'>('agente')
   const [contextOpen, setContextOpen] = useState(false)
   const [instrOpen, setInstrOpen] = useState(false)
   const [tasksOpen, setTasksOpen] = useState(false)
@@ -118,12 +117,15 @@ export default function ProjectHome({
             </div>
           </header>
 
+          {/* igual ao input da Home: uma linha, sem as abas Agente/Chat */}
           <ChatComposer
-            mode={mode}
-            onModeChange={setMode}
+            mode="agente"
+            onModeChange={() => {}}
             placeholder={`Conversar em ${name}`}
             excludeProjects
             agent={agent}
+            showTabs={false}
+            oneLine
           />
 
           <div className="ph-lists">
