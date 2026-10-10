@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowUp, ChevronDown, CornerDownLeft, Minus, Plus, RectangleHorizontal } from 'lucide-react'
 import creditsCoin from '../assets/credits.svg'
 
@@ -52,6 +52,10 @@ type Props = {
   onGenerate: () => void
   /* variante fixada no rodapé (quando o input do topo sai de vista) */
   docked?: boolean
+  /* sempre no estado ativo (expandido), ex.: barra das Minhas gerações */
+  alwaysOpen?: boolean
+  /* foca o campo ao montar / quando muda */
+  autoFocusKey?: number
 }
 
 /* Input de prompt do pilar de Imagens: começa como uma barra compacta e,
@@ -69,10 +73,16 @@ export default function ImagePromptBar({
   onRemoveAttachment,
   onGenerate,
   docked = false,
+  alwaysOpen = false,
+  autoFocusKey,
 }: Props) {
   const [focused, setFocused] = useState(false)
   const hasAtt = attachments.length > 0
-  const open = focused || value.trim().length > 0 || hasAtt
+  const open = alwaysOpen || focused || value.trim().length > 0 || hasAtt
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  useEffect(() => {
+    if (autoFocusKey) inputRef.current?.focus({ preventScroll: true })
+  }, [autoFocusKey])
   const canGenerate = value.trim().length > 0 || hasAtt
   /* depois que a expansão termina, liberamos o overflow para o glow do botão
      "escapar" (durante a animação o overflow fica escondido) */
@@ -121,6 +131,7 @@ export default function ImagePromptBar({
           <SparkIcon />
         </span>
         <textarea
+          ref={inputRef}
           className="ip-prompt-input"
           placeholder="Digite o que você quer gerar..."
           value={value}
