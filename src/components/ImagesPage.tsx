@@ -161,7 +161,16 @@ const TOOLS: Tool[] = [
 
 /* grid orgânico (Pinterest) — imagens geradas, intercaladas por tema/proporção.
    prompt/model aparecem no overlay ao passar o mouse. */
-type MasonryImg = { src: string; ar: number; prompt: string; model: string; uid?: string; cat?: string }
+type MasonryImg = {
+  src: string
+  ar: number
+  prompt: string
+  model: string
+  uid?: string
+  cat?: string
+  /* imagens usadas como base nesta geração */
+  bases?: string[]
+}
 
 /* categorias do Explorar: filtram o grid orgânico */
 const CATEGORIES = [
@@ -432,7 +441,11 @@ export default function ImagesPage() {
   /* cabeçalho das Minhas gerações saiu de vista: voltar + filtro viram overlay fixo */
   const gensHeadRef = useRef<HTMLDivElement>(null)
   const [headOut, setHeadOut] = useState(false)
+  /* Minhas gerações aberta por um template (drawer): sem botão de voltar.
+     Mantido até a troca de tela terminar, para o chevron não "piscar" ao fechar */
+  const [fromTool, setFromTool] = useState(false)
   const openTool = (t: Tool) => {
+    setFromTool(t.id !== 'image-generation')
     if (t.id !== 'image-generation') setTool(t)
     openGenerations()
     /* Image Generation: a barra já chega ativa e com o cursor no campo */
@@ -443,6 +456,8 @@ export default function ImagesPage() {
     const text = (prompt ?? promptValue).trim() || 'Geração de imagem'
     setGenPrompt(text)
     setRunning(true)
+    /* as bases anexadas ficam registradas na geração (aparecem no detalhe) */
+    const bases = attachments.map((a) => a.src)
     setPromptValue('')
     setAttachments([])
     openGenerations()
@@ -456,6 +471,7 @@ export default function ImagesPage() {
           ar: 16 / 9,
           prompt: text,
           model: 'Nano Banana 2',
+          bases: bases.length ? bases : undefined,
         })),
         ...prev,
       ])
@@ -675,10 +691,16 @@ export default function ImagesPage() {
             <div className="ip-gens" key="gens">
               {/* voltar + título à esquerda, filtro à direita, na mesma linha */}
               <div className="ip-gens-head" ref={gensHeadRef}>
-                <button type="button" className="ip-gens-back" aria-label="Voltar" onClick={exitGenerate}>
-                  <ChevronLeft size={20} strokeWidth={2.2} />
+                {/* voltar só no Image Generation; com o drawer de um template
+                    aberto, quem leva de volta é fechar o drawer */}
+                {fromTool ? (
                   <h2 className="ip-section-title">Minhas gerações</h2>
-                </button>
+                ) : (
+                  <button type="button" className="ip-gens-back" aria-label="Voltar" onClick={exitGenerate}>
+                    <ChevronLeft size={20} strokeWidth={2.2} />
+                    <h2 className="ip-section-title">Minhas gerações</h2>
+                  </button>
+                )}
                 <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
                   <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                     <path
@@ -696,15 +718,17 @@ export default function ImagesPage() {
               </div>
               {/* ao rolar: voltar + filtro fixos, como overlay escuro sobre as fotos */}
               <div className={`ip-gen-floatbar${headOut ? ' is-on' : ''}`} aria-hidden={!headOut}>
-                <button
-                  type="button"
-                  className="ip-gen-float is-back"
-                  aria-label="Voltar"
-                  tabIndex={headOut ? 0 : -1}
-                  onClick={exitGenerate}
-                >
-                  <ChevronLeft size={18} strokeWidth={2.4} />
-                </button>
+                {!fromTool && (
+                  <button
+                    type="button"
+                    className="ip-gen-float is-back"
+                    aria-label="Voltar"
+                    tabIndex={headOut ? 0 : -1}
+                    onClick={exitGenerate}
+                  >
+                    <ChevronLeft size={18} strokeWidth={2.4} />
+                  </button>
+                )}
                 <button
                   type="button"
                   className="ip-gen-float is-filter"
@@ -841,6 +865,7 @@ export default function ImagesPage() {
                               e.stopPropagation()
                               addBase(m.src)
                               /* a barra vive nas Gerações: leva a imagem pra lá, já digitando */
+                              setFromTool(false)
                               openGenerations()
                               focusBar()
                             }}
@@ -892,7 +917,10 @@ export default function ImagesPage() {
           onClose={closeImg}
           onUseAsBase={() => {
             addBase(imgModal.img.src)
-            if (!generating) openGenerations()
+            if (!generating) {
+              setFromTool(false)
+              openGenerations()
+            }
             focusBar()
             closeImg()
           }}

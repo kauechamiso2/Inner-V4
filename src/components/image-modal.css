@@ -128,6 +128,31 @@
   color: var(--text-mid);
 }
 
+/* imagens usadas como base: quadradinhos logo abaixo do prompt */
+.imm-bases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.imm-base {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--sb-border);
+  border-radius: 10px;
+  background: var(--thumb-ph);
+}
+
+.imm-base img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* lista de detalhes */
 .imm-details {
   margin: 0;

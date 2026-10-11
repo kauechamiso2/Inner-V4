@@ -4,7 +4,14 @@ import type { CSSProperties } from 'react'
 import { Check, Copy, Download, Images, Pencil, X } from 'lucide-react'
 import './image-modal.css'
 
-export type ModalImg = { src: string; ar: number; prompt: string; model: string }
+export type ModalImg = {
+  src: string
+  ar: number
+  prompt: string
+  model: string
+  /* imagens usadas como base na geração (aparecem junto do prompt) */
+  bases?: string[]
+}
 
 /* formato legível a partir da proporção (largura/altura) */
 function formatFromAr(ar: number): string {
@@ -85,6 +92,15 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
                 </button>
               </div>
               <p className="imm-prompt">{img.prompt}</p>
+              {img.bases && img.bases.length > 0 && (
+                <div className="imm-bases" aria-label="Imagens usadas como base">
+                  {img.bases.map((b, i) => (
+                    <span className="imm-base" key={`${b}-${i}`}>
+                      <img src={b} alt={`Imagem base ${i + 1}`} />
+                    </span>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="imm-sec">
