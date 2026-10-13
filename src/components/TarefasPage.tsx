@@ -5,20 +5,30 @@ import './tasks-page.css'
 import { Play } from 'lucide-react'
 import tutorialThumb from '../assets/task-tutorial.webp'
 import TaskCard from './TaskCard'
-import NovaTarefaModal from './NovaTarefaModal'
+import NewTaskMenu from './NewTaskMenu'
+import CreateTaskModal from './CreateTaskModal'
+import TaskPage from './TaskPage'
+import type { ChosenAgent } from './agents'
 import { ACTIVE_TASKS, INACTIVE_TASKS } from './tasks'
 import type { Task } from './tasks'
 
 export default function TarefasPage({
-  onOpenTask,
   empty = false,
-  onStartChat,
   createdTasks = [],
   taskEdits = {},
+  agent = null,
+  onCreateWithAgent,
+  onCreateTask,
+  onSaveTask,
 }: {
-  onOpenTask: (task: Task) => void
-  /* "Nova tarefa": o texto do modal vira mensagem no chat da Home */
-  onStartChat?: (text: string) => void
+  /* agente escolhido: "Criar com <nome>" */
+  agent?: ChosenAgent | null
+  /* "Criar com <agente>": abre a Home com @Tarefa */
+  onCreateWithAgent?: () => void
+  /* "Criar manualmente": a tarefa criada no formulário */
+  onCreateTask?: (task: Task) => void
+  /* "Configurações"/"Editar" na página da tarefa */
+  onSaveTask?: (task: Task) => void
   /* tarefas criadas pelo agente no chat: entram no topo de "Ativas" */
   createdTasks?: Task[]
   /* edições salvas no modal "Editar tarefa" */
@@ -27,8 +37,23 @@ export default function TarefasPage({
   empty?: boolean
 }) {
   const [openMenu, setOpenMenu] = useState<string | null>(null)
-  /* modal "Nova tarefa" (input estilo geração de imagem) */
-  const [novaOpen, setNovaOpen] = useState(false)
+  /* "Criar manualmente": formulário completo */
+  const [manualOpen, setManualOpen] = useState(false)
+  /* tarefa aberta na página de detalhe (por id: reflete edições salvas) */
+  const [pageId, setPageId] = useState<string | null>(null)
+  const allTasks = [...createdTasks, ...ACTIVE_TASKS, ...INACTIVE_TASKS]
+  const pageTask0 = pageId ? allTasks.find((t) => t.id === pageId) : null
+  const pageTask = pageTask0 ? (taskEdits[pageTask0.id] ?? pageTask0) : null
+  const onOpenTask = (t: Task) => setPageId(t.id)
+  const newTask = (cls?: string, align?: 'left' | 'right') => (
+    <NewTaskMenu
+      agent={agent}
+      className={cls}
+      align={align}
+      onWithAgent={() => onCreateWithAgent?.()}
+      onManual={() => setManualOpen(true)}
+    />
+  )
 
   useEffect(() => {
     if (!openMenu) return
@@ -48,6 +73,15 @@ export default function TarefasPage({
   return (
     <main className={`tasks-page${empty ? ' is-empty' : ''}`}>
       <div className="lib-container">
+        {pageTask ? (
+          <TaskPage
+            key={pageTask.id}
+            task={pageTask}
+            onBack={() => setPageId(null)}
+            onSave={(t) => onSaveTask?.(t)}
+          />
+        ) : (
+          <>
         <h1 className="lib-title">Tarefas Agendadas</h1>
 
         {empty ? (
@@ -77,21 +111,7 @@ export default function TarefasPage({
                     </span>
                   </li>
                 </ol>
-                <button
-                  type="button"
-                  className="lib-new-cta te-tutorial-cta"
-                  onClick={() => setNovaOpen(true)}
-                >
-                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path
-                      d="M8 3.1v9.8M3.1 8h9.8"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  Nova Tarefa
-                </button>
+                {newTask('te-tutorial-cta', 'left')}
               </div>
               <button type="button" className="te-tutorial-video" aria-label="Assistir: Como funcionam as tarefas agendadas">
                 <img src={tutorialThumb} alt="" aria-hidden="true" />
@@ -139,12 +159,7 @@ export default function TarefasPage({
                   Buscar
                 </span>
               </button>
-              <button className="lib-new-cta" type="button" onClick={() => setNovaOpen(true)}>
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-                Nova Tarefa
-              </button>
+              {newTask()}
             </div>
           </div>
 
@@ -187,9 +202,19 @@ export default function TarefasPage({
         </section>
           </>
         )}
+          </>
+        )}
       </div>
 
-      {novaOpen && <NovaTarefaModal onClose={() => setNovaOpen(false)} onSend={onStartChat} />}
+      {manualOpen && (
+        <CreateTaskModal
+          onClose={() => setManualOpen(false)}
+          onCreate={(t) => {
+            onCreateTask?.(t)
+            setPageId(t.id)
+          }}
+        />
+      )}
     </main>
   )
 }

@@ -12,7 +12,7 @@ import BlankPage from './components/BlankPage'
 import TaskDrawer from './components/TaskDrawer'
 import SiteDrawer from './components/SiteDrawer'
 import type { SiteDraft } from './components/sites'
-import type { ChatMsg } from './components/ChatHome'
+import type { ChatMsg, HomeIntent } from './components/ChatHome'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import Onboarding from './components/Onboarding'
 import { AGENT_BY_ID, ORB_ACCENT, ORB_NAME } from './components/agents'
@@ -149,13 +149,19 @@ export default function App() {
   /* mensagem vinda de fora da Home (ex.: modal de Nova tarefa em Agendado):
      a Home remonta e a envia sozinha ao montar */
   const [pendingMessage, setPendingMessage] = useState<string | null>(null)
-  const startChatFrom = (text: string) => {
+  /* variação da Home vinda de "Nova tarefa"/"Novo site" (@Tarefa / @Site) */
+  const [homeIntent, setHomeIntent] = useState<HomeIntent | null>(null)
+  /* trilha no topo da conversa reaberta por "Editar" no pilar de Sites */
+  const [chatCrumb, setChatCrumb] = useState<{ parent: string; label: string; back: AppView } | null>(null)
+  const startIntent = (intent: HomeIntent) => {
     setChatMode('agente')
     setActiveProject(null)
     setActiveChatId(null)
     if (view !== 'chat') reopenHistory()
-    setPendingMessage(text)
+    setPendingMessage(null)
     setRestoreThread(null)
+    setChatCrumb(null)
+    setHomeIntent(intent)
     setHomeKey((k) => k + 1)
     setView('chat')
     setPanelView('chat')
@@ -163,6 +169,8 @@ export default function App() {
   }
   const resetHome = () => {
     setRestoreThread(null)
+    setHomeIntent(null)
+    setChatCrumb(null)
     setActiveProject(null)
     setActiveChatId(null)
     setHomeKey((k) => k + 1)
@@ -220,6 +228,14 @@ export default function App() {
   /* Home (agente) e Chat são itens separados da sidebar: ambos abrem a view de
      chat, mudando o modo do input e o filtro do histórico. */
   const openChatMode = (mode: 'agente' | 'chat') => {
+    /* sair da variação (Nova tarefa/Novo site) ou da conversa com trilha volta à Home normal */
+    if (homeIntent || chatCrumb) {
+      setHomeIntent(null)
+      setChatCrumb(null)
+      setRestoreThread(null)
+      setActiveChatId(null)
+      setHomeKey((k) => k + 1)
+    }
     if (view !== 'chat' || mode !== chatMode) reopenHistory()
     setChatMode(mode)
     setView('chat')
@@ -273,14 +289,30 @@ export default function App() {
 
   /* "Editar" no drawer: reabre o chat onde o site foi criado */
   const [restoreThread, setRestoreThread] = useState<ChatMsg[] | null>(null)
-  const editSite = (site: SiteDraft) => {
-    const saved = siteChatsRef.current[site.id]
-    if (!saved) return
+  const editSite = (site: SiteDraft, fromPillar = false) => {
+    /* sites de exemplo não têm conversa salva: monta a conversa em que teriam nascido */
+    const saved = siteChatsRef.current[site.id] ?? {
+      chatId: null,
+      messages: [
+        { id: 1, role: 'user', text: `Quero criar um site: ${site.name}` },
+        {
+          id: 2,
+          role: 'agent',
+          blocks: [
+            { kind: 'p', text: `Pronto! Seu site **${site.name}** está criado.` },
+            { kind: 'p', text: 'Me diga o que você quer mudar: textos, cores, seções ou imagens.' },
+          ],
+          site,
+        },
+      ] as ChatMsg[],
+    }
     reopenHistory()
     setChatMode('agente')
     setActiveProject(null)
     setActiveChatId(saved.chatId)
     setPendingMessage(null)
+    setHomeIntent(null)
+    setChatCrumb(fromPillar ? { parent: 'Sites', label: site.name, back: 'sites' } : null)
     setRestoreThread(saved.messages)
     setHomeKey((k) => k + 1)
     setView('chat')
@@ -389,6 +421,12 @@ export default function App() {
           initialMessage={pendingMessage}
           onInitialMessageSent={() => setPendingMessage(null)}
           initialThread={restoreThread}
+          intent={homeIntent}
+          breadcrumb={
+            chatCrumb
+              ? { parent: chatCrumb.parent, label: chatCrumb.label, onBack: () => navigate(chatCrumb.back) }
+              : null
+          }
           mode={chatMode}
           onModeChange={setChatMode}
           project={activeProject}
@@ -409,18 +447,21 @@ export default function App() {
       ) : view === 'tarefas' ? (
         <TarefasPage
           key="tarefas"
-          onOpenTask={openTaskDrawer}
           empty={tasksEmpty}
           createdTasks={createdTasks}
           taskEdits={taskEdits}
-          onStartChat={startChatFrom}
+          agent={chosenAgent}
+          onCreateWithAgent={() => startIntent('task')}
+          onCreateTask={addTask}
+          onSaveTask={saveTask}
         />
       ) : view === 'sites' ? (
         <SitesPage
           key="sites"
-          onStartChat={startChatFrom}
           createdSites={createdSites}
+          onNewSite={() => startIntent('site')}
           onOpenSite={openSiteDrawer}
+          onEditSite={(site) => editSite(site, true)}
         />
       ) : (
         /* pilares desativados por enquanto: página em branco */
@@ -439,7 +480,7 @@ export default function App() {
           site={drawer.site}
           closing={!!drawer.closing}
           onClose={closeDrawer}
-          onEdit={drawer.fromPillar ? () => editSite(drawer.site) : undefined}
+          onEdit={drawer.fromPillar ? () => editSite(drawer.site, true) : undefined}
         />
       )}
       <ThemeSwitcher

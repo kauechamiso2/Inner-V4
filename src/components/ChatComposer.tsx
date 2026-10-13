@@ -51,6 +51,8 @@ export default function ChatComposer({
   showTabs = true,
   collapsible = false,
   oneLine = false,
+  initialFeature = null,
+  prefill = null,
   onSend,
 }: {
   mode: InputMode
@@ -77,13 +79,17 @@ export default function ChatComposer({
   collapsible?: boolean
   /* sempre em uma linha, como o input da Home (ex.: dentro de um Projeto) */
   oneLine?: boolean
+  /* feature já ativa ao montar (ex.: @Tarefa vindo de "Nova tarefa") */
+  initialFeature?: MentionItem | null
+  /* texto colocado no input por fora (ex.: clicar numa sugestão); key muda a cada vez */
+  prefill?: { text: string; key: number } | null
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
   const [mention, setMention] = useState<MentionState | null>(null)
   const [plusOpen, setPlusOpen] = useState(false)
   /* apenas uma tool ativa por vez: ativar outra substitui a atual */
-  const [feature, setFeature] = useState<MentionItem | null>(null)
+  const [feature, setFeature] = useState<MentionItem | null>(initialFeature)
   /* anexos (arquivos/imagens) — vários permitidos, acima do input */
   const [attachments, setAttachments] = useState<(Attachment & { uid: string })[]>([])
   /* projetos citados no texto como @Nome (tratados como tokens atômicos) */
@@ -91,6 +97,24 @@ export default function ChatComposer({
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const canSend = value.trim().length > 0
+
+  /* sugestão escolhida por fora: preenche o input e coloca o cursor no fim */
+  useEffect(() => {
+    if (!prefill) return
+    setValue(prefill.text)
+    requestAnimationFrame(() => {
+      const el = fieldRef.current
+      if (!el) return
+      el.focus()
+      el.setSelectionRange(prefill.text.length, prefill.text.length)
+    })
+  }, [prefill])
+
+  /* com uma feature vinda de fora, o input já chega com o cursor */
+  useEffect(() => {
+    if (initialFeature) requestAnimationFrame(() => fieldRef.current?.focus())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /* uma linha ⇄ expandido: as posições antes da troca viram um FLIP
      (altura do card + deslocamento de cada bloco), tudo na mesma curva */

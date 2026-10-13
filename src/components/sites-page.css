@@ -27,6 +27,7 @@
 /* card branco, herdando a UI dos cards de tarefas/projetos */
 .site-card {
   position: relative;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   padding: 10px 10px 4px;
@@ -136,47 +137,60 @@
   color: var(--text-faint);
 }
 
-/* "..." no canto superior direito (sem menu por enquanto) */
-.site-more {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  z-index: 2;
+/* nome + "..." na mesma linha, no rodapé do card */
+.site-title-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.site-title-row .site-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.site-more-wrap {
+  position: relative;
+  flex-shrink: 0;
+  margin: -6px -6px -6px 0;
+}
+
+.site-more {
+  display: grid;
+  place-items: center;
   width: 30px;
   height: 30px;
   padding: 0;
   border: 0;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(4px);
-  color: var(--text-mid);
+  background: transparent;
+  color: var(--text-soft);
   cursor: pointer;
-  opacity: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  transition: opacity 140ms ease, background-color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
-.site-card:hover .site-more {
-  opacity: 1;
-}
-
-.site-more:hover {
-  background: #ffffff;
+.site-more:hover,
+.site-more.is-open {
+  background: var(--hover-05);
+  color: var(--text-strong);
 }
 
 .site-more svg {
   display: block;
 }
 
-:root[data-dark] .site-more {
-  background: rgba(40, 40, 40, 0.86);
+/* menu abre para cima do card vizinho */
+.site-card.is-menu {
+  z-index: 5;
 }
 
-:root[data-dark] .site-more:hover {
-  background: #2c2c2c;
+.task-menu.site-menu {
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 184px;
 }
 
 /* estado vazio — placeholder enquanto os cards não existem */

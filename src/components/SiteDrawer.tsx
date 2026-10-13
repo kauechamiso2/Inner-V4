@@ -234,7 +234,11 @@ export default function SiteDrawer({
         </header>
 
         <div className="sd-viewport">
-          <PortfolioPreview />
+          {site.thumb ? (
+            <img className="sd-shot" src={site.thumb} alt={`Prévia do site ${site.name}`} />
+          ) : (
+            <PortfolioPreview />
+          )}
         </div>
       </div>
     </aside>

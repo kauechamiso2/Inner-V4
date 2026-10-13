@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import './library-page.css'
+import './tasks-page.css'
 import './sites-page.css'
-import { Globe, Lock, MoreHorizontal } from 'lucide-react'
+import { Eye, Globe, Link2, Lock, MoreHorizontal, Pencil, Settings2, Share2 } from 'lucide-react'
 import portfolioThumb from '../assets/sites/portfolio.png'
 import saasThumb from '../assets/sites/saas.png'
-import NovaTarefaModal from './NovaTarefaModal'
-import type { Suggestion } from './NovaTarefaModal'
+import ShareSiteModal from './ShareSiteModal'
+import type { SiteAccess } from './ShareSiteModal'
+import SiteSettingsModal from './SiteSettingsModal'
 import { SiteMiniPreview } from './SiteDrawer'
 import type { SiteDraft } from './sites'
 
@@ -14,7 +16,7 @@ type Site = {
   id: string
   title: string
   url: string
-  visibility: 'private' | 'public'
+  visibility: SiteAccess
   date: string
   /* sem thumb: miniatura ao vivo da prévia (sites criados pelo agente) */
   thumb?: string
@@ -40,52 +42,32 @@ const SITES: Site[] = [
   },
 ]
 
-/* ideias de site no modal "Novo site": clicar preenche o input */
-const SITE_SUGGESTIONS: Suggestion[] = [
-  {
-    emoji: '🍽️',
-    title: 'Cardápio virtual',
-    desc: 'Um cardápio digital do meu restaurante, com fotos dos pratos, preços e pedido pelo WhatsApp',
-  },
-  {
-    emoji: '🎨',
-    title: 'Portfólio',
-    desc: 'Um site de portfólio pra mostrar meus projetos, com uma página sobre mim e contato',
-  },
-  {
-    emoji: '🚀',
-    title: 'Landing page de produto',
-    desc: 'Uma landing page pro meu produto, com benefícios, depoimentos e lista de espera',
-  },
-  {
-    emoji: '💍',
-    title: 'Convite de casamento',
-    desc: 'Um site pro nosso casamento, com a nossa história, local, data e confirmação de presença',
-  },
-]
-
-/* o usuário digita curto ("portfolio pessoal") e a mensagem chega polida
-   no chat ("Quero criar um site de portfolio pessoal") */
-function polishSiteRequest(raw: string) {
-  const text = raw.trim().replace(/[.!]+$/, '')
-  const lower = text.charAt(0).toLowerCase() + text.slice(1)
-  if (/^(quero|queria|gostaria|preciso|crie|cria|criar|faça|faz|me ajuda|monte|monta)\b/i.test(text)) return text
-  if (/^(um|uma)\s/i.test(text)) return `Quero criar ${lower}`
-  if (/^site\b/i.test(text)) return `Quero criar um ${lower}`
-  return `Quero criar um site de ${lower}`
-}
+/* acesso alterado em Compartilhar: vale para a sessão toda (sobrevive à troca de página) */
+let accessMemo: Record<string, SiteAccess> = {}
 
 export default function SitesPage({
-  onStartChat,
   createdSites = [],
+  onNewSite,
   onOpenSite,
+  onEditSite,
 }: {
-  onStartChat?: (text: string) => void
   /* sites criados no chat: entram no topo da lista */
   createdSites?: SiteDraft[]
+  /* "Novo site": abre a Home com @Site */
+  onNewSite?: () => void
+  /* "Ver site": drawer com a prévia */
   onOpenSite?: (site: SiteDraft) => void
+  /* "Editar": volta à conversa com o agente onde o site foi criado */
+  onEditSite?: (site: SiteDraft) => void
 }) {
-  const [novoOpen, setNovoOpen] = useState(false)
+  const [menuFor, setMenuFor] = useState<string | null>(null)
+  const [share, setShare] = useState<Site | null>(null)
+  const [settings, setSettings] = useState<Site | null>(null)
+  /* acesso alterado no modal Compartilhar (por site) */
+  const [access, setAccessState] = useState<Record<string, SiteAccess>>(accessMemo)
+  const setAccess = (fn: (m: Record<string, SiteAccess>) => Record<string, SiteAccess>) =>
+    setAccessState((m) => (accessMemo = fn(m)))
+
   const sites: Site[] = [
     ...createdSites.map((d) => ({
       id: d.id,
@@ -96,7 +78,36 @@ export default function SitesPage({
       draft: d,
     })),
     ...SITES,
-  ]
+  ].map((s) => ({ ...s, visibility: access[s.id] ?? s.visibility }))
+
+  /* todo site vira um rascunho abrível (os de exemplo usam a imagem como prévia) */
+  const draftOf = (s: Site): SiteDraft => ({
+    ...(s.draft ?? { id: s.id, name: s.title, url: s.url, thumb: s.thumb }),
+    published: s.visibility !== 'private',
+  })
+
+  useEffect(() => {
+    if (!menuFor) return
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as HTMLElement
+      if (!t.closest('.site-menu') && !t.closest('.site-more')) setMenuFor(null)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuFor(null)
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuFor])
+
+  const act = (fn: () => void) => {
+    setMenuFor(null)
+    fn()
+  }
+
   return (
     <main className="sites-page">
       <div className="lib-container">
@@ -131,7 +142,7 @@ export default function SitesPage({
                   Buscar
                 </span>
               </button>
-              <button className="lib-new-cta" type="button" onClick={() => setNovoOpen(true)}>
+              <button className="lib-new-cta" type="button" onClick={() => onNewSite?.()}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
@@ -143,14 +154,11 @@ export default function SitesPage({
           <div className="sites-grid">
             {sites.map((s, i) => (
               <article
-                className={`site-card${s.draft ? ' is-clickable' : ''}`}
+                className={`site-card is-clickable${menuFor === s.id ? ' is-menu' : ''}`}
                 key={s.id}
                 style={{ '--i': i } as CSSProperties}
-                onClick={s.draft ? () => onOpenSite?.(s.draft!) : undefined}
+                onClick={() => onOpenSite?.(draftOf(s))}
               >
-                <button type="button" className="site-more" aria-label="Ações do site">
-                  <MoreHorizontal size={18} strokeWidth={2} />
-                </button>
                 <div className="site-thumb">
                   {s.thumb ? (
                     <img src={s.thumb} alt={`Prévia do site ${s.title}`} loading="lazy" />
@@ -159,16 +167,54 @@ export default function SitesPage({
                   )}
                 </div>
                 <div className="site-body">
-                  <h3 className="site-title">{s.title}</h3>
+                  <div className="site-title-row">
+                    <h3 className="site-title">{s.title}</h3>
+                    {/* "..." junto do nome (rodapé do card), com o menu de ações */}
+                    <span className="site-more-wrap" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className={`site-more${menuFor === s.id ? ' is-open' : ''}`}
+                        aria-label="Ações do site"
+                        aria-haspopup="menu"
+                        aria-expanded={menuFor === s.id}
+                        onClick={() => setMenuFor((m) => (m === s.id ? null : s.id))}
+                      >
+                        <MoreHorizontal size={18} strokeWidth={2} />
+                      </button>
+                      {menuFor === s.id && (
+                        <div className="task-menu site-menu" role="menu">
+                          <button type="button" className="task-menu-item" role="menuitem" onClick={() => act(() => onOpenSite?.(draftOf(s)))}>
+                            <Eye size={15} strokeWidth={1.9} />
+                            Ver site
+                          </button>
+                          <button type="button" className="task-menu-item" role="menuitem" onClick={() => act(() => setShare(s))}>
+                            <Share2 size={15} strokeWidth={1.9} />
+                            Compartilhar
+                          </button>
+                          <button type="button" className="task-menu-item" role="menuitem" onClick={() => act(() => onEditSite?.(draftOf(s)))}>
+                            <Pencil size={15} strokeWidth={1.9} />
+                            Editar
+                          </button>
+                          <div className="task-menu-sep" />
+                          <button type="button" className="task-menu-item" role="menuitem" onClick={() => act(() => setSettings(s))}>
+                            <Settings2 size={15} strokeWidth={1.9} />
+                            Configurações
+                          </button>
+                        </div>
+                      )}
+                    </span>
+                  </div>
                   <span className="site-url">{s.url}</span>
                   <div className="site-foot">
-                    <span className={`site-vis${s.visibility === 'public' ? ' is-public' : ''}`}>
+                    <span className={`site-vis${s.visibility === 'private' ? '' : ' is-public'}`}>
                       {s.visibility === 'private' ? (
                         <Lock size={13} strokeWidth={2} />
+                      ) : s.visibility === 'link' ? (
+                        <Link2 size={13} strokeWidth={2} />
                       ) : (
                         <Globe size={13} strokeWidth={2} />
                       )}
-                      {s.visibility === 'private' ? 'Só você' : 'Publicado'}
+                      {s.visibility === 'private' ? 'Só você' : s.visibility === 'link' ? 'Com o link' : 'Publicado'}
                     </span>
                     <span className="site-dot" aria-hidden="true">
                       ·
@@ -181,16 +227,17 @@ export default function SitesPage({
           </div>
         </section>
       </div>
-      {novoOpen && (
-        <NovaTarefaModal
-          title="Novo site"
-          placeholder="Descreva o site que você quer criar"
-          sendLabel="Criar site"
-          suggestions={SITE_SUGGESTIONS}
-          onClose={() => setNovoOpen(false)}
-          onSend={(text) => onStartChat?.(polishSiteRequest(text))}
+
+      {share && (
+        <ShareSiteModal
+          name={share.title}
+          url={share.url}
+          access={share.visibility}
+          onClose={() => setShare(null)}
+          onSave={(a) => setAccess((m) => ({ ...m, [share.id]: a }))}
         />
       )}
+      {settings && <SiteSettingsModal name={settings.title} url={settings.url} onClose={() => setSettings(null)} />}
     </main>
   )
 }

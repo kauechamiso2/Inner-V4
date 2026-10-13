@@ -17,6 +17,10 @@ export type Task = {
   project?: { id: string; name: string; emoji: string }
   /* fuso horário das execuções (padrão: America/Sao_Paulo) */
   timezone?: string
+  /* onde avisar o resultado (padrão: na plataforma) */
+  notify?: 'platform' | 'whatsapp'
+  /* quando a recorrência termina (padrão: nunca) */
+  ends?: string
 }
 
 export const ACTIVE_TASKS: Task[] = [

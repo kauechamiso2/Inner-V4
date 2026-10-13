@@ -1601,3 +1601,91 @@
     animation: none !important;
   }
 }
+
+/* ============ Variação da Home (Nova tarefa / Novo site) ============ */
+/* sugestões abaixo do input: mesma lista do modal, alinhada ao composer */
+.nt-sugg.ch-sugg {
+  width: 100%;
+  margin-top: 56px;
+  animation: ch-sugg-in 420ms cubic-bezier(0.22, 1, 0.36, 1) 120ms backwards;
+}
+
+@keyframes ch-sugg-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* trilha no topo da conversa (Sites / nome do site) */
+.chat-crumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+.chat-crumb-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin-left: -8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.chat-crumb-back:hover {
+  background: var(--hover-04);
+  color: var(--text-mid);
+}
+
+.chat-crumb-back svg {
+  display: block;
+}
+
+.chat-crumb-sep {
+  color: var(--text-ghost);
+}
+
+.chat-crumb-cur {
+  color: var(--text-mid);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch-sugg {
+    animation: none;
+  }
+}
+
+/* card do site criado no chat: mesmo card da listagem de Sites */
+.site-card.msg-site-card {
+  width: min(380px, 100%);
+  margin-top: 18px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.msg-site-card .site-title,
+.msg-site-card .site-url {
+  display: block;
+}

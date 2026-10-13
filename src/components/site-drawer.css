@@ -514,3 +514,10 @@
     animation: none;
   }
 }
+
+/* sites de exemplo: a prévia é a captura do site */
+.sd-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}

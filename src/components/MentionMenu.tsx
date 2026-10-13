@@ -151,7 +151,7 @@ const INTEGRATIONS: MentionItem[] = [
 ]
 
 /* Ferramentas (cascata) — busca, tarefa agendada e os pilares de geração */
-const TOOLS: MentionItem[] = [
+export const TOOLS: MentionItem[] = [
   {
     id: 'web-search',
     label: 'Busca na Web',

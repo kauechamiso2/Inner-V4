@@ -20,12 +20,45 @@ import type { Question, QuestionAnswer } from './QuestionCard'
 import { USER_NAME, greetingFor } from './greeting'
 import { AgendadoIcon } from './SidebarIcons'
 import type { Task } from './tasks'
-import { PORTFOLIO_SITE } from './sites'
+import { PORTFOLIO_SITE, SITE_SUGGESTIONS, polishSiteRequest } from './sites'
+import { TASK_SUGGESTIONS } from './taskSuggestions'
+import { TOOLS } from './MentionMenu'
+import type { MentionItem } from './MentionMenu'
+import { ArrowLeft, Plus } from 'lucide-react'
+import './nova-tarefa.css'
+import './sites-page.css'
+import { SiteMiniPreview } from './SiteDrawer'
 import type { SiteDraft } from './sites'
 import type { ActiveProject } from '../App'
 import type { ChosenAgent } from './agents'
 
 type InputMode = 'agente' | 'chat'
+
+/* variação da Home vinda de "Nova tarefa" / "Novo site": o input já chega
+   com a feature (@Tarefa / @Site), greeting próprio e sugestões embaixo */
+export type HomeIntent = 'task' | 'site'
+const INTENTS: Record<
+  HomeIntent,
+  { feature: string; label: string; greeting: string; placeholder: string }
+> = {
+  task: {
+    feature: 'tarefa',
+    label: 'Tarefa',
+    greeting: 'O que você quer agendar?',
+    placeholder: 'Resuma meus e-mails importantes todas as manhãs',
+  },
+  site: {
+    feature: 'site',
+    label: 'Site',
+    greeting: 'Que site vamos criar hoje?',
+    placeholder: 'Um portfólio pessoal com meus projetos e contato',
+  },
+}
+const intentFeature = (intent: HomeIntent): MentionItem | null => {
+  const cfg = INTENTS[intent]
+  const item = TOOLS.find((t) => t.id === cfg.feature)
+  return item ? { ...item, label: cfg.label, placeholder: cfg.placeholder } : null
+}
 
 /* resposta do agente em blocos (parágrafos e listas); **texto** vira negrito */
 type Block = { kind: 'p'; text: string } | { kind: 'ul'; items: string[] }
@@ -272,20 +305,30 @@ function AgentMessage({
           <ChevronRight className="msg-task-chev" size={18} strokeWidth={2} aria-hidden="true" />
         </button>
       )}
-      {/* site criado: widget que abre o drawer com a prévia */}
+      {/* site criado: card com a prévia (mesmo do pilar de Sites), abre o drawer */}
       {msg.site && (
-        <button type="button" className="msg-task" onClick={() => onOpenSite?.(msg.site!)}>
-          <span className="msg-task-ic" aria-hidden="true">
-            <Globe size={20} strokeWidth={1.8} />
+        <button
+          type="button"
+          className="site-card is-clickable msg-site-card"
+          onClick={() => onOpenSite?.(msg.site!)}
+        >
+          <span className="site-thumb">
+            {msg.site.thumb ? (
+              <img src={msg.site.thumb} alt={`Prévia do site ${msg.site.name}`} />
+            ) : (
+              <SiteMiniPreview />
+            )}
           </span>
-          <span className="msg-task-text">
-            <span className="msg-task-name">{msg.site.name}</span>
-            <span className="msg-task-sub msg-site-sub">
-              <Lock size={13} strokeWidth={2.2} aria-hidden="true" />
-              Não publicado · Visível apenas pra você
+          <span className="site-body">
+            <span className="site-title">{msg.site.name}</span>
+            <span className="site-url">{msg.site.url}</span>
+            <span className="site-foot">
+              <span className={`site-vis${msg.site.published ? ' is-public' : ''}`}>
+                {msg.site.published ? <Globe size={13} strokeWidth={2} /> : <Lock size={13} strokeWidth={2} />}
+                {msg.site.published ? 'Publicado' : 'Não publicado · Visível apenas pra você'}
+              </span>
             </span>
           </span>
-          <ChevronRight className="msg-task-chev" size={18} strokeWidth={2} aria-hidden="true" />
         </button>
       )}
       {/* ações: copiar, avaliar, gerar de novo; compartilhar só no hover */}
@@ -332,6 +375,8 @@ export default function ChatHome({
   onOpenSite,
   onSiteCreated,
   initialThread = null,
+  intent = null,
+  breadcrumb = null,
   taskEdits,
 }: {
   mode: InputMode
@@ -364,6 +409,10 @@ export default function ChatHome({
   onSiteCreated?: (site: SiteDraft, messages: ChatMsg[]) => void
   /* reabre uma conversa salva já em modo conversa, sem animar as respostas */
   initialThread?: ChatMsg[] | null
+  /* Home vinda de "Nova tarefa" / "Novo site" */
+  intent?: HomeIntent | null
+  /* trilha no topo da conversa (ex.: Sites / nome do site), com voltar */
+  breadcrumb?: { parent: string; label: string; onBack: () => void } | null
 }) {
   /* conversa: abre ao enviar a primeira mensagem */
   const [messages, setMessages] = useState<Msg[]>(() =>
@@ -374,6 +423,7 @@ export default function ChatHome({
   messagesRef.current = messages
   const [leaving, setLeaving] = useState(false)
   const [thinking, setThinking] = useState(false)
+  const [prefill, setPrefill] = useState<{ text: string; key: number } | null>(null)
   /* rótulo do "pensando" quando o agente está trabalhando (ex.: Construindo site) */
   const [thinkLabel, setThinkLabel] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<number | null>(null)
@@ -465,7 +515,9 @@ export default function ChatHome({
     }, 240)
   }
 
-  const send = (text: string) => {
+  const send = (raw: string) => {
+    /* com @Site, o pedido curto chega polido ("Quero criar um site de ...") */
+    const text = intent === 'site' && !thread ? polishSiteRequest(raw) : raw
     const userMsg: Msg = { id: ++idRef.current, role: 'user', text }
     if (thread) {
       setMessages((m) => [...m, userMsg])
@@ -604,7 +656,7 @@ export default function ChatHome({
           )}
           <span className="greeting-text-col">
             {agent && <span className="greeting-agent-name">{agent.name}</span>}
-            <h1 className="greeting-text">Me dê uma tarefa...</h1>
+            <h1 className="greeting-text">{intent ? INTENTS[intent].greeting : 'Me dê uma tarefa...'}</h1>
           </span>
         </>
       ) : (
@@ -624,6 +676,19 @@ export default function ChatHome({
           : undefined
       }
     >
+      {/* trilha (ex.: Sites / nome do site) quando a conversa foi aberta por "Editar" */}
+      {breadcrumb && (
+        <nav className="chat-crumb" aria-label="Navegação">
+          <button type="button" className="chat-crumb-back" onClick={breadcrumb.onBack}>
+            <ArrowLeft size={17} strokeWidth={2} />
+            {breadcrumb.parent}
+          </button>
+          <span className="chat-crumb-sep" aria-hidden="true">
+            /
+          </span>
+          <span className="chat-crumb-cur">{breadcrumb.label}</span>
+        </nav>
+      )}
       {/* cabeçalho da conversa: Compartilhar e mais opções, canto superior direito */}
       <header className="chat-thread-head" aria-hidden={!thread}>
         <button type="button" className="cth-btn" tabIndex={thread ? 0 : -1}>
@@ -701,9 +766,36 @@ export default function ChatHome({
             intro={intro}
             showTabs={showTabs}
             collapsible={mode === 'chat'}
+            initialFeature={intent ? intentFeature(intent) : null}
+            prefill={prefill}
             onSend={send}
           />
         </div>
+        {/* sugestões da variação (tarefa/site), só antes da conversa começar */}
+        {intent && !thread && !leaving && (
+          <div className="nt-sugg ch-sugg">
+            <span className="nt-sugg-head">Sugestões</span>
+            {(intent === 'task' ? TASK_SUGGESTIONS : SITE_SUGGESTIONS).map((sg) => (
+              <button
+                key={sg.title}
+                type="button"
+                className="nt-sugg-item"
+                onClick={() => setPrefill((p) => ({ text: sg.desc, key: (p?.key ?? 0) + 1 }))}
+              >
+                <span className="nt-sugg-emoji" aria-hidden="true">
+                  {sg.emoji}
+                </span>
+                <span className="nt-sugg-text">
+                  <span className="nt-sugg-title">{sg.title}</span>
+                  <span className="nt-sugg-desc">{sg.desc}</span>
+                </span>
+                <span className="nt-sugg-add" aria-hidden="true">
+                  <Plus size={16} strokeWidth={2} />
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
         {questions && (
           <QuestionCard
             agent={agent}
