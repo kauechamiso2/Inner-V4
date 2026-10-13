@@ -53,6 +53,8 @@ export default function ChatComposer({
   oneLine = false,
   initialFeature = null,
   prefill = null,
+  onFeatureChange,
+  decorateFeature,
   onSend,
 }: {
   mode: InputMode
@@ -83,6 +85,10 @@ export default function ChatComposer({
   initialFeature?: MentionItem | null
   /* texto colocado no input por fora (ex.: clicar numa sugestão); key muda a cada vez */
   prefill?: { text: string; key: number } | null
+  /* avisa o pai quando a feature (pill) entra ou sai do input */
+  onFeatureChange?: (item: MentionItem | null) => void
+  /* ajusta a feature escolhida no menu (ex.: label/placeholder da variação) */
+  decorateFeature?: (item: MentionItem) => MentionItem
 }) {
   const [value, setValue] = useState('')
   const setMode = onModeChange
@@ -109,6 +115,12 @@ export default function ChatComposer({
       el.setSelectionRange(prefill.text.length, prefill.text.length)
     })
   }, [prefill])
+
+  const featureCb = useRef(onFeatureChange)
+  featureCb.current = onFeatureChange
+  useEffect(() => {
+    featureCb.current?.(feature)
+  }, [feature])
 
   /* com uma feature vinda de fora, o input já chega com o cursor */
   useEffect(() => {
@@ -328,7 +340,7 @@ export default function ChatComposer({
     } else {
       // itens agentOnly puxam o input para o modo Agente
       if (item.agentOnly && mode === 'chat') setMode('agente')
-      if (item.feature) setFeature(item)
+      if (item.feature) setFeature(decorateFeature ? decorateFeature(item) : item)
     }
     setMention(null)
     setPlusOpen(false)

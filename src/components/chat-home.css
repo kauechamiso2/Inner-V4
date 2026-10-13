@@ -1617,6 +1617,15 @@
   }
 }
 
+/* sugestões somem suavemente ao tirar o @Tarefa/@Site do input */
+.nt-sugg.ch-sugg.is-leaving {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 200ms ease,
+    transform 220ms ease;
+}
+
 /* trilha no topo da conversa (Sites / nome do site) */
 .chat-crumb {
   position: absolute;

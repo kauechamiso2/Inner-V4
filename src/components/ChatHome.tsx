@@ -54,6 +54,8 @@ const INTENTS: Record<
     placeholder: 'Um portfólio pessoal com meus projetos e contato',
   },
 }
+const intentOf = (item: MentionItem | null): HomeIntent | null =>
+  item?.id === 'tarefa' ? 'task' : item?.id === 'site' ? 'site' : null
 const intentFeature = (intent: HomeIntent): MentionItem | null => {
   const cfg = INTENTS[intent]
   const item = TOOLS.find((t) => t.id === cfg.feature)
@@ -424,6 +426,27 @@ export default function ChatHome({
   const [leaving, setLeaving] = useState(false)
   const [thinking, setThinking] = useState(false)
   const [prefill, setPrefill] = useState<{ text: string; key: number } | null>(null)
+  /* variação ativa segue o pill do input: tirar @Tarefa/@Site volta à Home normal,
+     colocar pelo menu ativa a variação (frase, placeholder e sugestões) */
+  const [activeIntent, setActiveIntent] = useState<HomeIntent | null>(intent)
+  /* sugestões saem com fade antes de desmontar */
+  const [suggShown, setSuggShown] = useState<HomeIntent | null>(intent)
+  const [suggLeaving, setSuggLeaving] = useState(false)
+  useEffect(() => {
+    if (activeIntent) {
+      setSuggShown(activeIntent)
+      setSuggLeaving(false)
+      return
+    }
+    if (!suggShown) return
+    setSuggLeaving(true)
+    const t = window.setTimeout(() => {
+      setSuggShown(null)
+      setSuggLeaving(false)
+    }, 220)
+    return () => window.clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIntent])
   /* rótulo do "pensando" quando o agente está trabalhando (ex.: Construindo site) */
   const [thinkLabel, setThinkLabel] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<number | null>(null)
@@ -517,7 +540,7 @@ export default function ChatHome({
 
   const send = (raw: string) => {
     /* com @Site, o pedido curto chega polido ("Quero criar um site de ...") */
-    const text = intent === 'site' && !thread ? polishSiteRequest(raw) : raw
+    const text = activeIntent === 'site' && !thread ? polishSiteRequest(raw) : raw
     const userMsg: Msg = { id: ++idRef.current, role: 'user', text }
     if (thread) {
       setMessages((m) => [...m, userMsg])
@@ -656,7 +679,9 @@ export default function ChatHome({
           )}
           <span className="greeting-text-col">
             {agent && <span className="greeting-agent-name">{agent.name}</span>}
-            <h1 className="greeting-text">{intent ? INTENTS[intent].greeting : 'Me dê uma tarefa...'}</h1>
+            <h1 className="greeting-text" key={activeIntent ?? 'home'}>
+              {activeIntent ? INTENTS[activeIntent].greeting : 'Me dê uma tarefa...'}
+            </h1>
           </span>
         </>
       ) : (
@@ -768,14 +793,19 @@ export default function ChatHome({
             collapsible={mode === 'chat'}
             initialFeature={intent ? intentFeature(intent) : null}
             prefill={prefill}
+            onFeatureChange={(f) => setActiveIntent(intentOf(f))}
+            decorateFeature={(f) => {
+              const k = intentOf(f)
+              return k ? (intentFeature(k) ?? f) : f
+            }}
             onSend={send}
           />
         </div>
         {/* sugestões da variação (tarefa/site), só antes da conversa começar */}
-        {intent && !thread && !leaving && (
-          <div className="nt-sugg ch-sugg">
+        {suggShown && mode === 'agente' && !thread && !leaving && (
+          <div className={`nt-sugg ch-sugg${suggLeaving ? ' is-leaving' : ''}`} key={suggShown}>
             <span className="nt-sugg-head">Sugestões</span>
-            {(intent === 'task' ? TASK_SUGGESTIONS : SITE_SUGGESTIONS).map((sg) => (
+            {(suggShown === 'task' ? TASK_SUGGESTIONS : SITE_SUGGESTIONS).map((sg) => (
               <button
                 key={sg.title}
                 type="button"
