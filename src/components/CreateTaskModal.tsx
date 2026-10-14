@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, MessageCircle, Monitor, X, Zap } from 'lucide-react'
+import { ChevronDown, MessageCircle, MessagesSquare, Monitor, SquarePen, X } from 'lucide-react'
 import { AgendadoIcon } from './SidebarIcons'
 import type { Task } from './tasks'
 import './context-modal.css'
@@ -15,12 +15,6 @@ const FREQUENCIES = [
   { id: 'mes', label: 'Todo mês', unit: ['mês', 'meses'] },
 ]
 
-const TRIGGERS = [
-  'Gmail: quando chegar um e-mail novo',
-  'Google Calendar: antes de cada reunião',
-  'Hubspot: quando entrar um novo lead',
-  'Google Drive: quando um arquivo for adicionado',
-]
 
 const ENDS = ['Nunca', 'Em uma data', 'Depois de 10 execuções']
 
@@ -93,7 +87,6 @@ function Select({
 
 /* lê o texto de agendamento de uma tarefa existente de volta para os campos */
 function parseSchedule(schedule: string) {
-  const trigger = TRIGGERS.find((t) => t === schedule)
   const time = schedule.match(/\d{1,2}:\d{2}/)?.[0]?.padStart(5, '0') ?? '09:00'
   const every = Number(schedule.match(/A cada (\d+)/)?.[1] ?? 1)
   const freq = /úteis/i.test(schedule)
@@ -103,7 +96,7 @@ function parseSchedule(schedule: string) {
       : /semana|segunda|terça|quarta|quinta|sexta|sábado|domingo/i.test(schedule)
         ? 'semana'
         : 'dia'
-  return { trigger, time, every, freq }
+  return { time, every, freq }
 }
 
 /* mesmo modal para criar ("Criar manualmente") e editar ("Configurações" da tarefa) */
@@ -121,14 +114,14 @@ export default function CreateTaskModal({
   const [closing, setClosing] = useState(false)
   const [name, setName] = useState(task?.name ?? '')
   const [instructions, setInstructions] = useState(task?.description ?? '')
-  const [when, setWhen] = useState<'schedule' | 'trigger'>(parsed?.trigger ? 'trigger' : 'schedule')
   const [freq, setFreq] = useState(parsed?.freq ?? 'dia')
   const [time, setTime] = useState(parsed?.time ?? '09:00')
   const [every, setEvery] = useState(parsed?.every ?? 1)
-  const [trigger, setTrigger] = useState(parsed?.trigger ?? TRIGGERS[0])
   const [ends, setEnds] = useState(task?.ends ?? ENDS[0])
   const [timezone, setTimezone] = useState(task?.timezone ?? 'America/Sao_Paulo')
   const [notify, setNotify] = useState<'platform' | 'whatsapp'>(task?.notify ?? 'platform')
+  /* cada execução abre um chat novo ou continua sempre no mesmo */
+  const [thread, setThread] = useState<'new' | 'same'>(task?.thread ?? 'same')
   /* em edição, o agendamento só muda se o usuário mexer nos campos */
   const [touchedWhen, setTouchedWhen] = useState(false)
   const touch = <T,>(fn: (v: T) => void) => (v: T) => {
@@ -162,9 +155,7 @@ export default function CreateTaskModal({
     const schedule =
       task && !touchedWhen
         ? task.schedule
-        : when === 'trigger'
-          ? trigger
-          : `${every > 1 ? `A cada ${every} ${f.unit[1]}` : f.label}, ${time}`
+        : `${every > 1 ? `A cada ${every} ${f.unit[1]}` : f.label}, ${time}`
     if (task) {
       onCreate({
         ...task,
@@ -173,6 +164,7 @@ export default function CreateTaskModal({
         schedule,
         timezone,
         notify,
+        thread,
         ends,
       })
       close()
@@ -181,15 +173,16 @@ export default function CreateTaskModal({
     onCreate({
       id: `manual-${Date.now()}`,
       name: name.trim(),
-      emoji: when === 'trigger' ? '⚡' : '🗓️',
+      emoji: '🗓️',
       color: '#6B7280',
       recurring: true,
       schedule,
-      next: when === 'trigger' ? null : `Amanhã, ${time}`,
+      next: `Amanhã, ${time}`,
       last: null,
       description: instructions.trim() || 'Sem instruções por enquanto.',
       timezone,
       notify,
+      thread,
       ends,
     })
     close()
@@ -248,30 +241,10 @@ export default function CreateTaskModal({
             />
           </div>
 
+          {/* só agendamento: dia, horário e repetição */}
           <div className="et-field">
             <span className="et-label">Quando executar</span>
-            <div className="ct-choices" role="radiogroup" aria-label="Quando executar">
-              <Choice
-                selected={when === 'schedule'}
-                onSelect={() => touch(setWhen)('schedule')}
-                icon={<AgendadoIcon size={20} />}
-                title="Agendamento"
-                sub="Escolha o dia e o horário"
-              />
-              <Choice
-                selected={when === 'trigger'}
-                onSelect={() => touch(setWhen)('trigger')}
-                icon={<Zap size={19} strokeWidth={1.8} />}
-                title="Gatilho"
-                sub="A partir de uma integração"
-              />
-            </div>
-          </div>
-
-          {/* detalhes de "quando": troca com fade ao alternar */}
-          <div className="ct-box" key={when}>
-            {when === 'schedule' ? (
-              <>
+            <div className="ct-box">
                 <div className="et-row">
                   <div className="et-field">
                     <label className="et-label" htmlFor="ct-freq">
@@ -315,20 +288,7 @@ export default function CreateTaskModal({
                     <span>{every > 1 ? f.unit[1] : f.unit[0]}</span>
                   </div>
                 </div>
-              </>
-            ) : (
-              <div className="et-field">
-                <label className="et-label" htmlFor="ct-trigger">
-                  Integração
-                </label>
-                <Select
-                  id="ct-trigger"
-                  value={trigger}
-                  onChange={touch(setTrigger)}
-                  options={TRIGGERS.map((t) => ({ value: t, label: t }))}
-                />
-              </div>
-            )}
+            </div>
           </div>
 
           <div className="et-row">
@@ -347,6 +307,26 @@ export default function CreateTaskModal({
                 value={timezone}
                 onChange={setTimezone}
                 options={TIMEZONES.map((t) => ({ value: t.id, label: t.label }))}
+              />
+            </div>
+          </div>
+
+          <div className="et-field">
+            <span className="et-label">Conversa de cada execução</span>
+            <div className="ct-choices" role="radiogroup" aria-label="Conversa de cada execução">
+              <Choice
+                selected={thread === 'same'}
+                onSelect={() => setThread('same')}
+                icon={<MessagesSquare size={19} strokeWidth={1.8} />}
+                title="Sempre no mesmo chat"
+                sub="As execuções continuam a mesma conversa"
+              />
+              <Choice
+                selected={thread === 'new'}
+                onSelect={() => setThread('new')}
+                icon={<SquarePen size={19} strokeWidth={1.8} />}
+                title="Novo chat a cada vez"
+                sub="Cada execução abre uma conversa nova"
               />
             </div>
           </div>

@@ -86,7 +86,7 @@ export default function TaskPage({
     <div className="tp">
       <button type="button" className="tp-back" onClick={onBack}>
         <ArrowLeft size={17} strokeWidth={2} />
-        Tarefas agendadas
+        Loops
       </button>
 
       <header className="tp-head">
@@ -107,12 +107,7 @@ export default function TaskPage({
               <span className="tp-status-dot" aria-hidden="true" />
               {inactive ? task.status : 'Ativa'}
             </span>
-            {task.project && (
-              <span className="tp-project">
-                <span aria-hidden="true">{task.project.emoji}</span>
-                {task.project.name}
-              </span>
-            )}
+
           </div>
           <h1 className="tp-title">{task.name}</h1>
         </div>
@@ -175,7 +170,11 @@ export default function TaskPage({
               Histórico de execuções
               <span className="tp-count">{runs.length}</span>
             </h2>
-            <p className="tp-panel-sub">Cada execução tem sua própria conversa.</p>
+            <p className="tp-panel-sub">
+              {task.thread === 'new'
+                ? 'Cada execução tem sua própria conversa.'
+                : 'Todas as execuções acontecem na mesma conversa.'}
+            </p>
           </div>
           <div className="tp-filter">
             <select value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filtrar execuções">

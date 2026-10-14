@@ -13,14 +13,14 @@ export type Task = {
   description: string
   /* presente apenas em tarefas inativas (ex.: "Pausada") */
   status?: string
-  /* quando a tarefa pertence a um projeto da Biblioteca */
-  project?: { id: string; name: string; emoji: string }
   /* fuso horário das execuções (padrão: America/Sao_Paulo) */
   timezone?: string
   /* onde avisar o resultado (padrão: na plataforma) */
   notify?: 'platform' | 'whatsapp'
   /* quando a recorrência termina (padrão: nunca) */
   ends?: string
+  /* execuções continuam no mesmo chat (padrão) ou abrem um chat novo */
+  thread?: 'new' | 'same'
 }
 
 export const ACTIVE_TASKS: Task[] = [
@@ -35,7 +35,6 @@ export const ACTIVE_TASKS: Task[] = [
     last: 'há 4 horas',
     description:
       'Compila o desempenho dos posts da semana (alcance, engajamento e cliques) e sugere ajustes de pauta para o calendário editorial.',
-    project: { id: 'col-mkt', name: 'Marketing & Conteúdo', emoji: '📣' },
   },
   {
     id: 'voo',

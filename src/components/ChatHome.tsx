@@ -790,7 +790,6 @@ export default function ChatHome({
             agent={agent}
             intro={intro}
             showTabs={showTabs}
-            collapsible={mode === 'chat'}
             initialFeature={intent ? intentFeature(intent) : null}
             prefill={prefill}
             onFeatureChange={(f) => setActiveIntent(intentOf(f))}

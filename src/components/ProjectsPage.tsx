@@ -1,9 +1,10 @@
+import TutorialEmpty, { ProjectsArt } from './TutorialEmpty'
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import './images-page.css'
 import './library-page.css'
 import './projects-page.css'
-import { FolderPlus, Pin } from 'lucide-react'
+import { Pin } from 'lucide-react'
 import ProjectHome from './ProjectHome'
 import type { ChosenAgent } from './agents'
 
@@ -124,31 +125,29 @@ export default function ProjectsPage({
 
   if (empty) {
     return (
-      <main className="images-page projects-page">
+      <main className="images-page projects-page empty-page">
         <div className="lib-container">
           <h1 className="lib-title">Projetos</h1>
 
-          <div className="pjp-empty">
-            <span className="pjp-empty-art" aria-hidden="true">
-              <FolderPlus size={30} strokeWidth={1.6} />
-            </span>
-            <h2 className="pjp-empty-title">Crie seu primeiro projeto</h2>
-            <p className="pjp-empty-sub">
-              Reúna conversas, arquivos e contexto em um só lugar. Cada projeto vira um
-              espaço dedicado pro seu agente trabalhar com você.
-            </p>
-            <button type="button" className="lib-new-cta pjp-empty-cta">
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M8 3.1v9.8M3.1 8h9.8"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Novo projeto
-            </button>
-          </div>
+          <TutorialEmpty
+            title="Organize seu trabalho em projetos."
+            steps={[
+              { strong: 'Crie um projeto', rest: 'para cada cliente, área ou iniciativa.' },
+              { strong: 'Adicione contexto:', rest: 'arquivos, instruções e links que o agente precisa conhecer.' },
+              { strong: 'Converse dentro do projeto', rest: 'e o agente já responde com tudo isso em mente.' },
+            ]}
+            cta={
+              <button type="button" className="lib-new-cta te-tutorial-cta">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+                Novo projeto
+              </button>
+            }
+            caption="Como funcionam os projetos"
+            duration="1:12"
+            art={<ProjectsArt />}
+          />
         </div>
       </main>
     )

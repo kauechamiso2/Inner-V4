@@ -99,8 +99,9 @@ export default function App() {
   const appsReduced = version === 'v1'
   const [view, setView] = useState<AppView>('chat')
   /* protótipo: alterna Tarefas e Projetos entre conteúdo e empty state */
-  const [tasksEmpty, setTasksEmpty] = useState(false)
-  const [projectsEmpty, setProjectsEmpty] = useState(false)
+  /* protótipo: um único toggle (Configurações) liga o empty state de
+     Tarefas, Projetos e Biblioteca ao mesmo tempo */
+  const [emptyStates, setEmptyStates] = useState(false)
   /* última view com painel de histórico: mantém o conteúdo durante o colapso */
   const [panelView, setPanelView] = useState<PanelView>('chat')
   const [layout, setLayout] = useState<SidebarLayout>(readSavedLayout)
@@ -441,13 +442,13 @@ export default function App() {
       ) : view === 'videos' ? (
         <VideosPage key="videos" panelOpen={!historyCollapsed} />
       ) : view === 'library' ? (
-        <LibraryPage key="library" />
+        <LibraryPage key="library" empty={emptyStates} />
       ) : view === 'projetos' ? (
-        <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} agent={chosenAgent} empty={projectsEmpty} />
+        <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} agent={chosenAgent} empty={emptyStates} />
       ) : view === 'tarefas' ? (
         <TarefasPage
           key="tarefas"
-          empty={tasksEmpty}
+          empty={emptyStates}
           createdTasks={createdTasks}
           taskEdits={taskEdits}
           agent={chosenAgent}
@@ -490,11 +491,8 @@ export default function App() {
         onCoachToggle={changeCoach}
         version={version}
         onVersionChange={changeVersion}
-        view={view}
-        tasksEmpty={tasksEmpty}
-        onTasksEmptyToggle={setTasksEmpty}
-        projectsEmpty={projectsEmpty}
-        onProjectsEmptyToggle={setProjectsEmpty}
+        emptyStates={emptyStates}
+        onEmptyStatesToggle={setEmptyStates}
       />
     </div>
     {showOnboarding && (

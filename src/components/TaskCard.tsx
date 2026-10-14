@@ -2,13 +2,12 @@ import type { CSSProperties } from 'react'
 import { MoreHorizontal, Pencil, Pause, Play, Repeat, Trash2, Zap } from 'lucide-react'
 import type { Task } from './tasks'
 
-/* Card de tarefa — reusado na página de Tarefas e no modal de Tarefas do projeto */
+/* Card de tarefa (página de Tarefas agendadas) */
 export default function TaskCard({
   task,
   i,
   inactive,
   open,
-  showProject = true,
   onToggle,
   onOpen,
 }: {
@@ -16,8 +15,6 @@ export default function TaskCard({
   i: number
   inactive?: boolean
   open: boolean
-  /* mostra o chip do projeto ao qual a tarefa pertence */
-  showProject?: boolean
   onToggle: () => void
   onOpen: () => void
 }) {
@@ -80,14 +77,7 @@ export default function TaskCard({
       </span>
 
       <div className="task-text">
-        {showProject && task.project && (
-          <span className="task-project">
-            <span className="task-project-emoji" aria-hidden="true">
-              {task.project.emoji}
-            </span>
-            {task.project.name}
-          </span>
-        )}
+
         <span className="task-name">{task.name}</span>
         {inactive ? (
           <span className="task-badge">

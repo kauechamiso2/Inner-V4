@@ -14,7 +14,7 @@ export type SiteDraft = {
 export const PORTFOLIO_SITE: SiteDraft = {
   id: 'portfolio-do-kaue',
   name: 'Portfólio do Kauê',
-  url: 'portfolio-do-kaue.innerai.site',
+  url: 'portfolio.kaue.innerai.site',
 }
 
 /* ideias de site (abaixo do input com @Site): clicar preenche o input */

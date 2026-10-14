@@ -82,7 +82,7 @@ export default function TarefasPage({
           />
         ) : (
           <>
-        <h1 className="lib-title">Tarefas Agendadas</h1>
+        <h1 className="lib-title">Loops</h1>
 
         {empty ? (
           <div className="tasks-empty">

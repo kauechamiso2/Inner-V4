@@ -27,7 +27,7 @@ const SITES: Site[] = [
   {
     id: 's1',
     title: 'Kauê Chamiso | UX Design',
-    url: 'kauechamiso.design',
+    url: 'ux-design.kaue.innerai.site',
     visibility: 'private',
     date: 'Ontem',
     thumb: portfolioThumb,
@@ -35,15 +35,18 @@ const SITES: Site[] = [
   {
     id: 's2',
     title: 'Smart Analytics | Landing',
-    url: 'smartanalytics.inner.site',
+    url: 'smart-analytics.kaue.innerai.site',
     visibility: 'public',
     date: 'há 3 dias',
     thumb: saasThumb,
   },
 ]
 
-/* acesso alterado em Compartilhar: vale para a sessão toda (sobrevive à troca de página) */
+/* acesso alterado em Compartilhar, endereço e domínio das Configurações:
+   valem para a sessão toda (sobrevivem à troca de página) */
 let accessMemo: Record<string, SiteAccess> = {}
+const urlMemo: Record<string, string> = {}
+const domainMemo: Record<string, string | null> = {}
 
 export default function SitesPage({
   createdSites = [],
@@ -64,6 +67,7 @@ export default function SitesPage({
   const [share, setShare] = useState<Site | null>(null)
   const [settings, setSettings] = useState<Site | null>(null)
   /* acesso alterado no modal Compartilhar (por site) */
+  const [urls, setUrls] = useState<Record<string, string>>(urlMemo)
   const [access, setAccessState] = useState<Record<string, SiteAccess>>(accessMemo)
   const setAccess = (fn: (m: Record<string, SiteAccess>) => Record<string, SiteAccess>) =>
     setAccessState((m) => (accessMemo = fn(m)))
@@ -78,7 +82,7 @@ export default function SitesPage({
       draft: d,
     })),
     ...SITES,
-  ].map((s) => ({ ...s, visibility: access[s.id] ?? s.visibility }))
+  ].map((s) => ({ ...s, visibility: access[s.id] ?? s.visibility, url: urls[s.id] ?? s.url }))
 
   /* todo site vira um rascunho abrível (os de exemplo usam a imagem como prévia) */
   const draftOf = (s: Site): SiteDraft => ({
@@ -237,7 +241,21 @@ export default function SitesPage({
           onSave={(a) => setAccess((m) => ({ ...m, [share.id]: a }))}
         />
       )}
-      {settings && <SiteSettingsModal name={settings.title} url={settings.url} onClose={() => setSettings(null)} />}
+      {settings && (
+        <SiteSettingsModal
+          name={settings.title}
+          url={settings.url}
+          domain={domainMemo[settings.id] ?? null}
+          onChangeUrl={(u) => {
+            urlMemo[settings.id] = u
+            setUrls({ ...urlMemo })
+          }}
+          onDomainChange={(d) => {
+            domainMemo[settings.id] = d
+          }}
+          onClose={() => setSettings(null)}
+        />
+      )}
     </main>
   )
 }

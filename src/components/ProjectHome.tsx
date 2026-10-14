@@ -1,15 +1,12 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { ChevronLeft, Paperclip, Pin, ScrollText, Settings2 } from 'lucide-react'
-import { AgendadoIcon } from './SidebarIcons'
 import './project-home.css'
 import ChatComposer from './ChatComposer'
 import ContextModal from './ContextModal'
 import InstructionsModal from './InstructionsModal'
-import TasksModal from './TasksModal'
 import { DEFAULT_PROJECT_CONTENT, PROJECT_CONTENT } from './projectContent'
 import type { ProjChat } from './projectContent'
-import { ACTIVE_TASKS, INACTIVE_TASKS } from './tasks'
 import type { ChosenAgent } from './agents'
 
 type SideItem = { id: string; icon: ReactNode; label: string; sub?: string; action: string }
@@ -17,7 +14,6 @@ type SideItem = { id: string; icon: ReactNode; label: string; sub?: string; acti
 const SIDE_ITEMS: SideItem[] = [
   { id: 'instr', icon: <ScrollText size={18} strokeWidth={1.7} />, label: 'Instruções', action: 'Editar' },
   { id: 'ctx', icon: <Paperclip size={18} strokeWidth={1.7} />, label: 'Contexto', action: 'Adicionar' },
-  { id: 'tarefas', icon: <AgendadoIcon size={18} />, label: 'Tarefas', action: 'Adicionar' },
 ]
 
 function ChatRow({ chat, pinned = false }: { chat: ProjChat; pinned?: boolean }) {
@@ -51,12 +47,8 @@ export default function ProjectHome({
   agent?: ChosenAgent | null
 }) {
   const content = PROJECT_CONTENT[projectId] ?? DEFAULT_PROJECT_CONTENT
-  const projectTasks = [...ACTIVE_TASKS, ...INACTIVE_TASKS].filter(
-    (t) => t.project?.id === projectId,
-  )
   const [contextOpen, setContextOpen] = useState(false)
   const [instrOpen, setInstrOpen] = useState(false)
-  const [tasksOpen, setTasksOpen] = useState(false)
 
   return (
     <main className="project-home">
@@ -161,10 +153,6 @@ export default function ProjectHome({
             } else if (it.id === 'ctx') {
               sub = `${content.contextPct}%`
               onClick = () => setContextOpen(true)
-            } else if (it.id === 'tarefas') {
-              sub = projectTasks.length > 0 ? String(projectTasks.length) : undefined
-              action = projectTasks.length > 0 ? 'Visualizar' : 'Adicionar'
-              onClick = () => setTasksOpen(true)
             }
             return (
               <button className="ph-side-item" type="button" key={it.id} onClick={onClick}>
@@ -194,7 +182,6 @@ export default function ProjectHome({
         onClose={() => setInstrOpen(false)}
         defaultValue={content.instructions}
       />
-      <TasksModal open={tasksOpen} onClose={() => setTasksOpen(false)} tasks={projectTasks} />
     </main>
   )
 }

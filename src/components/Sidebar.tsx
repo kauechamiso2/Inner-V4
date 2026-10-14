@@ -399,7 +399,7 @@ export default function Sidebar({
             })}
             {rlItem({
               id: 'automacoes',
-              label: 'Agendado',
+              label: 'Loops',
               icon: activeView === 'tarefas' ? <AgendadoFillIcon /> : <AgendadoIcon />,
               active: activeView === 'tarefas',
               onSelect: () => onNavigate('tarefas'),
