@@ -307,28 +307,6 @@
   flex-shrink: 0;
 }
 
-.tp-filter select {
-  appearance: none;
-  height: 36px;
-  padding: 0 34px 0 14px;
-  border: 1px solid var(--sb-border);
-  border-radius: 10px;
-  background: var(--pop-surface);
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--text-strong);
-  cursor: pointer;
-}
-
-.tp-filter svg {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  color: var(--text-faint);
-  pointer-events: none;
-}
-
 /* tabela: execução | status | origem | chevron */
 .tp-tr {
   display: grid;

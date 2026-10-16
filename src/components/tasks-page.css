@@ -54,7 +54,7 @@
 
 /* inativas (pausadas): cinza e sem elevação */
 .task-card.is-inactive {
-  background: var(--card-surface);
+  background: transparent;
   box-shadow: none;
 }
 
@@ -913,4 +913,511 @@
   .te-art {
     transition: none;
   }
+}
+
+/* mais respiro entre "Ativas"/"Inativas" e os cards (igual a Projetos) */
+.tasks-page .lib-section-head,
+.tasks-page .lib-section > .lib-section-title {
+  margin-bottom: 24px;
+}
+
+/* filtro: botão ativo + rótulo dos grupos no menu */
+.tasks-page .cd-filter-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tasks-page .lib-new.is-ghost.is-on {
+  background: var(--hover-05);
+}
+
+.lp-filter-label {
+  padding: 6px 10px 2px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+/* ============ Explorar: presets de loops ============ */
+
+.lp-cats {
+  display: flex;
+  gap: 4px;
+  margin: -4px 0 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.lp-cats::-webkit-scrollbar {
+  display: none;
+}
+
+.lp-preset {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 236px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--card-surface);
+  cursor: pointer;
+  outline: none;
+  animation: card-in 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 40ms);
+  transition:
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.lp-preset:hover,
+.lp-preset:focus-visible {
+  box-shadow: 0 8px 22px -10px rgba(0, 0, 0, 0.16);
+  transform: translateY(-2px);
+}
+
+.lp-preset:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--card-border-hover),
+    0 8px 22px -10px rgba(0, 0, 0, 0.16);
+}
+
+.lp-preset-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 14px;
+  border-radius: 11px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.lp-preset-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text-strong);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lp-preset-when {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+
+.lp-preset-when svg {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.lp-preset-desc {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--card-desc);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lp-preset-actions {
+  display: flex;
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+.lp-preset:hover .prompt-btn.is-primary {
+  opacity: 0.88;
+}
+
+.lp-explore-empty {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-preset {
+    animation: none;
+  }
+}
+
+/* Explorar separado das suas tarefas: mais respiro e divisória tracejada */
+.tasks-page .lib-section.lp-explore {
+  margin-top: 96px;
+  padding-top: 56px;
+  border-top: 1px solid var(--card-border);
+}
+
+/* inativas: só o contorno tracejado, sem fundo */
+.task-card.is-inactive {
+  border-style: dashed;
+  border-color: var(--card-border-hover);
+}
+
+/* "Executando agora" no card */
+.task-last.is-running {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-mid);
+}
+
+.task-spin {
+  flex-shrink: 0;
+  animation: lp-spin 900ms linear infinite;
+}
+
+@keyframes lp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* toast das ações de Loops (executar, pausar, excluir) */
+.lp-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 300;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 8px 0 16px;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+  animation: lp-toast-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lp-toast.is-running,
+.lp-toast:not(:has(.lp-toast-btn)) {
+  padding-right: 18px;
+}
+
+.lp-toast svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.lp-toast.is-done svg {
+  color: #3ccf8e;
+}
+
+.lp-toast-text {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lp-toast-btn {
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--voice-fg) 14%, transparent);
+  color: var(--voice-fg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.lp-toast-btn:hover {
+  background: color-mix(in srgb, var(--voice-fg) 22%, transparent);
+}
+
+@keyframes lp-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-toast,
+  .task-spin {
+    animation: none;
+  }
+}
+
+.task-menu-item:disabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ============ Ativos/Inativos em lista ============ */
+.task-rows {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: var(--pop-surface);
+}
+
+.task-rows:empty {
+  display: none;
+}
+
+/* inativos: contorno tracejado e sem fundo */
+.task-rows.is-inactive {
+  border-style: dashed;
+  border-color: var(--card-border-hover);
+  background: transparent;
+}
+
+.task-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 150px 150px 28px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 14px 14px 16px;
+  cursor: pointer;
+  outline: none;
+  animation: card-in 340ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 35ms);
+  transition: background-color 140ms ease;
+}
+
+.task-row + .task-row {
+  border-top: 1px solid var(--card-border);
+}
+
+.task-rows.is-inactive .task-row + .task-row {
+  border-top-style: dashed;
+  border-top-color: var(--card-border-hover);
+}
+
+.task-row:first-child {
+  border-radius: 13px 13px 0 0;
+}
+
+.task-row:last-child {
+  border-radius: 0 0 13px 13px;
+}
+
+.task-row:only-child {
+  border-radius: 13px;
+}
+
+.task-row:hover,
+.task-row:focus-visible,
+.task-row.is-open {
+  background: var(--hover-04);
+}
+
+.task-row.is-open {
+  z-index: 2;
+}
+
+.task-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.task-row-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-row-sched {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.task-row-sched svg {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.task-row-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.task-row-label {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.task-row-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-row-value.is-running {
+  color: var(--text-strong);
+}
+
+.task-row.is-inactive .task-row-name {
+  color: var(--text-soft);
+  font-weight: 500;
+}
+
+.task-row.is-inactive .task-emoji {
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
+.task-row-more-wrap {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.task-row-more.task-more {
+  position: static;
+}
+
+.task-row:hover .task-more,
+.task-row:focus-visible .task-more {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.task-row-more-wrap .task-menu {
+  top: 34px;
+  right: 0;
+}
+
+@media (max-width: 720px) {
+  .task-row {
+    grid-template-columns: 40px minmax(0, 1fr) 28px;
+  }
+
+  .task-row-col {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-row {
+    animation: none;
+  }
+}
+
+/* lista solta (sem caixa em volta): o conteúdo alinha com o título da seção
+   e o hover desenha a linha arredondada */
+.task-rows,
+.task-rows.is-inactive {
+  gap: 2px;
+  margin: 0 -12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.task-row,
+.task-row:first-child,
+.task-row:last-child,
+.task-row:only-child {
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.task-row + .task-row,
+.task-rows.is-inactive .task-row + .task-row {
+  border-top: 0;
+}
+
+/* chevron: a linha abre a página do loop */
+.task-row {
+  grid-template-columns: 40px minmax(0, 1fr) 150px 150px 28px 17px;
+  gap: 14px;
+}
+
+.task-row-chev {
+  display: block;
+  color: var(--text-ghost);
+  transition:
+    color 140ms ease,
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.task-row:hover .task-row-chev,
+.task-row:focus-visible .task-row-chev {
+  color: var(--text-soft);
+  transform: translateX(2px);
+}
+
+@media (max-width: 720px) {
+  .task-row {
+    grid-template-columns: 40px minmax(0, 1fr) 28px 17px;
+  }
+}
+
+/* linha fina entre os loops, alinhada ao conteúdo; some ao redor da linha em hover */
+.task-rows,
+.task-rows.is-inactive {
+  gap: 0;
+}
+
+.task-row + .task-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12px;
+  right: 12px;
+  border-top: 1px solid var(--card-border);
+  transition: opacity 140ms ease;
+}
+
+.task-rows.is-inactive .task-row + .task-row::before {
+  border-top-style: dashed;
+  border-top-color: var(--card-border-hover);
+}
+
+.task-row:hover::before,
+.task-row.is-open::before,
+.task-row:focus-visible::before,
+.task-row:hover + .task-row::before,
+.task-row.is-open + .task-row::before,
+.task-row:focus-visible + .task-row::before {
+  opacity: 0;
+}
+
+/* Inativos: título mais perto da lista e mais afastado dos Ativos */
+.tasks-page .lib-section.lp-inactive {
+  margin-top: 68px;
+}
+
+.tasks-page .lp-inactive > .lib-section-title {
+  margin-bottom: -4px;
 }

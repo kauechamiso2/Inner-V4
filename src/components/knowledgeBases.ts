@@ -61,3 +61,26 @@ export const KNOWLEDGE_BASES: KnowledgeBase[] = [
     ],
   },
 ]
+
+/* bases criadas na sessão (protótipo): entram no começo da lista, que é lida
+   na hora por Biblioteca, menu @ e "Adicionar à base de conhecimento" */
+export function addKnowledgeBase(kb: KnowledgeBase) {
+  KNOWLEDGE_BASES.unshift(kb)
+}
+
+export function updateKnowledgeBase(id: string, patch: Partial<Pick<KnowledgeBase, 'name' | 'description' | 'emoji' | 'color'>>) {
+  const i = KNOWLEDGE_BASES.findIndex((b) => b.id === id)
+  if (i >= 0) KNOWLEDGE_BASES[i] = { ...KNOWLEDGE_BASES[i], ...patch }
+}
+
+/* remove e devolve a base (com a posição) para o "Desfazer" */
+export function removeKnowledgeBase(id: string): { kb: KnowledgeBase; index: number } | null {
+  const index = KNOWLEDGE_BASES.findIndex((b) => b.id === id)
+  if (index < 0) return null
+  const [kb] = KNOWLEDGE_BASES.splice(index, 1)
+  return { kb, index }
+}
+
+export function restoreKnowledgeBase(kb: KnowledgeBase, index: number) {
+  if (!KNOWLEDGE_BASES.some((b) => b.id === kb.id)) KNOWLEDGE_BASES.splice(index, 0, kb)
+}

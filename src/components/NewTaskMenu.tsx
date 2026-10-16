@@ -56,7 +56,7 @@ export default function NewTaskMenu({
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
-        Nova Tarefa
+        Novo Loop
         <ChevronDown className="ntm-caret" size={15} strokeWidth={2.2} aria-hidden="true" />
       </button>
       {open && (

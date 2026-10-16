@@ -464,3 +464,27 @@
   font-size: 15px;
   line-height: 1;
 }
+
+/* integração ainda não conectada */
+.mm-connect {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--hover-05);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+
+/* sem espaço acima (input no topo da página): abre embaixo do input */
+.mention-menu.is-below {
+  top: calc(100% + 28px);
+  bottom: auto;
+  transform-origin: top left;
+  animation: mm-in 200ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+.mention-menu.is-plus.is-below {
+  top: calc(100% + 10px);
+}

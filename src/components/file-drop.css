@@ -1,0 +1,139 @@
+/* ============ "Solte aqui para fazer upload" (tela cheia) ============ */
+
+.fd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--main-bg) 70%, transparent);
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+  animation: fd-in 160ms ease;
+}
+
+/* moldura tracejada acompanhando a tela */
+.fd-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 2px dashed var(--text-soft);
+  border-radius: 20px;
+  transition: opacity 160ms ease;
+}
+
+.fd-overlay.is-target::before {
+  opacity: 0.35;
+}
+
+/* sobre um destino específico: o véu some para a seção destacada aparecer
+   e o aviso desce para o rodapé */
+.fd-overlay.is-target {
+  place-items: end center;
+  padding-bottom: 36px;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.fd-overlay.is-target .fd-card {
+  flex-direction: row;
+  gap: 12px;
+  padding: 12px 20px 12px 12px;
+  text-align: left;
+}
+
+.fd-overlay.is-target .fd-ic {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 12px;
+}
+
+.fd-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.fd-overlay.is-target .fd-text {
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.fd-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 26px 34px;
+  border: 1px solid var(--pop-border);
+  border-radius: 20px;
+  background: var(--pop-surface);
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  animation: fd-card-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fd-ic {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 6px;
+  border-radius: 16px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  animation: fd-bob 1.4s ease-in-out infinite;
+}
+
+.fd-ic svg {
+  display: block;
+}
+
+.fd-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.fd-sub {
+  font-size: 13.5px;
+  color: var(--text-soft);
+}
+
+@keyframes fd-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fd-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+@keyframes fd-bob {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* destino específico sob o cursor (ex.: seção da base) */
+.is-file-drop {
+  border-radius: 12px;
+  background: var(--hover-05);
+  box-shadow: inset 0 0 0 2px var(--text-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fd-overlay,
+  .fd-card,
+  .fd-ic {
+    animation: none;
+  }
+}

@@ -1,0 +1,379 @@
+/* ============ Modais do chat (compartilhar / excluir / renomear) + menu "..." ============ */
+
+.cm-modal {
+  width: min(560px, 100%);
+}
+
+.cm-body {
+  padding-top: 6px;
+  padding-bottom: 24px;
+}
+
+.cm-foot {
+  gap: 4px;
+}
+
+.cm-share {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: ss-view-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cm-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.cm-text.is-left {
+  text-align: left;
+}
+
+.cm-text strong {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.cm-create,
+.cm-link-btn {
+  gap: 8px;
+}
+
+/* link criado: url + "Copiar link" dentro do mesmo campo */
+.cm-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  padding: 0 6px 0 18px;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--hover-04);
+}
+
+.cm-link-url {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--text-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cm-link-btn {
+  flex-shrink: 0;
+}
+
+.instr-save.cm-danger {
+  background: #e5484d;
+  color: #ffffff;
+}
+
+.instr-save.cm-danger:hover {
+  opacity: 0.88;
+}
+
+/* ---------- menu de contexto do chat (portal) ---------- */
+.chat-ctx {
+  position: fixed;
+  z-index: 300;
+  min-width: 212px;
+  padding: 6px;
+  border: 1px solid var(--pop-border);
+  border-radius: 12px;
+  background: var(--pop-surface);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    0 16px 40px -4px rgba(0, 0, 0, 0.12);
+  animation: chat-ctx-in 150ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+@keyframes chat-ctx-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+.chat-ctx .task-menu-item {
+  position: relative;
+}
+
+.chat-ctx-chev {
+  margin-left: auto;
+  color: var(--text-faint) !important;
+}
+
+.chat-ctx .task-menu-item.is-open {
+  background: var(--hover-05);
+}
+
+/* submenu "Mover para projeto": abre ao lado */
+.chat-ctx-sub {
+  position: absolute;
+  top: -7px;
+  left: calc(100% + 8px);
+  min-width: 200px;
+  padding: 6px;
+  border: 1px solid var(--pop-border);
+  border-radius: 12px;
+  background: var(--pop-surface);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    0 16px 40px -4px rgba(0, 0, 0, 0.12);
+  animation: chat-ctx-sub-in 150ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+.chat-ctx-sub.is-left {
+  left: auto;
+  right: calc(100% + 8px);
+}
+
+@keyframes chat-ctx-sub-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+}
+
+.chat-ctx-emoji {
+  width: 18px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.chat-ctx-check {
+  margin-left: auto;
+  color: var(--text-strong) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-ctx,
+  .chat-ctx-sub,
+  .cm-share {
+    animation: none;
+  }
+}
+
+/* ponte invisível entre o item e o submenu (o hover não se perde no vão) */
+.chat-ctx-sub::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -12px;
+  width: 12px;
+}
+
+.chat-ctx-sub.is-left::before {
+  left: auto;
+  right: -12px;
+}
+
+.chat-ctx .task-menu-item {
+  white-space: nowrap;
+}
+
+.chat-ctx-sub {
+  min-width: 228px;
+}
+
+/* ---------- Feedback negativo ---------- */
+.fb-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 120ms ease;
+}
+
+.fb-chip:hover {
+  border-color: var(--card-border-hover);
+  color: var(--text-strong);
+}
+
+.fb-chip:active {
+  transform: scale(0.97);
+}
+
+.fb-chip.is-on {
+  border-color: var(--text-strong);
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+}
+
+.fb-chip svg {
+  display: block;
+}
+
+.fb-text {
+  min-height: 96px;
+  flex: none;
+}
+
+.fb-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.fb-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 6px;
+  animation: ss-view-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fb-done-ic {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, #1f9d6b 14%, var(--pop-surface));
+  color: #1f9d6b;
+  animation: fb-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 80ms backwards;
+}
+
+@keyframes fb-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+.fb-done-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+/* ---------- Integração não conectada ---------- */
+.ci-modal {
+  position: relative;
+  width: min(440px, 100%);
+}
+
+.ci-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  z-index: 2;
+}
+
+.ci-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 36px 32px 26px;
+  text-align: center;
+}
+
+.ci-logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 10px;
+  border: 1px solid var(--sb-border);
+  border-radius: 20px;
+  background: var(--pop-surface);
+  box-shadow: 0 10px 28px -12px rgba(0, 0, 0, 0.25);
+  animation: fb-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ci-logo img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+:root[data-dark] .ci-logo img.is-mono {
+  filter: invert(1);
+}
+
+.ci-ok {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--pop-surface);
+  border-radius: 50%;
+  background: #1f9d6b;
+  color: #fff;
+  animation: fb-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ci-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text-strong);
+}
+
+.ci-btn {
+  gap: 8px;
+}
+
+.ci-spin {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: tp-spin 800ms linear infinite;
+}
+
+@keyframes tp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* só "Conectar", centralizado */
+.ctx-modal-foot.sm-foot.ci-foot {
+  justify-content: center;
+}

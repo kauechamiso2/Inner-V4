@@ -1035,10 +1035,8 @@
   gap: 4px;
   height: 52px;
   padding: 0 20px;
-  /* barra translúcida: a conversa rola por baixo sem colidir com os botões */
-  background: color-mix(in srgb, var(--main-bg) 72%, transparent);
-  -webkit-backdrop-filter: blur(12px) saturate(1.2);
-  backdrop-filter: blur(12px) saturate(1.2);
+  /* sem fundo nem corte: a conversa rola livre até o topo; Compartilhar e "..."
+     ficam à direita, fora da coluna da conversa, então não colidem com o texto */
   opacity: 0;
   pointer-events: none;
   transition: opacity 260ms ease 220ms;
@@ -1046,6 +1044,11 @@
 
 .chat-home.is-thread .chat-thread-head {
   opacity: 1;
+}
+
+/* a faixa do cabeçalho deixa o scroll e os cliques passarem para a conversa;
+   só os botões recebem o mouse */
+.chat-home.is-thread .chat-thread-head > * {
   pointer-events: auto;
 }
 
@@ -1113,7 +1116,7 @@
   gap: 40px;
   width: min(820px, calc(100% - 64px));
   margin: 0 auto;
-  padding: 94px 0 28px; /* 52 do cabeçalho + 42 até o balão, como no Figma */
+  padding: 94px 0 28px; /* 52 do cabeçalho + 42 até o primeiro balão */
 }
 
 /* mensagem do usuário: balão cinza alinhado à direita */
@@ -1337,11 +1340,12 @@
   }
 }
 
-/* ============ Input em uma linha (Home no modo Agente; Chat com modelos enquanto recolhido) ============
+/* ============ Input em uma linha (Home no modo Agente; Projeto) ============
    [+ / pills] [texto] [mic · enviar] lado a lado; anexos ocupam a linha de cima.
-   .chat-controls vira "contents" para seus dois lados entrarem no grid do card. */
-.chat-home.is-agent .chat-input-card,
-.chat-input-wrap.is-compact .chat-input-card {
+   .chat-controls vira "contents" para seus dois lados entrarem no grid do card.
+   Ao quebrar linha (.is-multiline), volta ao layout alto: texto em cima e controles embaixo. */
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-input-card,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-input-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas:
@@ -1356,36 +1360,36 @@
   border-radius: 28px;
 }
 
-.chat-home.is-agent .chat-attachments,
-.chat-input-wrap.is-compact .chat-attachments {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-attachments,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-attachments {
   grid-area: att;
   margin-bottom: 10px;
   padding: 4px 2px 0;
 }
 
-.chat-home.is-agent .chat-input-editor,
-.chat-input-wrap.is-compact .chat-input-editor {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-input-editor,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-input-editor {
   grid-area: editor;
 }
 
-.chat-home.is-agent .chat-controls,
-.chat-input-wrap.is-compact .chat-controls {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-controls,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-controls {
   display: contents;
 }
 
-.chat-home.is-agent .chat-controls-left,
-.chat-input-wrap.is-compact .chat-controls-left {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-controls-left,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-controls-left {
   grid-area: left;
 }
 
-.chat-home.is-agent .chat-controls-right,
-.chat-input-wrap.is-compact .chat-controls-right {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-controls-right,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-controls-right {
   grid-area: right;
 }
 
 /* uma linha: altura de 1 linha, rola por dentro se o texto ficar longo */
-.chat-home.is-agent .chat-input-field,
-.chat-input-wrap.is-compact .chat-input-field {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-input-field,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-input-field {
   min-height: 24px;
   max-height: 24px;
   overflow-y: auto;
@@ -1393,23 +1397,23 @@
   line-height: 24px;
 }
 
-.chat-home.is-agent .chat-input-field::-webkit-scrollbar,
-.chat-input-wrap.is-compact .chat-input-field::-webkit-scrollbar {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-input-field::-webkit-scrollbar,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-input-field::-webkit-scrollbar {
   display: none;
 }
 
-.chat-home.is-agent .chat-input-backdrop,
-.chat-input-wrap.is-compact .chat-input-backdrop {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-input-backdrop,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-input-backdrop {
   line-height: 24px;
 }
 
 /* botões um pouco maiores, centrados na linha */
-.chat-home.is-agent .ch-attach,
-.chat-input-wrap.is-compact .ch-attach,
-.chat-home.is-agent .chat-send,
-.chat-input-wrap.is-compact .chat-send,
-.chat-home.is-agent .ch-voice,
-.chat-input-wrap.is-compact .ch-voice {
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .ch-attach,
+.chat-input-wrap.is-compact:not(.is-multiline) .ch-attach,
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .chat-send,
+.chat-input-wrap.is-compact:not(.is-multiline) .chat-send,
+.chat-home.is-agent .chat-input-wrap:not(.is-multiline) .ch-voice,
+.chat-input-wrap.is-compact:not(.is-multiline) .ch-voice {
   width: 36px;
   height: 36px;
 }
@@ -1426,7 +1430,7 @@
 }
 
 /* recolhido: sem seletor de modelo até expandir */
-.chat-input-wrap.is-compact .ch-model {
+.chat-input-wrap.is-compact:not(.is-multiline) .ch-model {
   display: none;
 }
 
@@ -1697,4 +1701,131 @@
 .msg-site-card .site-title,
 .msg-site-card .site-url {
   display: block;
+}
+
+/* ações da resposta: tooltip abaixo do botão e estado ativo (voto / lendo) */
+.msg-act {
+  position: relative;
+}
+
+.msg-act-tip {
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-3px) scale(0.96);
+}
+
+.msg-act:hover .msg-act-tip,
+.msg-act:focus-visible .msg-act-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+  transition:
+    opacity 140ms ease 300ms,
+    transform 140ms ease 300ms,
+    visibility 0s linear 300ms;
+}
+
+.msg-act.is-active {
+  color: var(--text-strong);
+}
+
+.msg-act.is-active svg {
+  animation: msg-act-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes msg-act-pop {
+  0% {
+    transform: scale(0.7);
+  }
+}
+
+/* ============ Input que cresce com o texto ============
+   A altura acompanha o conteúdo (calculada no componente) até um limite;
+   passou disso, rola por dentro. O realce de @menções acompanha a altura. */
+.chat-input-field {
+  max-height: 216px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.chat-input-wrap.is-multiline .chat-input-field {
+  min-height: 52px;
+}
+
+/* integração usada na mensagem do usuário (label dentro do balão, abaixo do texto) */
+.msg-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  margin: 8px 0 -2px -4px;
+  padding: 0 9px 0 6px;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+}
+
+.msg-tool img {
+  display: block;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
+:root[data-dark] .msg-tool img.is-mono {
+  filter: invert(1);
+}
+
+/* variáveis de prompt no input: chip roxo (vazia) ou contornado (preenchida).
+   As chaves {{ }} ficam invisíveis e funcionam como o respiro do chip */
+.var-token {
+  border-radius: 7px;
+  background: color-mix(in srgb, #7c5cf0 14%, transparent);
+  color: #6a4be0;
+  /* mesma métrica do texto do textarea (o cursor precisa alinhar): sem peso
+     nem espaçamento diferentes; o destaque vem do fundo e da cor */
+}
+
+.var-token.is-filled {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #7c5cf0 55%, transparent);
+}
+
+.var-brace {
+  color: transparent;
+}
+
+:root[data-dark] .var-token {
+  color: #b5a3ff;
+}
+
+/* botão do modelo: logo do modelo (ou inicial do assistente) */
+.ch-model .mp-logo {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.ch-model-asst {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c) 18%, var(--pop-surface));
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c);
+}
+
+.ch-model-asst {
+  overflow: hidden;
+}
+
+.ch-model-asst img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

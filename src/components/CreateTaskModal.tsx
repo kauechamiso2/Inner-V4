@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, MessageCircle, MessagesSquare, Monitor, SquarePen, X } from 'lucide-react'
+import { MessageCircle, MessagesSquare, Monitor, SquarePen, X } from 'lucide-react'
 import { AgendadoIcon } from './SidebarIcons'
+import Dropdown from './Dropdown'
 import type { Task } from './tasks'
 import './context-modal.css'
 import './edit-task.css'
@@ -71,18 +72,15 @@ function Select({
   onChange: (v: string) => void
   options: { value: string; label: string }[]
 }) {
-  return (
-    <div className="et-select">
-      <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown size={16} strokeWidth={2} aria-hidden="true" />
-    </div>
-  )
+  return <Dropdown id={id} value={value} onChange={onChange} options={options} />
+}
+
+/* horários de 30 em 30 min (+ o horário atual, se não estiver na grade) */
+function timeOptions(current: string) {
+  const list: string[] = []
+  for (let h = 0; h < 24; h++) for (const m of ['00', '30']) list.push(`${String(h).padStart(2, '0')}:${m}`)
+  if (!list.includes(current)) list.push(current)
+  return list.sort().map((t) => ({ value: t, label: t }))
 }
 
 /* lê o texto de agendamento de uma tarefa existente de volta para os campos */
@@ -104,22 +102,33 @@ export default function CreateTaskModal({
   onClose,
   onCreate,
   task = null,
+  preset = null,
 }: {
   onClose: () => void
   onCreate: (task: Task) => void
   /* presente: modo edição, campos preenchidos e "Salvar" */
   task?: Task | null
+  /* preset do "Explorar": campos preenchidos, mas continua criando uma tarefa nova */
+  preset?: {
+    name: string
+    desc: string
+    schedule: string
+    notify?: 'platform' | 'whatsapp'
+    emoji?: string
+    color?: string
+  } | null
 }) {
-  const parsed = task ? parseSchedule(task.schedule) : null
+  const src = task ?? (preset ? { schedule: preset.schedule } : null)
+  const parsed = src ? parseSchedule(src.schedule) : null
   const [closing, setClosing] = useState(false)
-  const [name, setName] = useState(task?.name ?? '')
-  const [instructions, setInstructions] = useState(task?.description ?? '')
+  const [name, setName] = useState(task?.name ?? preset?.name ?? '')
+  const [instructions, setInstructions] = useState(task?.description ?? preset?.desc ?? '')
   const [freq, setFreq] = useState(parsed?.freq ?? 'dia')
   const [time, setTime] = useState(parsed?.time ?? '09:00')
   const [every, setEvery] = useState(parsed?.every ?? 1)
   const [ends, setEnds] = useState(task?.ends ?? ENDS[0])
   const [timezone, setTimezone] = useState(task?.timezone ?? 'America/Sao_Paulo')
-  const [notify, setNotify] = useState<'platform' | 'whatsapp'>(task?.notify ?? 'platform')
+  const [notify, setNotify] = useState<'platform' | 'whatsapp'>(task?.notify ?? preset?.notify ?? 'platform')
   /* cada execução abre um chat novo ou continua sempre no mesmo */
   const [thread, setThread] = useState<'new' | 'same'>(task?.thread ?? 'same')
   /* em edição, o agendamento só muda se o usuário mexer nos campos */
@@ -153,8 +162,8 @@ export default function CreateTaskModal({
   const create = () => {
     if (!canCreate) return
     const schedule =
-      task && !touchedWhen
-        ? task.schedule
+      src && !touchedWhen
+        ? src.schedule
         : `${every > 1 ? `A cada ${every} ${f.unit[1]}` : f.label}, ${time}`
     if (task) {
       onCreate({
@@ -173,8 +182,8 @@ export default function CreateTaskModal({
     onCreate({
       id: `manual-${Date.now()}`,
       name: name.trim(),
-      emoji: '🗓️',
-      color: '#6B7280',
+      emoji: preset?.emoji ?? '🗓️',
+      color: preset?.color ?? '#6B7280',
       recurring: true,
       schedule,
       next: `Amanhã, ${time}`,
@@ -194,7 +203,7 @@ export default function CreateTaskModal({
         className="ctx-modal et-modal ct-modal"
         role="dialog"
         aria-modal="true"
-        aria-label={task ? 'Configurações da tarefa' : 'Nova tarefa'}
+        aria-label={task ? 'Configurações do loop' : 'Novo loop'}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="ctx-modal-head ct-head">
@@ -202,7 +211,7 @@ export default function CreateTaskModal({
             <AgendadoIcon size={22} />
           </span>
           <div className="ctx-modal-head-text">
-            <h2 className="ctx-modal-title">{task ? 'Configurações da tarefa' : 'Nova tarefa'}</h2>
+            <h2 className="ctx-modal-title">{task ? 'Configurações do loop' : 'Novo loop'}</h2>
             <p className="ctx-modal-sub">Defina o que fazer e quando executar.</p>
           </div>
           <button className="ctx-modal-close" type="button" aria-label="Fechar" onClick={close}>
@@ -245,7 +254,7 @@ export default function CreateTaskModal({
           <div className="et-field">
             <span className="et-label">Quando executar</span>
             <div className="ct-box">
-                <div className="et-row">
+                <div className="et-row ct-row3">
                   <div className="et-field">
                     <label className="et-label" htmlFor="ct-freq">
                       Frequência
@@ -261,16 +270,15 @@ export default function CreateTaskModal({
                     <label className="et-label" htmlFor="ct-time">
                       Horário
                     </label>
-                    <input
+                    <Dropdown
                       id="ct-time"
-                      className="et-input"
-                      type="time"
                       value={time}
-                      onChange={(e) => touch(setTime)(e.target.value)}
+                      onChange={touch(setTime)}
+                      options={timeOptions(time)}
+                      menuWidth={140}
                     />
                   </div>
-                </div>
-                <div className="et-field">
+                  <div className="et-field">
                   <label className="et-label" htmlFor="ct-every">
                     Repetir
                   </label>
@@ -287,6 +295,7 @@ export default function CreateTaskModal({
                     />
                     <span>{every > 1 ? f.unit[1] : f.unit[0]}</span>
                   </div>
+                </div>
                 </div>
             </div>
           </div>
@@ -351,11 +360,8 @@ export default function CreateTaskModal({
         </div>
 
         <footer className="ctx-modal-foot instr-foot et-foot">
-          <button type="button" className="et-cancel" onClick={close}>
-            Cancelar
-          </button>
           <button type="button" className="instr-save" disabled={!canCreate} onClick={create}>
-            {task ? 'Salvar' : 'Criar tarefa'}
+            {task ? 'Salvar' : 'Criar loop'}
           </button>
         </footer>
       </div>

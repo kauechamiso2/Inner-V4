@@ -7,6 +7,7 @@ import { Eye, Globe, Link2, Lock, MoreHorizontal, Pencil, Settings2, Share2 } fr
 import portfolioThumb from '../assets/sites/portfolio.png'
 import saasThumb from '../assets/sites/saas.png'
 import ShareSiteModal from './ShareSiteModal'
+import SearchToggle, { SearchEmpty, normSearch } from './SearchToggle'
 import type { SiteAccess } from './ShareSiteModal'
 import SiteSettingsModal from './SiteSettingsModal'
 import { SiteMiniPreview } from './SiteDrawer'
@@ -64,6 +65,8 @@ export default function SitesPage({
   onEditSite?: (site: SiteDraft) => void
 }) {
   const [menuFor, setMenuFor] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+  const nq = normSearch(query)
   const [share, setShare] = useState<Site | null>(null)
   const [settings, setSettings] = useState<Site | null>(null)
   /* acesso alterado no modal Compartilhar (por site) */
@@ -137,15 +140,7 @@ export default function SitesPage({
                   Filtrar
                 </span>
               </button>
-              <button className="lib-new is-ghost" type="button" aria-label="Buscar">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <circle cx="8.2" cy="8.2" r="5" stroke="#3D3D3D" strokeWidth="1.2" />
-                  <path d="M12 12l3.4 3.4" stroke="#3D3D3D" strokeWidth="1.2" strokeLinecap="round" />
-                </svg>
-                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                  Buscar
-                </span>
-              </button>
+              <SearchToggle value={query} onChange={setQuery} placeholder="Buscar sites" />
               <button className="lib-new-cta" type="button" onClick={() => onNewSite?.()}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -155,8 +150,9 @@ export default function SitesPage({
             </div>
           </div>
 
+          {nq && !sites.some((x) => normSearch(`${x.title} ${x.url}`).includes(nq)) && <SearchEmpty query={query} />}
           <div className="sites-grid">
-            {sites.map((s, i) => (
+            {sites.filter((x) => !nq || normSearch(`${x.title} ${x.url}`).includes(nq)).map((s, i) => (
               <article
                 className={`site-card is-clickable${menuFor === s.id ? ' is-menu' : ''}`}
                 key={s.id}

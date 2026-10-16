@@ -1,9 +1,43 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { ArrowUp, ChevronDown, CornerDownLeft, Minus, Plus, RectangleHorizontal } from 'lucide-react'
+import type { CSSProperties } from 'react'
+import { ArrowUp, Check, ChevronDown, ChevronRight, Images, Minus, Plus, Search, Upload } from 'lucide-react'
 import creditsCoin from '../assets/credits.svg'
+import { BarPopover, ImageModelLogo, ImageModelMenu } from './ImageModelPicker'
+import { normSearch } from './SearchToggle'
+import {
+  ASPECT_RATIOS,
+  AUTO_MODEL,
+  IMAGE_MODEL_BY_ID,
+  LIBRARY_IMAGES,
+  RESOLUTIONS,
+  setImageSettings,
+  useImageSettings,
+} from './imageModels'
+import type { AspectRatio } from './imageModels'
 
-/* custo em créditos (protótipo): proporcional à quantidade de imagens */
-const CREDITS_PER_IMAGE = 20
+/* forma da proporção (retângulo com a razão certa) para o botão e a lista */
+function RatioIcon({ ratio, size = 15 }: { ratio: AspectRatio; size?: number }) {
+  if (ratio === 'Auto')
+    return (
+      <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M2.5 5.5v-2a1 1 0 0 1 1-1h2M10.5 2.5h2a1 1 0 0 1 1 1v2M13.5 10.5v2a1 1 0 0 1-1 1h-2M5.5 13.5h-2a1 1 0 0 1-1-1v-2"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    )
+  const [w, h] = ratio.split(':').map(Number)
+  const k = 11 / Math.max(w, h)
+  const rw = Math.max(5, w * k)
+  const rh = Math.max(5, h * k)
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x={8 - rw / 2} y={8 - rh / 2} width={rw} height={rh} rx="1.6" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  )
+}
 
 /* estrela de IA com preenchimento em gradiente que gira devagar; o glow
    pulsante vem via CSS (.ip-spark-svg). A grande + uma pequena no canto. */
@@ -48,6 +82,8 @@ type Props = {
   /* imagens anexadas como base ("Usar de base") — compartilhadas pelo pai */
   attachments: BaseAttachment[]
   onRemoveAttachment: (uid: string) => void
+  /* "+": imagem do computador ou da Biblioteca entra como base */
+  onAddBase?: (src: string) => void
   /* dispara a geração (botão "Gerar" ativo) */
   onGenerate: () => void
   /* variante fixada no rodapé (quando o input do topo sai de vista) */
@@ -71,6 +107,7 @@ export default function ImagePromptBar({
   onCountChange,
   attachments,
   onRemoveAttachment,
+  onAddBase,
   onGenerate,
   docked = false,
   alwaysOpen = false,
@@ -78,12 +115,30 @@ export default function ImagePromptBar({
 }: Props) {
   const [focused, setFocused] = useState(false)
   const hasAtt = attachments.length > 0
-  const open = alwaysOpen || focused || value.trim().length > 0 || hasAtt
+  /* menus da barra ("+", proporção, resolução) e o modal de modelos; com algum
+     aberto, a barra continua expandida mesmo sem foco no texto */
+  const [pop, setPop] = useState<{ kind: 'add' | 'ratio' | 'res' | 'model'; el: HTMLElement } | null>(null)
+  const [libOpen, setLibOpen] = useState(false)
+  const [libQuery, setLibQuery] = useState('')
+  const open = alwaysOpen || focused || value.trim().length > 0 || hasAtt || !!pop
   const inputRef = useRef<HTMLTextAreaElement>(null)
   useEffect(() => {
     if (autoFocusKey) inputRef.current?.focus({ preventScroll: true })
   }, [autoFocusKey])
   const canGenerate = value.trim().length > 0 || hasAtt
+  /* modelo, proporção e resolução (compartilhados com a outra barra) */
+  const cfg = useImageSettings()
+  const model = IMAGE_MODEL_BY_ID[cfg.model] ?? IMAGE_MODEL_BY_ID['nano-banana-2']
+  const fileRef = useRef<HTMLInputElement>(null)
+  const toggle = (kind: 'add' | 'ratio' | 'res' | 'model') => (e: React.MouseEvent<HTMLElement>) => {
+    const el = e.currentTarget
+    setLibOpen(false)
+    setLibQuery('')
+    setPop((p) => (p?.kind === kind ? null : { kind, el }))
+  }
+  const nlq = normSearch(libQuery)
+  const libList = LIBRARY_IMAGES.filter((img) => !nlq || normSearch(img.name).includes(nlq))
+  const credits = model.credits * count
   /* depois que a expansão termina, liberamos o overflow para o glow do botão
      "escapar" (durante a animação o overflow fica escondido) */
   const [settled, setSettled] = useState(false)
@@ -153,22 +208,54 @@ export default function ImagePromptBar({
         <div className="ip-prompt-ctrls">
           <button
             type="button"
-            className="ip-pc ip-pc-add"
-            aria-label="Adicionar referência"
+            className={`ip-pc ip-pc-add${pop?.kind === 'add' ? ' is-open' : ''}`}
+            aria-label="Adicionar imagem de referência"
+            aria-haspopup="menu"
+            aria-expanded={pop?.kind === 'add'}
             tabIndex={open ? 0 : -1}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggle('add')}
           >
             <Plus size={16} strokeWidth={2.2} />
           </button>
-          <button type="button" className="ip-pc ip-pc-drop" tabIndex={open ? 0 : -1}>
-            Nano Banana 2
+          <button
+            type="button"
+            className={`ip-pc ip-pc-drop ip-pc-model${pop?.kind === 'model' ? ' is-open' : ''}`}
+            tabIndex={open ? 0 : -1}
+            aria-haspopup="menu"
+            aria-expanded={pop?.kind === 'model'}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggle('model')}
+          >
+            <ImageModelLogo model={model} size={18} />
+            {model.name}
+            {model.id === 'auto' && <span className="ip-pc-auto">{AUTO_MODEL}</span>}
             <ChevronDown size={14} strokeWidth={2} />
           </button>
-          <button type="button" className="ip-pc" tabIndex={open ? 0 : -1}>
-            <RectangleHorizontal size={14} strokeWidth={2} />
-            16:9
+          <button
+            type="button"
+            className={`ip-pc ip-pc-drop${pop?.kind === 'ratio' ? ' is-open' : ''}`}
+            tabIndex={open ? 0 : -1}
+            aria-label={`Proporção: ${cfg.ratio}`}
+            aria-haspopup="menu"
+            aria-expanded={pop?.kind === 'ratio'}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggle('ratio')}
+          >
+            <RatioIcon ratio={cfg.ratio} size={14} />
+            {cfg.ratio}
           </button>
-          <button type="button" className="ip-pc ip-pc-drop" tabIndex={open ? 0 : -1}>
-            4K
+          <button
+            type="button"
+            className={`ip-pc ip-pc-drop${pop?.kind === 'res' ? ' is-open' : ''}`}
+            tabIndex={open ? 0 : -1}
+            aria-label={`Resolução: ${cfg.res}`}
+            aria-haspopup="menu"
+            aria-expanded={pop?.kind === 'res'}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggle('res')}
+          >
+            {cfg.res}
             <ChevronDown size={14} strokeWidth={2} />
           </button>
           <div className="ip-stepper">
@@ -195,15 +282,10 @@ export default function ImagePromptBar({
         </div>
 
         <div className="ip-prompt-send">
-          {canGenerate && (
-            <span className="ip-credits" title={`${count * CREDITS_PER_IMAGE} créditos`}>
-              <img src={creditsCoin} alt="" aria-hidden="true" />
-              {count * CREDITS_PER_IMAGE}
-            </span>
-          )}
           <button
             type="button"
             className={`ip-prompt-go${canGenerate ? ' is-ready' : ''}`}
+            style={{ '--go-w': `${110 + String(credits).length * 8}px` } as CSSProperties}
             aria-label="Gerar imagem"
             tabIndex={open ? 0 : -1}
             onClick={canGenerate ? () => onGenerate() : undefined}
@@ -213,11 +295,156 @@ export default function ImagePromptBar({
             </span>
             <span className="ip-go-text">
               Gerar
-              <CornerDownLeft className="ip-go-enter" size={14} strokeWidth={2.2} aria-hidden="true" />
+              {/* créditos que a geração vai consumir, dentro do botão */}
+              <span className="ip-go-cost" title={`${credits} créditos`}>
+                <img src={creditsCoin} alt="" aria-hidden="true" />
+                {credits}
+              </span>
             </span>
           </button>
         </div>
       </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        onChange={(e) => {
+          Array.from(e.target.files ?? []).forEach((f) => onAddBase?.(URL.createObjectURL(f)))
+          e.target.value = ''
+        }}
+      />
+
+      {pop?.kind === 'add' && (
+        <BarPopover anchor={pop.el} label="Imagem de referência" width={248} className="igp-cascade" onClose={() => setPop(null)}>
+          <button
+            type="button"
+            className="igp-item"
+            role="menuitem"
+            onPointerEnter={() => setLibOpen(false)}
+            onClick={() => {
+              setPop(null)
+              fileRef.current?.click()
+            }}
+          >
+            <Upload size={16} strokeWidth={1.9} />
+            Upload do dispositivo
+          </button>
+          <button
+            type="button"
+            className={`igp-item${libOpen ? ' is-on' : ''}`}
+            role="menuitem"
+            aria-haspopup="menu"
+            aria-expanded={libOpen}
+            onPointerEnter={() => setLibOpen(true)}
+            onClick={() => setLibOpen(true)}
+          >
+            <Images size={16} strokeWidth={1.9} />
+            Imagens da Biblioteca
+            <ChevronRight className="igp-chev" size={15} strokeWidth={2} />
+          </button>
+          {/* cascata ao lado: só as imagens da Biblioteca */}
+          {libOpen && (
+            <div className="igp-sub" role="menu" aria-label="Imagens da Biblioteca">
+              <label className="igp-search">
+                <Search size={14} strokeWidth={2} />
+                <input
+                  value={libQuery}
+                  onChange={(e) => setLibQuery(e.target.value)}
+                  placeholder="Buscar imagens"
+                  spellCheck={false}
+                  autoFocus
+                />
+              </label>
+              <div className="igp-sub-list">
+                {libList.length === 0 && <p className="igp-empty">Nenhuma imagem encontrada</p>}
+                {libList.map((img) => {
+                  const added = attachments.some((a) => a.src === img.src)
+                  return (
+                    <button
+                      key={img.id}
+                      type="button"
+                      className="igp-item igp-img"
+                      role="menuitem"
+                      disabled={added}
+                      onClick={() => {
+                        onAddBase?.(img.src)
+                        setPop(null)
+                        setLibOpen(false)
+                      }}
+                    >
+                      <span className="igp-img-thumb" aria-hidden="true">
+                        <img src={img.src} alt="" loading="lazy" />
+                      </span>
+                      <span className="igp-img-name">{img.name}</span>
+                      {added && <Check className="igp-check" size={15} strokeWidth={2.4} aria-label="Já anexada" />}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </BarPopover>
+      )}
+
+      {/* modelos: menu contextual grande (logo, nome e créditos) */}
+      {pop?.kind === 'model' && (
+        <ImageModelMenu
+          anchor={pop.el}
+          selected={cfg.model}
+          onSelect={(id) => setImageSettings({ model: id })}
+          onClose={() => setPop(null)}
+        />
+      )}
+
+      {pop?.kind === 'ratio' && (
+        <BarPopover anchor={pop.el} label="Proporção" width={180} onClose={() => setPop(null)}>
+          {ASPECT_RATIOS.map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={`igp-item${cfg.ratio === r ? ' is-on' : ''}`}
+              role="menuitemradio"
+              aria-checked={cfg.ratio === r}
+              onClick={() => {
+                setImageSettings({ ratio: r })
+                setPop(null)
+              }}
+            >
+              <RatioIcon ratio={r} />
+              {r}
+              {cfg.ratio === r && <Check className="igp-check" size={15} strokeWidth={2.4} />}
+            </button>
+          ))}
+        </BarPopover>
+      )}
+
+      {pop?.kind === 'res' && (
+        <BarPopover anchor={pop.el} label="Resolução" width={200} onClose={() => setPop(null)}>
+          {RESOLUTIONS.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              className={`igp-item igp-res${cfg.res === r.id ? ' is-on' : ''}`}
+              role="menuitemradio"
+              aria-checked={cfg.res === r.id}
+              onClick={() => {
+                setImageSettings({ res: r.id })
+                setPop(null)
+              }}
+            >
+              <span className="igp-res-text">
+                <span>{r.id}</span>
+                <span className="igp-res-px">{r.px}</span>
+              </span>
+              {cfg.res === r.id && <Check className="igp-check" size={15} strokeWidth={2.4} />}
+            </button>
+          ))}
+        </BarPopover>
+      )}
+
     </div>
   )
 }

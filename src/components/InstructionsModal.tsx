@@ -7,10 +7,13 @@ export default function InstructionsModal({
   open,
   onClose,
   defaultValue = '',
+  onSave,
 }: {
   open: boolean
   onClose: () => void
   defaultValue?: string
+  /* salva as instruções (projetos criados pelo usuário) */
+  onSave?: (value: string) => void
 }) {
   const [value, setValue] = useState(defaultValue)
 
@@ -63,7 +66,14 @@ export default function InstructionsModal({
         </div>
 
         <footer className="ctx-modal-foot instr-foot">
-          <button type="button" className="instr-save" onClick={onClose}>
+          <button
+            type="button"
+            className="instr-save"
+            onClick={() => {
+              onSave?.(value.trim())
+              onClose()
+            }}
+          >
             Salvar
           </button>
         </footer>

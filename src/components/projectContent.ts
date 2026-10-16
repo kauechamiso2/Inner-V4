@@ -24,6 +24,10 @@ const HR_STUFF: ProjectContent = {
     { id: 'hr4', title: 'Resumo da política de benefícios', date: '27 set' },
     { id: 'hr5', title: 'Checklist de onboarding de novos', date: '24 set' },
     { id: 'hr6', title: 'Comparativo de planos de saúde', date: '20 set' },
+    { id: 'hr7', title: 'Pesquisa de clima do 3º trimestre', date: '17 set' },
+    { id: 'hr8', title: 'Roteiro de entrevista de desligamento', date: '12 set' },
+    { id: 'hr9', title: 'Calendário de feriados 2027', date: '9 set' },
+    { id: 'hr10', title: 'Feedback do ciclo de avaliação', date: '4 set' },
   ],
   contextSections: [
     {
@@ -84,7 +88,7 @@ const MARKETING: ProjectContent = {
   recents: [
     { id: 'm1', title: 'Calendário editorial de outubro', date: '2 out' },
     { id: 'm2', title: 'Legendas do lançamento da coleção', date: '1 out' },
-    { id: 'm3', title: 'Roteiro de Reels — bastidores do ensaio', date: '30 set' },
+    { id: 'm3', title: 'Roteiro de Reels: bastidores do ensaio', date: '30 set' },
     { id: 'm4', title: 'Ideias de carrossel educativo', date: '29 set' },
     { id: 'm5', title: 'Briefing do ensaio de produto', date: '26 set' },
     { id: 'm6', title: 'Plano de mídia paga Q4', date: '24 set' },

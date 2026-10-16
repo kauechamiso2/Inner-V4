@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import './context-modal.css'
@@ -10,7 +10,7 @@ export default function ContextModal({
   onClose,
   sections,
   looseFiles,
-  usedPct = 57,
+  usedPct: basePct = 57,
 }: {
   open: boolean
   onClose: () => void
@@ -18,6 +18,9 @@ export default function ContextModal({
   looseFiles: DetailFile[]
   usedPct?: number
 }) {
+  /* cada item adicionado ocupa um pouco do limite de contexto */
+  const [added, setAdded] = useState(0)
+  const usedPct = Math.min(100, basePct + added * 3)
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -57,6 +60,8 @@ export default function ContextModal({
             allSections={sections}
             allLoose={looseFiles}
             searchPlaceholder="Buscar no contexto"
+            dropWhere="No contexto do projeto"
+            onAddedChange={setAdded}
           />
         </div>
 

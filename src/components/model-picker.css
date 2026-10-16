@@ -1,0 +1,445 @@
+/* ============ Seletor de modelos (Chat com modelos) ============ */
+
+.ctx-modal.mp-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(760px, 100%);
+  height: min(860px, calc(100dvh - 48px));
+  padding: 0;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.mp-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 3;
+}
+
+.mp-top {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 64px 32px 14px;
+  border-bottom: 1px solid var(--pop-divider);
+}
+
+/* abas segmentadas com fundo que desliza */
+.mp-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--hover-05);
+}
+
+.mp-tab-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 2px 8px -2px rgba(0, 0, 0, 0.08);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mp-tab-thumb.is-right {
+  transform: translateX(100%);
+}
+
+.mp-tab {
+  position: relative;
+  z-index: 1;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.mp-tab.is-on {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.mp-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px 0 18px;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  color: var(--text-faint);
+  cursor: text;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.mp-search:focus-within {
+  border-color: var(--card-border-hover);
+  box-shadow: 0 0 0 3px var(--hover-05);
+}
+
+.mp-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-strong);
+}
+
+.mp-search input::placeholder {
+  color: var(--text-faint);
+}
+
+.mp-search-clear {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--hover-06);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+/* lista rolável */
+.mp-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 32px 28px;
+  scrollbar-width: thin;
+  animation: mp-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes mp-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.mp-section {
+  padding-top: 18px;
+}
+
+.mp-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.mp-section-desc {
+  margin: 4px 0 6px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-mid);
+}
+
+.mp-tier-ic {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.mp-tier-ic.is-fast {
+  color: #8b5cf6;
+}
+
+.mp-tier-ic.is-adv {
+  color: #3b82f6;
+}
+
+.mp-tier-ic.is-adv svg + svg {
+  margin-left: -7px;
+}
+
+/* linha do modelo */
+.mp-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 64px;
+  border-bottom: 1px solid var(--pop-divider);
+}
+
+.mp-row-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 10px 2px 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* o hover pinta a linha inteira (por trás de info, check e estrela) */
+.mp-row::before {
+  content: '';
+  position: absolute;
+  inset: 4px 0;
+  z-index: -1;
+  border-radius: 12px;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+
+.mp-row:hover::before {
+  background: var(--hover-04);
+}
+
+.mp-body {
+  isolation: isolate;
+}
+
+.mp-logo {
+  display: grid;
+  place-items: center;
+  width: var(--s, 40px);
+  height: var(--s, 40px);
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 2px 6px -1px rgba(0, 0, 0, 0.12);
+}
+
+.mp-logo img {
+  display: block;
+  width: 56%;
+  height: 56%;
+  object-fit: contain;
+}
+
+/* Inner AI Fusion: orb azul próprio */
+.mp-fusion {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background:
+    radial-gradient(60% 55% at 38% 30%, rgba(160, 205, 255, 0.95) 0%, rgba(160, 205, 255, 0) 60%),
+    radial-gradient(80% 80% at 70% 80%, #1f5fd6 0%, rgba(31, 95, 214, 0) 70%),
+    radial-gradient(100% 100% at 50% 50%, #0b2a6b 0%, #050c26 100%);
+  box-shadow: inset 0 0 0 2px rgba(80, 150, 255, 0.55);
+}
+
+.mp-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* "i" com a descrição do modelo */
+.mp-info {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--text-ghost);
+  outline: none;
+  cursor: default;
+}
+
+.mp-info:hover,
+.mp-info:focus-visible {
+  color: var(--text-soft);
+}
+
+.mp-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 10;
+  width: max-content;
+  max-width: 260px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(4px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    visibility 0s linear 140ms;
+}
+
+.mp-info:hover .mp-tip,
+.mp-info:focus-visible .mp-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  transition:
+    opacity 140ms ease 120ms,
+    transform 140ms ease 120ms,
+    visibility 0s;
+}
+
+.mp-row-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding-right: 10px;
+}
+
+.mp-check {
+  color: var(--text-strong);
+  animation: mp-check-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes mp-check-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* estrela: some até o hover; favoritada fica amarela */
+.mp-star {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-ghost);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 140ms ease,
+    color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+
+.mp-row:hover .mp-star,
+.mp-star:focus-visible,
+.mp-star.is-on {
+  opacity: 1;
+}
+
+.mp-star:hover {
+  background: var(--hover-05);
+  color: var(--text-soft);
+}
+
+.mp-star.is-on {
+  color: #f5b300;
+}
+
+.mp-star.is-on svg {
+  fill: currentColor;
+}
+
+.mp-star:active {
+  transform: scale(0.88);
+}
+
+/* Assistentes */
+.mp-asst {
+  background: color-mix(in srgb, var(--c) 16%, var(--pop-surface));
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--c);
+}
+
+.mp-asst-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mp-asst-desc {
+  font-size: 13px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mp-empty {
+  margin: 48px 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-faint);
+}
+
+@media (max-width: 640px) {
+  .mp-top {
+    padding: 56px 16px 12px;
+  }
+
+  .mp-body {
+    padding: 4px 16px 20px;
+  }
+
+  .mp-star {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-body,
+  .mp-check,
+  .mp-tab-thumb {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* avatar 3D do assistente (robôs do pilar de Assistentes) */
+.mp-asst {
+  overflow: hidden;
+}
+
+.mp-asst img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -985,3 +985,257 @@
   width: 16px;
   height: 16px;
 }
+
+/* ============ Chats do histórico: menu "...", renomear, projeto, busca ============ */
+
+/* com o menu aberto, a linha fica destacada e as ações visíveis */
+.chat-row.is-menu {
+  background: var(--hover-05);
+}
+
+.chat-row.is-menu .chat-more,
+.chat-row.is-menu .chat-pin {
+  opacity: 1;
+}
+
+.chat-more.is-open {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+.chat-more:hover .chat-pin-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0) scale(1);
+  transition: opacity 140ms ease 120ms, transform 140ms ease 120ms, visibility 0s;
+}
+
+/* renomear na própria linha */
+.chat-rename {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  margin: 0 -4px;
+  padding: 0 6px;
+  border: 1px solid var(--text-strong);
+  border-radius: 6px;
+  outline: none;
+  background: var(--pop-surface);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-strong);
+  box-shadow: 0 0 0 3px var(--hover-05);
+}
+
+.chat-row.is-renaming {
+  background: transparent;
+}
+
+/* chats dentro do projeto: clicáveis, com "..." no hover e estado selecionado */
+.chat-proj-child {
+  justify-content: space-between;
+  gap: 6px;
+  padding-right: 4px;
+  cursor: pointer;
+}
+
+.chat-proj-child-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-proj-child .chat-more {
+  flex-shrink: 0;
+}
+
+.chat-proj-child:hover .chat-more,
+.chat-proj-child.is-menu .chat-more {
+  opacity: 1;
+}
+
+.chat-proj-child.is-menu {
+  background: var(--hover-05);
+}
+
+.chat-proj-child.is-selected {
+  background: var(--hover-06);
+  color: var(--text-strong);
+  font-weight: 500;
+}
+
+/* projeto: a linha toda expande/recolhe (o chevron só indica o estado) */
+.chat-proj > .chat-row {
+  cursor: pointer;
+}
+
+/* busca do histórico: tooltip no hover e campo ativo */
+.history-search {
+  position: relative;
+}
+
+.history-search-tip {
+  left: auto;
+  right: calc(100% + 8px);
+  transform: translateY(-50%) translateX(4px) scale(0.96);
+}
+
+.history-search:hover .history-search-tip,
+.history-search:focus-visible .history-search-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0) scale(1);
+  transition: opacity 140ms ease 250ms, transform 140ms ease 250ms, visibility 0s linear 250ms;
+}
+
+.history-label-row.is-searching {
+  padding: 0 4px;
+}
+
+.history-searchbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 32px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--text-strong);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  color: var(--text-faint);
+  box-shadow: 0 0 0 3px var(--hover-05);
+  animation: history-search-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes history-search-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0.92);
+    transform-origin: right center;
+  }
+}
+
+.history-searchbox svg {
+  flex-shrink: 0;
+  display: block;
+}
+
+.history-searchbox input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-strong);
+}
+
+.history-searchbox input::placeholder {
+  color: var(--text-faint);
+}
+
+.history-search-clear {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background-color 130ms ease;
+}
+
+.history-search-clear:hover {
+  background: var(--hover-06);
+}
+
+.history-search-empty {
+  padding: 18px 10px;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history-searchbox {
+    animation: none;
+  }
+}
+
+/* "Ver todos" no fim da lista de chats do projeto */
+.chat-proj-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  height: 28px;
+  margin: 2px 0 2px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition:
+    background-color 130ms ease,
+    color 130ms ease;
+}
+
+.chat-proj-more:hover {
+  background: var(--hover-04);
+  color: var(--text-strong);
+}
+
+.chat-proj-more svg {
+  transform: rotate(90deg);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chat-proj-more svg.is-up {
+  transform: rotate(-90deg);
+}
+
+/* chats com o agente: foto do agente escolhido no onboarding */
+.chat-agent-avatar {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--lib-tile-neutral);
+}
+
+/* chat começado no Chat com modelos: logo do modelo escolhido */
+.chat-model-logo {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.chat-model-fusion {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(60% 55% at 38% 30%, rgba(160, 205, 255, 0.95) 0%, rgba(160, 205, 255, 0) 60%),
+    radial-gradient(80% 80% at 70% 80%, #1f5fd6 0%, rgba(31, 95, 214, 0) 70%),
+    radial-gradient(100% 100% at 50% 50%, #0b2a6b 0%, #050c26 100%);
+}
+
+:root[data-dark] .chat-model-logo.is-mono {
+  filter: invert(1);
+}

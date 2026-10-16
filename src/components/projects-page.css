@@ -253,3 +253,8 @@
     padding-top: 48px;
   }
 }
+
+/* mais respiro entre "Meus Projetos" e os cards (16 do gap da seção + 24) */
+.projects-page .lib-section-head {
+  margin-bottom: 24px;
+}

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, ImagePlus, X } from 'lucide-react'
+import { ChevronDown, ImagePlus, Minus, Plus, X } from 'lucide-react'
 import creditsCoin from '../assets/credits.svg'
 import type { Tool } from './ImagesPage'
+import { ImageModelLogo, ImageModelMenu } from './ImageModelPicker'
+import { AUTO_MODEL, IMAGE_MODEL_BY_ID } from './imageModels'
 
 /* ---------- Campos dinâmicos por template ---------- */
 type Field =
@@ -76,19 +78,47 @@ const DEFAULT_FIELDS: Field[] = [
   { type: 'file', label: 'Imagem', required: true, sub: 'Envie uma imagem. Apenas imagens.' },
 ]
 
-/* modelo pré-populado aleatoriamente (último campo, presente em todos) */
-const MODELS = ['Nano Banana 2', 'Nano Banana Pro', 'Flux Schnell 1.0', 'GPT Image 2', 'Playground 2.5', 'Magnific']
-
-const CREDITS = 40
+/* modelo pré-populado aleatoriamente (mesma lista do input do Image Generation) */
+const START_MODELS = ['nano-banana-2', 'nano-banana-pro', 'flux-schnell', 'gpt-image-2', 'playground']
 
 type UploadedFile = { name: string; url: string }
 
-export default function ToolDrawer({ tool, onGenerate }: { tool: Tool; onGenerate: () => void }) {
+export default function ToolDrawer({
+  tool,
+  onGenerate,
+  incomingBase = null,
+}: {
+  tool: Tool
+  /* gera com a quantidade e o modelo escolhidos no drawer */
+  onGenerate: (opts: { count: number; model: string }) => void
+  /* "Usar de base" numa geração: vai para o campo de imagem (o primeiro vazio) */
+  incomingBase?: { src: string; key: number } | null
+}) {
   const fields = TOOL_FIELDS[tool.id] ?? DEFAULT_FIELDS
   const [files, setFiles] = useState<Record<number, UploadedFile>>({})
   const [texts, setTexts] = useState<Record<number, string>>({})
   const [pills, setPills] = useState<Record<number, string>>({})
-  const [model] = useState(() => MODELS[Math.floor(Math.random() * MODELS.length)])
+  const [modelId, setModelId] = useState(() => START_MODELS[Math.floor(Math.random() * START_MODELS.length)])
+  const model = IMAGE_MODEL_BY_ID[modelId]
+  const [modelAnchor, setModelAnchor] = useState<HTMLElement | null>(null)
+  /* quantas imagens por vez (como o 1/4 do input) */
+  const [count, setCount] = useState(1)
+  const cost = model.credits * count
+
+  const [flash, setFlash] = useState<number | null>(null)
+  useEffect(() => {
+    if (!incomingBase) return
+    const fileIdx = fields.map((f, i) => (f.type === 'file' ? i : -1)).filter((i) => i >= 0)
+    if (!fileIdx.length) return
+    setFiles((prev) => {
+      const target = fileIdx.find((i) => !prev[i]) ?? fileIdx[0]
+      setFlash(target)
+      return { ...prev, [target]: { name: 'Imagem das suas gerações', url: incomingBase.src } }
+    })
+    const t = window.setTimeout(() => setFlash(null), 900)
+    return () => window.clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incomingBase?.key])
 
   /* libera os object URLs ao desmontar */
   useEffect(() => {
@@ -125,7 +155,7 @@ export default function ToolDrawer({ tool, onGenerate }: { tool: Tool; onGenerat
       </div>
 
       {fields.map((f, i) => (
-        <div className="ip-tf" key={i}>
+        <div className={`ip-tf${flash === i ? ' is-flash' : ''}`} key={i}>
           {f.type === 'file' &&
             (files[i] ? (
               <div className="ip-tf-file">
@@ -186,13 +216,48 @@ export default function ToolDrawer({ tool, onGenerate }: { tool: Tool; onGenerat
         </div>
       ))}
 
-      {/* Modelo — presente em todos, pré-populado (sem ícone) */}
+      {/* Modelo — presente em todos, pré-populado; abre o mesmo menu do input */}
       <div className="ip-tf">
         <span className="ip-tf-label">Modelo</span>
-        <button type="button" className="ip-tf-model">
-          <span className="ip-tf-model-name">{model}</span>
-          <ChevronRight size={16} strokeWidth={2} />
+        <button
+          type="button"
+          className={`ip-tf-model${modelAnchor ? ' is-open' : ''}`}
+          aria-haspopup="menu"
+          aria-expanded={!!modelAnchor}
+          onClick={(e) => {
+            const el = e.currentTarget
+            setModelAnchor((a) => (a ? null : el))
+          }}
+        >
+          <ImageModelLogo model={model} size={24} />
+          <span className="ip-tf-model-name">
+            {model.name}
+            {model.id === 'auto' && <span className="igp-model-auto">{AUTO_MODEL}</span>}
+          </span>
+          <ChevronDown className="ip-tf-model-caret" size={16} strokeWidth={2} />
         </button>
+        {modelAnchor && (
+          <ImageModelMenu
+            anchor={modelAnchor}
+            selected={modelId}
+            onSelect={setModelId}
+            onClose={() => setModelAnchor(null)}
+          />
+        )}
+      </div>
+
+      {/* Quantidade de imagens por geração */}
+      <div className="ip-tf ip-tf-count">
+        <span className="ip-tf-label">Imagens por vez</span>
+        <div className="ip-stepper ip-tf-stepper">
+          <button type="button" aria-label="Menos imagens" disabled={count <= 1} onClick={() => setCount((c) => Math.max(1, c - 1))}>
+            <Minus size={14} strokeWidth={2.4} />
+          </button>
+          <span className="ip-stepper-val">{count}/4</span>
+          <button type="button" aria-label="Mais imagens" disabled={count >= 4} onClick={() => setCount((c) => Math.min(4, c + 1))}>
+            <Plus size={14} strokeWidth={2.4} />
+          </button>
+        </div>
       </div>
       </div>
 
@@ -201,12 +266,12 @@ export default function ToolDrawer({ tool, onGenerate }: { tool: Tool; onGenerat
           type="button"
           className={`ip-tool-gen${ready ? ' is-ready' : ''}`}
           disabled={!ready}
-          onClick={ready ? onGenerate : undefined}
+          onClick={ready ? () => onGenerate({ count, model: model.id === 'auto' ? AUTO_MODEL : model.name }) : undefined}
         >
           Gerar
           <span className="ip-tool-gen-cost">
             <img src={creditsCoin} alt="" aria-hidden="true" />
-            {CREDITS}
+            {cost}
           </span>
         </button>
       </div>

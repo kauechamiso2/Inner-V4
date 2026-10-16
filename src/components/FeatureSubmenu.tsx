@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import searchIcon from '../assets/library/search.svg'
+import { isIntegrationReady } from './integrations'
 import type { MentionItem } from './MentionMenu'
 
 const normalize = (s: string) =>
@@ -65,6 +66,7 @@ export default function FeatureSubmenu({
                 {item.img ? <img src={item.img} alt="" loading="lazy" /> : item.icon}
               </span>
               <span className="bib-label">{item.label}</span>
+              {!isIntegrationReady(item) && <span className="mm-connect">Conectar</span>}
               {mode === 'chat' && item.agentOnly && <span className="mm-agent">Agent</span>}
             </button>
           ))

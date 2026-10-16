@@ -8,6 +8,12 @@ import InstructionsModal from './InstructionsModal'
 import { DEFAULT_PROJECT_CONTENT, PROJECT_CONTENT } from './projectContent'
 import type { ProjChat } from './projectContent'
 import type { ChosenAgent } from './agents'
+import { RenameInput, projectChatKey } from './HistoryPanel'
+import { ProjectGlyph } from './projectIcons'
+import { ProjectSettingsModal } from './NewProjectModal'
+import type { DetailFile, FileType } from './ContextFileList'
+import { MessageSquarePlus, MoreHorizontal } from 'lucide-react'
+import type { ChatEdit } from './HistoryPanel'
 
 type SideItem = { id: string; icon: ReactNode; label: string; sub?: string; action: string }
 
@@ -16,12 +22,57 @@ const SIDE_ITEMS: SideItem[] = [
   { id: 'ctx', icon: <Paperclip size={18} strokeWidth={1.7} />, label: 'Contexto', action: 'Adicionar' },
 ]
 
-function ChatRow({ chat, pinned = false }: { chat: ProjChat; pinned?: boolean }) {
+function ChatRow({
+  chat,
+  pinned = false,
+  onOpen,
+  onMenu,
+  menuOpen = false,
+  renaming = false,
+  onRenameDone,
+}: {
+  chat: ProjChat
+  pinned?: boolean
+  onOpen?: () => void
+  /* "..." no hover: mesmo menu do histórico (renomear, fixar, compartilhar, mover, excluir) */
+  onMenu?: (rect: DOMRect) => void
+  menuOpen?: boolean
+  /* renomear na própria linha */
+  renaming?: boolean
+  onRenameDone?: (title: string | null) => void
+}) {
   return (
-    <a className="ph-row" href="#conversa">
-      <span className="ph-row-title">{chat.title}</span>
+    <a
+      className={`ph-row${menuOpen ? ' is-menu' : ''}${renaming ? ' is-renaming' : ''}`}
+      href="#conversa"
+      onClick={(e) => {
+        e.preventDefault()
+        if (!renaming) onOpen?.()
+      }}
+    >
+      {renaming ? (
+        <RenameInput value={chat.title} onDone={(t) => onRenameDone?.(t)} />
+      ) : (
+        <span className="ph-row-title">{chat.title}</span>
+      )}
       {pinned && <Pin className="ph-row-pin" size={13} strokeWidth={1.8} fill="currentColor" />}
       <span className="ph-row-date">{chat.date}</span>
+      {!renaming && (
+      <button
+        type="button"
+        className={`ph-row-more${menuOpen ? ' is-open' : ''}`}
+        aria-label="Mais opções"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          onMenu?.(e.currentTarget.getBoundingClientRect())
+        }}
+      >
+        <MoreHorizontal size={16} strokeWidth={2} />
+      </button>
+      )}
     </a>
   )
 }
@@ -29,15 +80,30 @@ function ChatRow({ chat, pinned = false }: { chat: ProjChat; pinned?: boolean })
 export default function ProjectHome({
   name,
   emoji,
+  icon,
   color,
   projectId,
   pinned = false,
   onTogglePin,
   onBack,
   agent = null,
+  chatEdits = {},
+  movedChats = [],
+  onOpenChat,
+  custom = null,
+  description = '',
+  onUpdateProject,
+  onStartChat,
+  onChatMenu,
+  menuKey = null,
+  isChatPinned = () => false,
+  renamingKey = null,
+  onRenameDone,
 }: {
   name: string
   emoji?: string
+  /* ícone escolhido no "Novo projeto" (projetos novos) */
+  icon?: string
   color?: string
   projectId: string
   pinned?: boolean
@@ -45,10 +111,87 @@ export default function ProjectHome({
   onBack: () => void
   /* agente escolhido no onboarding — herdado no input do projeto */
   agent?: ChosenAgent | null
+  /* edições do menu "..." do histórico (renomear/excluir/mover) */
+  chatEdits?: Record<string, ChatEdit>
+  /* chats movidos para este projeto pelo histórico (entram no topo de Recentes) */
+  movedChats?: { key: string; title: string }[]
+  onOpenChat?: (key: string, title: string) => void
+  /* projeto criado pelo usuário: começa vazio (sem chats), com as instruções e
+     os arquivos informados no "Novo projeto" */
+  custom?: { instructions: string; files: string[] } | null
+  /* descrição do projeto (editável nas Configurações) */
+  description?: string
+  /* enviar no input do projeto: abre a conversa na Home, dentro do projeto */
+  onStartChat?: (text: string) => void
+  /* menu "..." de um chat do projeto (o App abre o mesmo menu do histórico) */
+  onChatMenu?: (key: string, title: string, rect: DOMRect) => void
+  menuKey?: string | null
+  /* chat fixado (mesmo "Fixar" do menu e dos Pinados da Home) */
+  isChatPinned?: (key: string) => boolean
+  /* renomear um chat na própria linha */
+  renamingKey?: string | null
+  onRenameDone?: (key: string, title: string | null) => void
+  /* Configurações (nome, ícone, cor) e Instruções salvas */
+  onUpdateProject?: (patch: {
+    name?: string
+    description?: string
+    icon?: string
+    color?: string
+    instructions?: string
+  }) => void
 }) {
-  const content = PROJECT_CONTENT[projectId] ?? DEFAULT_PROJECT_CONTENT
+  /* projeto novo: sem chats; contexto = só os arquivos enviados (0% se nenhum) */
+  const extOf = (n: string): FileType => {
+    const e = n.split('.').pop()?.toLowerCase() ?? ''
+    if (e === 'pdf') return 'pdf'
+    if (/xls|csv/.test(e)) return 'xlsx'
+    if (/ppt|key/.test(e)) return 'pptx'
+    if (/png|jpe?g|gif|webp|svg/.test(e)) return 'png'
+    if (e === 'txt' || e === 'md') return 'txt'
+    return 'docx'
+  }
+  const content0 = custom
+    ? {
+        ...DEFAULT_PROJECT_CONTENT,
+        pinned: [],
+        recents: [],
+        contextSections: [],
+        contextLoose: custom.files.map<DetailFile>((n, i) => ({ id: `cf-${i}`, name: n, type: extOf(n) })),
+        contextPct: custom.files.length ? Math.min(6 + custom.files.length * 4, 40) : 0,
+        instructions: custom.instructions,
+      }
+    : (PROJECT_CONTENT[projectId] ?? DEFAULT_PROJECT_CONTENT)
+  /* Fixados do projeto também refletem renomear/excluir/mover */
+  const content = {
+    ...content0,
+    pinned: content0.pinned
+      .map((c) => {
+        const key = projectChatKey(projectId, c.id)
+        const ed = chatEdits[key]
+        return { chat: { id: key, title: ed?.title ?? c.title, date: c.date }, ed }
+      })
+      .filter(({ ed }) => !ed?.deleted && (ed?.projectId === undefined || ed.projectId === projectId))
+      .map(({ chat }) => chat),
+  }
+  /* Recentes = movidos para cá (topo) + os do projeto, com renomear/excluir/mover aplicados */
+  /* todos os chats do projeto; os fixados (pelo "...") vão para "Fixados" */
+  const allChats: ProjChat[] = [
+    ...movedChats.map((c) => ({ id: c.key, title: c.title, date: 'Agora' })),
+    ...content.pinned,
+    ...content.recents
+      .map((c) => {
+        const key = projectChatKey(projectId, c.id)
+        const ed = chatEdits[key]
+        return { chat: { id: key, title: ed?.title ?? c.title, date: c.date }, ed }
+      })
+      .filter(({ ed }) => !ed?.deleted && (ed?.projectId === undefined || ed.projectId === projectId))
+      .map(({ chat }) => chat),
+  ]
+  const pinnedChats = allChats.filter((c) => isChatPinned(c.id))
+  const recents = allChats.filter((c) => !isChatPinned(c.id))
   const [contextOpen, setContextOpen] = useState(false)
   const [instrOpen, setInstrOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   return (
     <main className="project-home">
@@ -73,7 +216,7 @@ export default function ProjectHome({
           </nav>
 
           <header className="ph-head">
-            {emoji && (
+            {(emoji || icon) && (
               <span
                 className="ph-icon"
                 aria-hidden="true"
@@ -83,7 +226,7 @@ export default function ProjectHome({
                     : undefined
                 }
               >
-                {emoji}
+                {icon ? <ProjectGlyph icon={icon} size={24} /> : emoji}
               </span>
             )}
             <div className="ph-head-text">
@@ -102,7 +245,7 @@ export default function ProjectHome({
                   </span>
                 </button>
               </div>
-              <button type="button" className="ph-settings">
+              <button type="button" className="ph-settings" onClick={() => setSettingsOpen(true)}>
                 <Settings2 size={14} strokeWidth={1.8} />
                 Configurações do projeto
               </button>
@@ -118,28 +261,59 @@ export default function ProjectHome({
             agent={agent}
             showTabs={false}
             oneLine
+            onSend={(text) => onStartChat?.(text)}
           />
 
           <div className="ph-lists">
-            {content.pinned.length > 0 && (
+            {pinnedChats.length > 0 && (
               <section className="ph-group">
                 <div className="ph-group-label">Fixados</div>
                 <div className="ph-rows">
-                  {content.pinned.map((c) => (
-                    <ChatRow key={c.id} chat={c} pinned />
+                  {pinnedChats.map((c) => (
+                    <ChatRow
+                      key={c.id}
+                      chat={c}
+                      pinned
+                      onOpen={() => onOpenChat?.(c.id, c.title)}
+                      onMenu={(r) => onChatMenu?.(c.id, c.title, r)}
+                      menuOpen={menuKey === c.id}
+                      renaming={renamingKey === c.id}
+                      onRenameDone={(t) => onRenameDone?.(c.id, t)}
+                    />
                   ))}
                 </div>
               </section>
             )}
 
+            {allChats.length === 0 && (
+              <div className="ph-empty">
+                <span className="ph-empty-ic" aria-hidden="true">
+                  <MessageSquarePlus size={20} strokeWidth={1.8} />
+                </span>
+                <p className="ph-empty-title">Nenhum chat ainda</p>
+                <p className="ph-empty-sub">
+                  Comece seu primeiro chat pelo campo acima. As conversas deste projeto aparecem aqui.
+                </p>
+              </div>
+            )}
+            {recents.length > 0 && (
             <section className="ph-group">
               <div className="ph-group-label">Recentes</div>
               <div className="ph-rows">
-                {content.recents.map((c) => (
-                  <ChatRow key={c.id} chat={c} />
+                {recents.map((c) => (
+                  <ChatRow
+                    key={c.id}
+                    chat={c}
+                    onOpen={() => onOpenChat?.(c.id, c.title)}
+                    onMenu={(r) => onChatMenu?.(c.id, c.title, r)}
+                    menuOpen={menuKey === c.id}
+                    renaming={renamingKey === c.id}
+                    onRenameDone={(t) => onRenameDone?.(c.id, t)}
+                  />
                 ))}
               </div>
             </section>
+            )}
           </div>
         </div>
 
@@ -181,7 +355,18 @@ export default function ProjectHome({
         open={instrOpen}
         onClose={() => setInstrOpen(false)}
         defaultValue={content.instructions}
+        onSave={custom ? (v) => onUpdateProject?.({ instructions: v }) : undefined}
       />
+      {settingsOpen && (
+        <ProjectSettingsModal
+          name={name}
+          description={description}
+          icon={icon ?? emoji ?? '📁'}
+          color={color ?? '#1c1c1c'}
+          onClose={() => setSettingsOpen(false)}
+          onSave={(p) => onUpdateProject?.(p)}
+        />
+      )}
     </main>
   )
 }

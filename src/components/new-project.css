@@ -1,0 +1,274 @@
+/* ============ Modal "Novo projeto" ============ */
+
+.np-modal {
+  position: relative;
+  width: min(600px, 100%);
+  overflow: visible;
+}
+
+/* prévia do gradiente do projeto no topo do modal (troca suave de cor) */
+.np-wash {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 140px;
+  border-radius: 18px 18px 0 0;
+  pointer-events: none;
+  transition: background 320ms ease;
+}
+
+.np-head,
+.np-body,
+.np-modal .ctx-modal-foot {
+  position: relative;
+}
+
+.np-body {
+  overflow: visible;
+  padding-bottom: 22px;
+}
+
+.np-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.np-icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.np-icon-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--sb-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 260ms ease,
+    transform 120ms ease;
+}
+
+.np-icon-btn:hover,
+.np-icon-btn.is-open {
+  border-color: var(--card-border-hover);
+}
+
+.np-icon-btn:active {
+  transform: scale(0.96);
+}
+
+.np-icon-btn svg {
+  display: block;
+}
+
+.np-icon-caret {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 18px;
+  height: 18px;
+  padding: 2px;
+  border: 1px solid var(--sb-border);
+  border-radius: 50%;
+  background: var(--pop-surface);
+  color: var(--text-soft);
+}
+
+.np-textarea {
+  min-height: 120px;
+  flex: none;
+}
+
+.np-opt {
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+/* área de upload do contexto */
+.np-drop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px dashed var(--card-border-hover);
+  border-radius: 14px;
+  background: var(--pop-surface);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.np-drop:hover {
+  border-color: var(--text-faint);
+  background: var(--hover-04);
+}
+
+.np-drop-ic {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--hover-05);
+  color: var(--text-mid);
+}
+
+.np-drop-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.np-drop-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+}
+
+.np-drop-sub {
+  font-size: 12.5px;
+  color: var(--text-faint);
+}
+
+.np-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.np-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--sb-border);
+  border-radius: 9px;
+  background: var(--pop-surface);
+  font-size: 13px;
+  color: var(--text-mid);
+  animation: ct-box-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.np-file svg {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.np-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-file-x {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.np-file-x:hover {
+  background: var(--hover-06);
+}
+
+/* rodapé acompanha os cantos arredondados (o modal deixa o seletor vazar) */
+.np-modal .ctx-modal-foot {
+  border-radius: 0 0 18px 18px;
+}
+
+.np-modal .ctx-modal-head {
+  border-radius: 18px 18px 0 0;
+}
+
+/* contexto: "+ Adicionar contexto" + chip com a contagem de arquivos */
+.np-ctx-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.np-ctx-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px 0 12px;
+  border: 1px solid var(--ctl-border);
+  border-radius: 10px;
+  background: var(--pop-surface);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    transform 120ms ease;
+}
+
+.np-ctx-add:hover {
+  background: var(--hover-05);
+}
+
+.np-ctx-add:active {
+  transform: scale(0.97);
+}
+
+.np-ctx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 6px 0 12px;
+  border-radius: 10px;
+  background: var(--hover-05);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+  animation: ct-box-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.np-ctx-chip svg {
+  display: block;
+  color: var(--text-soft);
+}
+
+.np-settings {
+  width: min(520px, 100%);
+}
+
+/* o seletor de emoji precisa de espaço abaixo do campo no modal curto */
+.np-settings .np-body {
+  min-height: 120px;
+}
+
+/* descrição da nova base de conhecimento */
+.kb-desc {
+  min-height: 96px;
+  flex: none;
+}

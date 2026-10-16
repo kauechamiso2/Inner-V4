@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import { ChevronRight, MoreHorizontal, Pin, Search as SearchIcon, SquarePen } from 'lucide-react'
+import { ChevronRight, MoreHorizontal, Pin, Search as SearchIcon, SquarePen, X } from 'lucide-react'
 import './history.css'
 import magnifyingGlass from '../assets/magnifying-glass.svg'
-import { COLLECTIONS as LIB_COLLECTIONS } from './libraryEntries'
+import { allProjectEntries } from './projectStore'
 import { PROJECT_CONTENT } from './projectContent'
 import AgentOrb from './AgentOrb'
+import { MODEL_BY_ID } from './chatModels'
 import modelBlue from '../assets/model-blue.svg'
 import modelAvatarRing from '../assets/model-avatar-ring.svg'
 import modelDark from '../assets/model-dark.png'
@@ -23,7 +24,7 @@ import {
 } from './SidebarIcons'
 import { PILLAR_COLORS } from './pillars'
 import type { GenPillarId, PanelView } from './pillars'
-import type { ActiveProject, StartedChat } from '../App'
+import type { StartedChat } from '../App'
 import type { ChosenAgent } from './agents'
 import { USER_NAME, greetingFor } from './greeting'
 
@@ -33,7 +34,22 @@ import { USER_NAME, greetingFor } from './greeting'
 type ChatSource = 'agent' | 'blue' | 'avatar' | 'dark' | 'spiral' | 'task' | 'project'
 /* 'task' usa o ícone de Tarefas; 'project' usa o emoji do projeto.
    id: só nos chats iniciados nesta sessão (para marcar o selecionado) */
-type Chat = { title: string; source: ChatSource; emoji?: string; id?: string }
+type Chat = {
+  title: string
+  source: ChatSource
+  emoji?: string
+  id?: string
+  /* chat começado no Chat com modelos: logo do modelo (ou avatar do assistente) */
+  model?: string
+  asst?: { name: string; avatar?: string }
+}
+
+/* edições feitas pelo menu "..." (valem para a sessão): renomear, excluir e
+   mover para projeto. Chave do chat: id (chats da sessão) ou o título original */
+export type ChatEdit = { title?: string; deleted?: boolean; projectId?: string | null }
+export const chatKeyOf = (c: { id?: string; title: string }) => c.id ?? c.title
+/* chats dentro de um projeto: "<projeto>:<id do chat>" */
+export const projectChatKey = (projectId: string, chatId: string) => `${projectId}:${chatId}`
 type ChatGroup = { label: string; chats: Chat[] }
 
 const CHAT_GROUPS: ChatGroup[] = [
@@ -236,8 +252,35 @@ function ModelIcon({ source }: { source: Exclude<ChatSource, 'agent' | 'task' | 
 
 /* ícone/emoji à esquerda de cada chat: agente → orb, tarefa → ícone de Tarefas,
    projeto → emoji do projeto, demais → ícone do modelo */
-function ChatAvatar({ source, emoji }: { source: ChatSource; emoji?: string }) {
-  if (source === 'agent') return <AgentOrb />
+/* agente escolhido no onboarding: os chats com o agente usam a foto dele */
+const AgentAvatarCtx = createContext<ChosenAgent | null>(null)
+
+function ChatAvatar({
+  source,
+  emoji,
+  model,
+  asst,
+}: {
+  source: ChatSource
+  emoji?: string
+  model?: string
+  asst?: { name: string; avatar?: string }
+}) {
+  const agent = useContext(AgentAvatarCtx)
+  if (asst?.avatar) return <img className="chat-agent-avatar" src={asst.avatar} alt="" aria-hidden="true" />
+  const m = model ? MODEL_BY_ID[model] : null
+  if (m)
+    return m.logo ? (
+      <img className={`chat-model-logo${m.mono ? ' is-mono' : ''}`} src={m.logo} alt="" aria-hidden="true" />
+    ) : (
+      <span className="chat-model-fusion" aria-hidden="true" />
+    )
+  if (source === 'agent')
+    return agent?.img && !agent.orb ? (
+      <img className="chat-agent-avatar" src={agent.img} alt="" aria-hidden="true" />
+    ) : (
+      <AgentOrb />
+    )
   if (source === 'task')
     return (
       <span className="chat-task-icon" aria-hidden="true">
@@ -257,33 +300,64 @@ type PinRef = { kind: 'chat' | 'project'; id: string }
 
 const ALL_CHATS: Chat[] = CHAT_GROUPS.flatMap((g) => g.chats)
 
-/* Projetos fixáveis = apenas os projetos existentes na Biblioteca */
+/* Projetos fixáveis = os de exemplo + os criados no "Novo projeto" (com as
+   edições das Configurações), lidos do projectStore a cada render */
 type ProjectEntry = { id: string; name: string; emoji?: string; color?: string }
-const PROJECT_ENTRIES: ProjectEntry[] = LIB_COLLECTIONS.map((c) => ({
-  id: c.id,
-  name: c.label,
-  emoji: c.emoji,
-  color: c.color,
-}))
-const findProject = (id: string) => PROJECT_ENTRIES.find((p) => p.id === id) ?? null
+const findProject = (id: string): ProjectEntry | null => allProjectEntries().find((p) => p.id === id) ?? null
 
-/* "..." de ações da conversa (sem ação por ora) — à esquerda do pin */
-function MoreButton() {
+/* "..." de ações da conversa — abre o menu de contexto ancorado no botão */
+function MoreButton({ open = false, onOpen }: { open?: boolean; onOpen?: (rect: DOMRect) => void }) {
   return (
     <button
       type="button"
-      className="chat-more"
+      className={`chat-more${open ? ' is-open' : ''}`}
       aria-label="Mais opções"
+      aria-haspopup="menu"
+      aria-expanded={open}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onOpen?.(e.currentTarget.getBoundingClientRect())
+      }}
+    >
+      <MoreHorizontal size={15} strokeWidth={2} />
+      {!open && (
+        <span className="pill-tooltip chat-pin-tip" role="tooltip" aria-hidden="true">
+          Mais
+        </span>
+      )}
+    </button>
+  )
+}
+
+/* título editável na própria linha (Renomear) */
+export function RenameInput({ value, onDone }: { value: string; onDone: (title: string | null) => void }) {
+  const [v, setV] = useState(value)
+  const doneRef = useRef(false)
+  const finish = (t: string | null) => {
+    if (doneRef.current) return
+    doneRef.current = true
+    onDone(t)
+  }
+  return (
+    <input
+      className="chat-rename"
+      value={v}
+      autoFocus
+      spellCheck={false}
+      aria-label="Novo nome do chat"
+      onFocus={(e) => e.currentTarget.select()}
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()
       }}
-    >
-      <MoreHorizontal size={15} strokeWidth={2} />
-      <span className="pill-tooltip chat-pin-tip" role="tooltip" aria-hidden="true">
-        Mais
-      </span>
-    </button>
+      onChange={(e) => setV(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') finish(v.trim() || null)
+        if (e.key === 'Escape') finish(null)
+      }}
+      onBlur={() => finish(v.trim() || null)}
+    />
   )
 }
 
@@ -313,6 +387,11 @@ function ChatRow({
   onTogglePin,
   hideIcon = false,
   selected = false,
+  onOpen,
+  onMenu,
+  menuOpen = false,
+  renaming = false,
+  onRenameDone,
 }: {
   chat: Chat
   pinned: boolean
@@ -321,13 +400,24 @@ function ChatRow({
   hideIcon?: boolean
   /* conversa aberta agora na Home */
   selected?: boolean
+  onOpen?: () => void
+  onMenu?: (rect: DOMRect) => void
+  menuOpen?: boolean
+  renaming?: boolean
+  onRenameDone?: (title: string | null) => void
 }) {
   const isAgent = chat.source === 'agent'
   return (
     <a
-      className={`chat-row${hideIcon && !pinned ? ' no-icon' : ''}${selected ? ' is-selected' : ''}`}
+      className={`chat-row${hideIcon && !pinned ? ' no-icon' : ''}${selected ? ' is-selected' : ''}${
+        menuOpen ? ' is-menu' : ''
+      }${renaming ? ' is-renaming' : ''}`}
       href="#conversa"
       aria-current={selected ? 'page' : undefined}
+      onClick={(e) => {
+        e.preventDefault()
+        if (!renaming) onOpen?.()
+      }}
     >
       <span className="chat-row-main">
         {pinned ? (
@@ -335,49 +425,73 @@ function ChatRow({
             <ChatDotsIcon size={16} />
           </span>
         ) : (
-          !hideIcon && <ChatAvatar source={chat.source} emoji={chat.emoji} />
+          !hideIcon && <ChatAvatar source={chat.source} emoji={chat.emoji} model={chat.model} asst={chat.asst} />
         )}
-        <span className={`chat-row-title${isAgent ? '' : ' is-model'}`}>{chat.title}</span>
+        {renaming ? (
+          <RenameInput value={chat.title} onDone={(t) => onRenameDone?.(t)} />
+        ) : (
+          <span className={`chat-row-title${isAgent ? '' : ' is-model'}`}>{chat.title}</span>
+        )}
       </span>
       {isAgent && !pinned && !hideIcon && <span className="chat-chip">Agent</span>}
-      <span className="chat-actions">
-        <MoreButton />
-        <PinButton pinned={pinned} onToggle={onTogglePin} />
-      </span>
+      {!renaming && (
+        <span className="chat-actions">
+          <MoreButton open={menuOpen} onOpen={onMenu} />
+          <PinButton pinned={pinned} onToggle={onTogglePin} />
+        </span>
+      )}
     </a>
   )
 }
+
+type ProjChild = { key: string; title: string }
 
 function ProjectRow({
   name,
   emoji,
   pinned,
-  selected = false,
   childChats,
   expanded = false,
   onToggleExpand,
-  onOpen,
   onTogglePin,
+  activeKey = null,
+  onOpenChild,
+  onChildMenu,
+  menuKey = null,
+  renamingKey = null,
+  onRenameDone,
 }: {
   name: string
   emoji?: string
   pinned: boolean
-  selected?: boolean
-  childChats?: string[]
+  childChats?: ProjChild[]
   expanded?: boolean
   onToggleExpand?: () => void
-  onOpen?: () => void
   onTogglePin: () => void
+  /* chat aberto agora (pode ser um dos chats do projeto) */
+  activeKey?: string | null
+  onOpenChild?: (c: ProjChild) => void
+  onChildMenu?: (c: ProjChild, rect: DOMRect) => void
+  menuKey?: string | null
+  renamingKey?: string | null
+  onRenameDone?: (key: string, title: string | null) => void
 }) {
   const hasChildren = !!childChats && childChats.length > 0
+  /* listas longas: mostra os 5 primeiros e "Ver todos" */
+  const LIMIT = 5
+  const [showAll, setShowAll] = useState(false)
+  const visible = childChats && !showAll ? childChats.slice(0, LIMIT) : (childChats ?? [])
+  const hidden = (childChats?.length ?? 0) - LIMIT
   return (
     <div className="chat-proj">
+      {/* clicar no projeto só expande/recolhe a lista dos chats dele */}
       <a
-        className={`chat-row${selected ? ' is-selected' : ''}`}
+        className="chat-row"
         href="#projeto"
+        aria-expanded={expanded}
         onClick={(e) => {
           e.preventDefault()
-          onOpen?.()
+          onToggleExpand?.()
         }}
       >
         <span className="chat-row-main">
@@ -392,19 +506,9 @@ function ProjectRow({
               </span>
             )}
             {hasChildren && (
-              <button
-                type="button"
-                className={`chat-proj-caret${expanded ? ' is-open' : ''}`}
-                aria-label={expanded ? 'Recolher projeto' : 'Expandir projeto'}
-                aria-expanded={expanded}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onToggleExpand?.()
-                }}
-              >
+              <span className={`chat-proj-caret${expanded ? ' is-open' : ''}`} aria-hidden="true">
                 <ChevronRight size={14} strokeWidth={2.4} />
-              </button>
+              </span>
             )}
           </span>
           <span className="chat-row-title is-model">{name}</span>
@@ -414,11 +518,41 @@ function ProjectRow({
       {hasChildren && (
         <div className={`chat-proj-childwrap${expanded ? ' is-open' : ''}`}>
           <div className="chat-proj-children">
-            {childChats.map((t) => (
-              <a className="chat-proj-child" href="#conversa" key={t} tabIndex={expanded ? 0 : -1}>
-                {t}
+            {visible.map((c) => (
+              <a
+                className={`chat-proj-child${c.key === activeKey ? ' is-selected' : ''}${
+                  menuKey === c.key ? ' is-menu' : ''
+                }`}
+                href="#conversa"
+                key={c.key}
+                tabIndex={expanded ? 0 : -1}
+                aria-current={c.key === activeKey ? 'page' : undefined}
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (renamingKey !== c.key) onOpenChild?.(c)
+                }}
+              >
+                {renamingKey === c.key ? (
+                  <RenameInput value={c.title} onDone={(t) => onRenameDone?.(c.key, t)} />
+                ) : (
+                  <span className="chat-proj-child-title">{c.title}</span>
+                )}
+                {renamingKey !== c.key && (
+                  <MoreButton open={menuKey === c.key} onOpen={(r) => onChildMenu?.(c, r)} />
+                )}
               </a>
             ))}
+            {hidden > 0 && (
+              <button
+                type="button"
+                className="chat-proj-more"
+                tabIndex={expanded ? 0 : -1}
+                onClick={() => setShowAll((v) => !v)}
+              >
+                {showAll ? 'Ver menos' : `Ver todos (${childChats.length})`}
+                <ChevronRight className={showAll ? 'is-up' : ''} size={13} strokeWidth={2.4} />
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -429,14 +563,17 @@ function ProjectRow({
 function PinPicker({
   isPinned,
   togglePin,
+  sources,
 }: {
   isPinned: (kind: PinRef['kind'], id: string) => boolean
   togglePin: (kind: PinRef['kind'], id: string) => void
+  /* chats do modo atual: Home (agente e loops) ou Chat com modelos */
+  sources: ChatSource[]
 }) {
   const [q, setQ] = useState('')
   const nq = q.trim().toLowerCase()
-  const chats = ALL_CHATS.filter((c) => c.title.toLowerCase().includes(nq))
-  const projects = PROJECT_ENTRIES.filter((p) => p.name.toLowerCase().includes(nq))
+  const chats = ALL_CHATS.filter((c) => sources.includes(c.source) && c.title.toLowerCase().includes(nq))
+  const projects = allProjectEntries().filter((p) => p.name.toLowerCase().includes(nq))
 
   return (
     <div className="pin-picker">
@@ -490,7 +627,7 @@ function PinPicker({
                   className="pin-pick-row"
                   onClick={() => togglePin('chat', c.title)}
                 >
-                  <ChatAvatar source={c.source} emoji={c.emoji} />
+                  <ChatAvatar source={c.source} emoji={c.emoji} model={c.model} asst={c.asst} />
                   <span className="pin-pick-title">{c.title}</span>
                   <span className={`chat-pin is-static${isPinned('chat', c.title) ? ' is-pinned' : ''}`}>
                     <Pin size={14} strokeWidth={1.8} fill={isPinned('chat', c.title) ? 'currentColor' : 'none'} />
@@ -538,8 +675,6 @@ type Props = {
   pins: PinRef[]
   isPinned: (kind: PinRef['kind'], id: string) => boolean
   togglePin: (kind: PinRef['kind'], id: string) => void
-  activeProject?: ActiveProject | null
-  onOpenProject?: (p: ActiveProject) => void
   onNewTask?: () => void
   /* chats iniciados nesta sessão (entram no topo de "Hoje") e o que está aberto */
   startedChats?: StartedChat[]
@@ -548,6 +683,19 @@ type Props = {
   agent?: ChosenAgent | null
   /* destaque único de "personalização" ao cair na tela */
   intro?: boolean
+  /* edições do menu "..." (título, excluído, projeto) */
+  chatEdits?: Record<string, ChatEdit>
+  /* projetos fixados: chats deles ficam dentro do projeto em Pinados; os de
+     projetos não fixados continuam no Histórico */
+  pinnedProjectIds?: string[]
+  /* abre a conversa do chat (projectId quando é um chat de projeto) */
+  onOpenChat?: (key: string, title: string, projectId?: string | null) => void
+  /* abre o menu "..." do chat, ancorado no botão */
+  onChatMenu?: (key: string, title: string, rect: DOMRect, projectId?: string | null) => void
+  menuKey?: string | null
+  /* renomear na própria linha */
+  renamingKey?: string | null
+  onRenameDone?: (key: string, title: string | null) => void
 }
 
 export default function HistoryPanel({
@@ -557,22 +705,85 @@ export default function HistoryPanel({
   pins,
   isPinned,
   togglePin,
-  activeProject = null,
-  onOpenProject,
   onNewTask,
   startedChats = [],
   activeChatId = null,
   agent = null,
   intro = false,
+  chatEdits = {},
+  pinnedProjectIds = [],
+  onOpenChat,
+  onChatMenu,
+  menuKey = null,
+  renamingKey = null,
+  onRenameDone,
 }: Props) {
   const config = PANEL_CONFIG[view]
   /* chats iniciados nesta sessão entram no topo do grupo "Hoje" */
   const chatGroups = useMemo<ChatGroup[]>(() => {
-    if (startedChats.length === 0) return CHAT_GROUPS
-    const started: Chat[] = startedChats.map((s) => ({ id: s.id, title: s.title, source: s.source }))
+    const started: Chat[] = startedChats.map((s) => ({ id: s.id, title: s.title, source: s.source, model: s.model, asst: s.asst }))
     const [today, ...rest] = CHAT_GROUPS
-    return [{ ...today, chats: [...started, ...today.chats] }, ...rest]
-  }, [startedChats])
+    const base = [{ ...today, chats: [...started, ...today.chats] }, ...rest]
+    /* aplica renomear/excluir/mover: excluídos e movidos para projeto saem do histórico */
+    return base.map((g) => ({
+      ...g,
+      chats: g.chats
+        .filter((c) => {
+          const ed = chatEdits[chatKeyOf(c)]
+          return !ed?.deleted && !(ed?.projectId && pinnedProjectIds.includes(ed.projectId))
+        })
+        .map((c) => {
+          const ed = chatEdits[chatKeyOf(c)]
+          /* renomeado: a chave continua a do título original */
+          return ed?.title ? { ...c, id: chatKeyOf(c), title: ed.title } : c
+        }),
+    }))
+  }, [startedChats, chatEdits, pinnedProjectIds])
+  /* todos os chats (com edições aplicadas), para achar os fixados e os movidos */
+  const allChats = useMemo<Chat[]>(() => {
+    const started: Chat[] = startedChats.map((s) => ({ id: s.id, title: s.title, source: s.source, model: s.model, asst: s.asst }))
+    return [...started, ...ALL_CHATS]
+      .filter((c) => !chatEdits[chatKeyOf(c)]?.deleted)
+      .map((c) => {
+        const ed = chatEdits[chatKeyOf(c)]
+        /* renomeado: a chave continua a do título original */
+          return ed?.title ? { ...c, id: chatKeyOf(c), title: ed.title } : c
+      })
+  }, [startedChats, chatEdits])
+  /* chat de projeto fixado pelo "..." (ex.: "col-hr:hr1") vira uma linha de Pinados */
+  const projectChatAsChat = (key: string): Chat | undefined => {
+    const [pid, cid] = key.split(':')
+    if (!cid) return undefined
+    const all = [...(PROJECT_CONTENT[pid]?.pinned ?? []), ...(PROJECT_CONTENT[pid]?.recents ?? [])]
+    const found = all.find((c) => c.id === cid)
+    const ed = chatEdits[key]
+    if (!found || ed?.deleted) return undefined
+    return { id: key, title: ed?.title ?? found.title, source: 'agent' }
+  }
+  /* chats de um projeto: os do próprio projeto + os movidos para ele */
+  const projectChildren = (projectId: string): ProjChild[] => {
+    const own = (PROJECT_CONTENT[projectId]?.recents ?? [])
+      .map((c) => {
+        const key = projectChatKey(projectId, c.id)
+        const ed = chatEdits[key]
+        return { key, title: ed?.title ?? c.title, ed }
+      })
+      .filter((c) => !c.ed?.deleted && (c.ed?.projectId === undefined || c.ed.projectId === projectId))
+      .map(({ key, title }) => ({ key, title }))
+    const moved = allChats
+      .filter((c) => chatEdits[chatKeyOf(c)]?.projectId === projectId)
+      .map((c) => ({ key: chatKeyOf(c), title: c.title }))
+    return [...moved, ...own]
+  }
+  /* busca no histórico */
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const norm = (t: string) =>
+    t
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+  const nq = norm(query.trim())
   const isChat = view === 'chat'
   /* pilar de Imagens: histórico de "Gerações" — título + lupa, sem botão "Nova" */
   const isGen = view === 'imagens'
@@ -614,6 +825,7 @@ export default function HistoryPanel({
   }, [pickerOpen])
 
   return (
+    <AgentAvatarCtx.Provider value={agent ?? null}>
     <section
       className={`history-panel${hidden ? ' is-hidden' : ''}`}
       aria-label={`Histórico de ${config.title}`}
@@ -684,21 +896,26 @@ export default function HistoryPanel({
                 <div className="history-group-list">
                   {pins.map((p) => {
                     if (p.kind === 'chat') {
-                      const c = ALL_CHATS.find((x) => x.title === p.id)
+                      const c =
+                        allChats.find((x) => chatKeyOf(x) === p.id) ?? projectChatAsChat(p.id)
                       return c && modeSources.includes(c.source) ? (
                         <ChatRow
                           key={`pin-${p.id}`}
                           chat={c}
                           pinned
                           hideIcon={chatMode === 'agente'}
+                          selected={p.id === activeChatId}
+                          onOpen={() => onOpenChat?.(p.id, c.title)}
+                          onMenu={(r) => onChatMenu?.(p.id, c.title, r)}
+                          menuOpen={menuKey === p.id}
+                          renaming={renamingKey === p.id}
+                          onRenameDone={(t) => onRenameDone?.(p.id, t)}
                           onTogglePin={() => togglePin('chat', p.id)}
                         />
                       ) : null
                     }
                     const pr = findProject(p.id)
                     if (!pr) return null
-                    const childChats =
-                      PROJECT_CONTENT[pr.id]?.recents.slice(0, 6).map((c) => c.title) ?? []
                     return (
                       <ProjectRow
                         key={`pin-${p.id}`}
@@ -706,43 +923,92 @@ export default function HistoryPanel({
                         /* pinados: ícone de projeto (pasta) no lugar do emoji escolhido */
                         emoji={undefined}
                         pinned
-                        selected={activeProject?.id === pr.id}
-                        childChats={childChats}
+                        childChats={projectChildren(pr.id)}
                         expanded={expandedProjects.has(pr.id)}
                         onToggleExpand={() => toggleExpanded(pr.id)}
-                        onOpen={() =>
-                          onOpenProject?.({
-                            id: pr.id,
-                            name: pr.name,
-                            emoji: pr.emoji,
-                            color: pr.color,
-                          })
-                        }
+                        activeKey={activeChatId}
+                        onOpenChild={(c) => onOpenChat?.(c.key, c.title, pr.id)}
+                        onChildMenu={(c, r) => onChatMenu?.(c.key, c.title, r, pr.id)}
+                        menuKey={menuKey}
+                        renamingKey={renamingKey}
+                        onRenameDone={onRenameDone}
                         onTogglePin={() => togglePin('project', p.id)}
                       />
                     )
                   })}
                 </div>
               )}
-              {pickerOpen && <PinPicker isPinned={isPinned} togglePin={togglePin} />}
+              {pickerOpen && <PinPicker isPinned={isPinned} togglePin={togglePin} sources={modeSources} />}
             </div>
           )}
 
           {!isGen && (
-            <div className="history-label-row">
-              <span className="history-label">Histórico</span>
-              <button className="history-search" type="button" aria-label="Buscar no histórico">
-                <img src={magnifyingGlass} alt="" aria-hidden="true" />
-              </button>
+            <div className={`history-label-row${searchOpen ? ' is-searching' : ''}`}>
+              {searchOpen ? (
+                <div className="history-searchbox">
+                  <SearchIcon size={15} strokeWidth={2} aria-hidden="true" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setQuery('')
+                        setSearchOpen(false)
+                      }
+                    }}
+                    placeholder="Buscar no histórico"
+                    autoFocus
+                    spellCheck={false}
+                    aria-label="Buscar no histórico"
+                  />
+                  <button
+                    type="button"
+                    className="history-search-clear"
+                    aria-label="Fechar busca"
+                    onClick={() => {
+                      setQuery('')
+                      setSearchOpen(false)
+                    }}
+                  >
+                    <X size={14} strokeWidth={2.2} />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className="history-label">Histórico</span>
+                  <button
+                    className="history-search"
+                    type="button"
+                    aria-label="Buscar no histórico"
+                    onClick={() => setSearchOpen(true)}
+                  >
+                    <img src={magnifyingGlass} alt="" aria-hidden="true" />
+                    <span className="pill-tooltip history-search-tip" role="tooltip" aria-hidden="true">
+                      Buscar
+                    </span>
+                  </button>
+                </>
+              )}
             </div>
           )}
 
           <div className="history-scroll">
             <div className="history-groups">
+              {isChat &&
+                nq &&
+                !chatGroups.some((g) =>
+                  g.chats.some(
+                    (c) =>
+                      !pinnedChatIds.has(chatKeyOf(c)) && modeSources.includes(c.source) && norm(c.title).includes(nq),
+                  ),
+                ) && <p className="history-search-empty">Nenhum chat encontrado para "{query.trim()}".</p>}
               {isChat
                 ? chatGroups.map((group) => {
                     const chats = group.chats.filter(
-                      (c) => !pinnedChatIds.has(c.title) && modeSources.includes(c.source),
+                      (c) =>
+                        !pinnedChatIds.has(chatKeyOf(c)) &&
+                        modeSources.includes(c.source) &&
+                        (!nq || norm(c.title).includes(nq)),
                     )
                     if (chats.length === 0) return null
                     return (
@@ -752,11 +1018,16 @@ export default function HistoryPanel({
                           {chats.map((chat) => (
                             <ChatRow
                               chat={chat}
-                              key={chat.id ?? chat.title}
+                              key={chatKeyOf(chat)}
                               pinned={false}
                               hideIcon={chatMode === 'agente'}
-                              selected={!!chat.id && chat.id === activeChatId}
-                              onTogglePin={() => togglePin('chat', chat.title)}
+                              selected={chatKeyOf(chat) === activeChatId}
+                              onOpen={() => onOpenChat?.(chatKeyOf(chat), chat.title)}
+                              onMenu={(r) => onChatMenu?.(chatKeyOf(chat), chat.title, r)}
+                              menuOpen={menuKey === chatKeyOf(chat)}
+                              renaming={renamingKey === chatKeyOf(chat)}
+                              onRenameDone={(t) => onRenameDone?.(chatKeyOf(chat), t)}
+                              onTogglePin={() => togglePin('chat', chatKeyOf(chat))}
                             />
                           ))}
                         </div>
@@ -778,5 +1049,6 @@ export default function HistoryPanel({
         </div>
       </div>
     </section>
+    </AgentAvatarCtx.Provider>
   )
 }

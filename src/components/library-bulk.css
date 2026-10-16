@@ -1,0 +1,687 @@
+/* ============ Biblioteca: filtro, seleção em massa e barra de ações ============ */
+
+.library-page .lib-new.is-ghost.is-on {
+  background: var(--hover-05);
+}
+
+/* ---------- Caixinha de seleção ---------- */
+.lib-check {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1.5px solid var(--text-ghost);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--voice-fg);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    opacity 140ms ease;
+}
+
+.lib-check:hover {
+  border-color: var(--text-soft);
+}
+
+.lib-check.is-on {
+  border-color: var(--text-strong);
+  background: var(--text-strong);
+}
+
+.lib-check svg {
+  display: block;
+}
+
+/* ---------- Lista ---------- */
+.lib-files .file-row.is-selected {
+  background: var(--hover-05);
+}
+
+.lib-files.is-selecting .file-row {
+  cursor: pointer;
+}
+
+/* ---------- Grade: caixinha no canto do card ---------- */
+.file-card {
+  position: relative;
+}
+
+.file-card-check {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  width: 20px;
+  height: 20px;
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+}
+
+.file-card:hover .file-card-check,
+.file-card.is-selecting .file-card-check,
+.file-card-check:focus-visible {
+  opacity: 1;
+}
+
+.file-card-check.is-on {
+  border-color: var(--text-strong);
+  background: var(--text-strong);
+}
+
+.file-card.is-selected {
+  border-color: var(--text-strong);
+  box-shadow: 0 0 0 1px var(--text-strong);
+}
+
+/* ---------- Barra de ações (flutuante, embaixo) ---------- */
+.lib-bulk {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 250;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 52px;
+  padding: 0 8px 0 20px;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.4);
+  transform: translateX(-50%);
+  animation: lib-bulk-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes lib-bulk-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(14px) scale(0.97);
+  }
+}
+
+.lib-bulk-count {
+  margin-right: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+.lib-bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px 0 12px;
+  border: 1px solid color-mix(in srgb, var(--voice-fg) 22%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--voice-fg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    opacity 140ms ease,
+    transform 120ms ease;
+}
+
+.lib-bulk-btn:hover {
+  background: color-mix(in srgb, var(--voice-fg) 12%, transparent);
+}
+
+.lib-bulk-btn:active {
+  transform: scale(0.97);
+}
+
+.lib-bulk-btn svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Iniciar chat: o botão claro dentro da barra escura (e vice-versa no dark) */
+.lib-bulk-btn.is-primary {
+  border-color: transparent;
+  background: var(--voice-fg);
+  color: var(--voice-bg);
+}
+
+.lib-bulk-btn.is-primary:hover {
+  background: var(--voice-fg);
+  opacity: 0.9;
+}
+
+.lib-bulk-btn.is-danger {
+  border-color: transparent;
+  background: #e5484d;
+  color: #fff;
+}
+
+.lib-bulk-btn.is-danger:hover {
+  background: #d93b41;
+}
+
+.lib-bulk-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--voice-fg);
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.lib-bulk-icon:hover,
+.lib-bulk-icon.is-open {
+  background: color-mix(in srgb, var(--voice-fg) 14%, transparent);
+}
+
+.lib-bulk-icon svg {
+  display: block;
+}
+
+/* menu "..." abre para cima, a partir da barra */
+.lib-bulk-more-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.task-menu.lib-bulk-menu {
+  top: auto;
+  right: -8px;
+  left: auto;
+  bottom: calc(100% + 14px);
+  min-width: 264px;
+  transform-origin: bottom right;
+  overflow: visible;
+}
+
+.lib-bulk-sub .lib-bulk-chev {
+  margin-left: auto;
+  color: var(--text-faint) !important;
+}
+
+.lib-bulk-sub.is-active {
+  background: var(--hover-05);
+  color: var(--text-strong);
+}
+
+/* cascata: ao lado do menu */
+.task-menu.lib-bulk-submenu {
+  top: auto;
+  right: auto;
+  left: calc(100% + 6px);
+  bottom: -7px;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  transform-origin: bottom left;
+}
+
+.lib-bulk-sub-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lib-bulk-sub-meta {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.lib-bulk-emoji {
+  width: 15px;
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+}
+
+
+@media (max-width: 720px) {
+  .lib-bulk {
+    left: 12px;
+    right: 12px;
+    bottom: 16px;
+    justify-content: center;
+    padding: 0 6px 0 14px;
+    transform: none;
+    animation: none;
+  }
+
+  .lib-bulk-count {
+    display: none;
+  }
+
+  .lib-bulk-btn {
+    padding: 0 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lib-bulk {
+    animation: none;
+  }
+}
+
+/* caixinhas da lista: só no hover da linha (no cabeçalho, no hover da tabela);
+   com algo selecionado, ficam todas visíveis */
+.lib-files .lib-check {
+  opacity: 0;
+}
+
+.lib-files .file-row:hover .lib-check,
+.lib-files:hover .lib-files-head .lib-check,
+.lib-files.is-selecting .lib-check,
+.lib-files .lib-check:focus-visible {
+  opacity: 1;
+}
+
+/* ---------- Modal "Nova pasta" ---------- */
+.nf-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 6px;
+}
+
+.nf-error {
+  margin: -2px 0 0;
+  color: #d93b41;
+}
+
+.nf-move {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-mid);
+  cursor: pointer;
+}
+
+.nf-move .lib-check {
+  pointer-events: none;
+}
+
+/* menu "..." da barra: itens numa linha só */
+.lib-bulk-menu .task-menu-item {
+  white-space: nowrap;
+}
+
+.task-menu.lib-bulk-menu {
+  min-width: 0;
+}
+
+/* ============ Pasta aberta ============ */
+.lib-folder-head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 8px;
+  animation: lib-folder-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes lib-folder-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.lib-crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-left: -8px;
+}
+
+.lib-crumb-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.lib-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition:
+    background-color 130ms ease,
+    color 130ms ease,
+    box-shadow 130ms ease;
+}
+
+.lib-crumb:hover {
+  background: var(--hover-05);
+  color: var(--text-strong);
+}
+
+.lib-crumb.is-current {
+  color: var(--text-strong);
+  font-weight: 500;
+  cursor: default;
+}
+
+.lib-crumb.is-current:hover {
+  background: transparent;
+}
+
+.lib-crumb svg {
+  display: block;
+}
+
+.lib-crumb-sep {
+  color: var(--text-ghost);
+}
+
+.lib-crumb.is-drop {
+  background: var(--hover-06);
+  color: var(--text-strong);
+  box-shadow: inset 0 0 0 1.5px var(--text-strong);
+}
+
+.lib-folder-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--text-strong);
+}
+
+.lib-folder-ic {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--lib-tile-neutral);
+  color: var(--text-soft);
+}
+
+.lib-folder-count {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+
+.lib-folder-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 56px 20px;
+  border: 1px dashed var(--card-border-hover);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.lib-folder-empty-ic {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  background: var(--lib-tile-neutral);
+  color: var(--text-soft);
+}
+
+.lib-folder-empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.lib-folder-empty-sub {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-faint);
+}
+
+/* pastas abrem no clique */
+.file-row.is-folder {
+  cursor: pointer;
+}
+
+/* ============ Arrastar e soltar ============ */
+.file-row[draggable='true'],
+.file-card[draggable='true'] {
+  -webkit-user-drag: element;
+}
+
+.file-row.is-dragging,
+.file-card.is-dragging {
+  opacity: 0.4;
+}
+
+/* pasta sob o cursor ao arrastar: destaque de destino */
+.file-row.is-drop {
+  background: var(--hover-06);
+  box-shadow: inset 0 0 0 1.5px var(--text-strong);
+}
+
+.file-card.is-drop {
+  border-color: var(--text-strong);
+  box-shadow: 0 0 0 1px var(--text-strong);
+  transform: translateY(-2px);
+}
+
+/* fora da tela: só serve de imagem do arraste */
+.lib-drag-ghost {
+  position: fixed;
+  top: -200px;
+  left: -200px;
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ============ Bases de conhecimento: espaço e "..." ============ */
+/* mais respiro entre o título da seção e os cards (igual a Projetos e Loops) */
+.library-page .lib-kb-section > .lib-section-head {
+  margin-bottom: 24px;
+}
+
+.coll-wrap {
+  position: relative;
+  display: flex;
+}
+
+.coll-wrap > .coll-card {
+  flex: 1;
+  min-width: 0;
+}
+
+.kb-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.kb-more {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition:
+    background-color 130ms ease,
+    color 130ms ease,
+    opacity 140ms ease;
+}
+
+.kb-more:hover,
+.kb-menu.is-open .kb-more {
+  background: var(--hover-06);
+  color: var(--text-strong);
+}
+
+.kb-more svg {
+  display: block;
+}
+
+/* no card: canto do topo colorido, aparece no hover */
+.coll-menu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+}
+
+.coll-menu .kb-more {
+  background: rgba(255, 255, 255, 0.82);
+  color: #3d3d3d;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+}
+
+.coll-wrap:hover .coll-menu .kb-more,
+.coll-menu.is-open .kb-more,
+.coll-menu .kb-more:focus-visible {
+  opacity: 1;
+}
+
+.coll-menu .kb-more:hover,
+.coll-menu.is-open .kb-more {
+  background: #fff;
+  color: #1c1c1c;
+}
+
+.task-menu.kb-menu-list {
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 228px;
+}
+
+.kb-menu-list .task-menu-item {
+  white-space: nowrap;
+}
+
+/* no cabeçalho da base: ao lado do título */
+.cd-kb-menu {
+  margin-left: 4px;
+}
+
+/* ============ "..." de um arquivo/pasta ============ */
+.file-act.is-open {
+  background: var(--hover-06);
+}
+
+.task-menu.lib-row-menu {
+  position: fixed;
+  left: auto;
+  z-index: 260;
+  min-width: 232px;
+  overflow: visible;
+  transform-origin: top right;
+}
+
+.task-menu.lib-row-menu.is-up {
+  transform-origin: bottom right;
+}
+
+.lib-row-menu .task-menu-item {
+  white-space: nowrap;
+}
+
+/* cascata ao lado (à esquerda quando não cabe à direita) */
+.task-menu.lib-row-sub {
+  position: absolute;
+  top: -7px;
+  right: auto;
+  bottom: auto;
+  left: calc(100% + 6px);
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  transform-origin: top left;
+}
+
+.lib-row-menu.is-up .lib-row-sub {
+  top: auto;
+  bottom: -7px;
+  transform-origin: bottom left;
+}
+
+.lib-row-menu.is-flip .lib-row-sub {
+  left: auto;
+  right: calc(100% + 6px);
+  transform-origin: top right;
+}
+
+.lib-row-empty {
+  display: block;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+/* renomear na própria linha/card (mesmo visual do histórico) */
+.lib-rename {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  margin-left: -7px;
+  padding: 0 6px;
+  border: 1px solid var(--text-strong);
+  border-radius: 7px;
+  outline: none;
+  background: var(--pop-surface);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-strong);
+  box-shadow: 0 0 0 3px var(--hover-05);
+}
+
+.file-card-text .lib-rename {
+  height: 26px;
+  font-size: 13.5px;
+}

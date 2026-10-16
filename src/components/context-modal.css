@@ -331,3 +331,8 @@
     animation: none;
   }
 }
+
+/* Contexto: altura fixa (a busca e os filtros não mudam o tamanho do modal) */
+.ctx-modal--context {
+  height: min(88vh, 860px);
+}

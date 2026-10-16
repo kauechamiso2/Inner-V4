@@ -17,7 +17,7 @@ const SEGMENTS = [
   'Produto',
 ]
 
-const SEGMENT_COLOR: Record<string, string> = {
+export const SEGMENT_COLOR: Record<string, string> = {
   Marketing: '#F0603A',
   Vendas: '#1F7A4D',
   Atendimento: '#8B5CF6',
@@ -28,9 +28,9 @@ const SEGMENT_COLOR: Record<string, string> = {
   Produto: '#6E62E5',
 }
 
-type Assistant = { id: string; name: string; desc: string; segment: string }
+export type Assistant = { id: string; name: string; desc: string; segment: string }
 
-const ASSISTANTS: Assistant[] = [
+export const ASSISTANTS: Assistant[] = [
   { id: 'a1', name: 'Estrategista de Marketing', desc: 'Monta estratégias e planos de marketing completos.', segment: 'Marketing' },
   { id: 'a2', name: 'Gerador de Campanhas', desc: 'Cria campanhas multicanal do briefing ao criativo.', segment: 'Marketing' },
   { id: 'a3', name: 'Analista de SEO', desc: 'Audita páginas e sugere melhorias de ranqueamento.', segment: 'Marketing' },
@@ -80,7 +80,7 @@ const avatarModules = import.meta.glob('../assets/assistants/*.png', {
   eager: true,
   import: 'default',
 }) as Record<string, string>
-const ASSISTANT_AVATAR: Record<string, string> = {}
+export const ASSISTANT_AVATAR: Record<string, string> = {}
 for (const [path, url] of Object.entries(avatarModules)) {
   const id = path.match(/\/(a\d+)\.png$/)?.[1]
   if (id) ASSISTANT_AVATAR[id] = url

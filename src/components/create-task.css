@@ -131,7 +131,7 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  border: 1.5px solid var(--sb-border);
+  border: 1.5px solid var(--text-ghost);
   border-radius: 50%;
   transition:
     border-color 160ms ease,
@@ -203,3 +203,30 @@
   }
 }
 .et-field > .ct-box { margin-top: 0; }
+
+/* Frequência | Horário | Repetir (a cada N) na mesma linha */
+.et-row.ct-row3 {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+}
+
+.ct-row3 .ct-every {
+  height: 44px;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.ct-row3 .ct-every-input {
+  width: 58px;
+  padding: 0 10px;
+}
+
+/* rodapé só com a ação principal (fechar é pelo X) */
+.ct-modal .et-foot {
+  justify-content: flex-end;
+}
+
+@media (max-width: 560px) {
+  .et-row.ct-row3 {
+    grid-template-columns: 1fr;
+  }
+}

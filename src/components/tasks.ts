@@ -60,18 +60,6 @@ export const ACTIVE_TASKS: Task[] = [
     description:
       'Resume os e-mails importantes recebidos e destaca o que precisa de ação ou resposta rápida.',
   },
-  {
-    id: 'vendas',
-    name: 'Relatório de vendas Q4',
-    emoji: '📊',
-    color: '#1F7A4D',
-    recurring: false,
-    schedule: 'Execução única',
-    next: '20 out, 09:00',
-    last: null,
-    description:
-      'Gera o relatório consolidado de vendas do Q4 com os principais indicadores e comparativos.',
-  },
 ]
 
 export const INACTIVE_TASKS: Task[] = [
@@ -86,6 +74,6 @@ export const INACTIVE_TASKS: Task[] = [
     last: 'há 2 dias',
     description:
       'Monitora os preços dos concorrentes e alerta sobre mudanças relevantes no mercado.',
-    status: 'Pausada',
+    status: 'Pausado',
   },
 ]

@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { CSSProperties } from 'react'
-import { Check, Copy, Download, Images, Pencil, X } from 'lucide-react'
+import { ArrowUp, Check, Copy, Download, Images, Mic, Pencil, Square, X } from 'lucide-react'
 import './image-modal.css'
 
 export type ModalImg = {
@@ -37,8 +37,66 @@ type Props = {
   onUseAsBase: () => void
 }
 
+/* ditado simulado (protótipo): o que o "microfone" transcreve */
+const DICTATION = 'Deixe o céu ao entardecer, com tons de laranja e rosa'
+
 export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props) {
   const [copied, setCopied] = useState(false)
+  /* "Editar": o botão vira um input (texto ou voz) no mesmo lugar */
+  const [edit, setEdit] = useState<'idle' | 'open' | 'running' | 'done'>('idle')
+  const [editText, setEditText] = useState('')
+  const [listening, setListening] = useState(false)
+  const [editW, setEditW] = useState(560)
+  const editRef = useRef<HTMLDivElement>(null)
+  const editInputRef = useRef<HTMLInputElement>(null)
+  const timers = useRef<number[]>([])
+  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), [])
+  const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms))
+  const openEdit = () => {
+    /* largura do input: a da imagem, entre 360 e 600px */
+    const imgW = editRef.current?.parentElement?.querySelector('.imm-img')?.getBoundingClientRect().width ?? 560
+    setEditW(Math.max(360, Math.min(600, imgW)))
+    setEdit('open')
+    later(() => editInputRef.current?.focus(), 220)
+  }
+  const closeEdit = () => {
+    setListening(false)
+    setEdit('idle')
+  }
+  const toggleMic = () => {
+    if (listening) {
+      setListening(false)
+      return
+    }
+    setListening(true)
+    setEditText('')
+    /* "transcreve" palavra por palavra e para sozinho */
+    const words = DICTATION.split(' ')
+    words.forEach((_, i) => later(() => setEditText(words.slice(0, i + 1).join(' ')), 700 + i * 170))
+    later(() => {
+      setListening(false)
+      editInputRef.current?.focus()
+    }, 700 + words.length * 170 + 250)
+  }
+  const sendEdit = () => {
+    if (!editText.trim()) return
+    setListening(false)
+    setEdit('running')
+    later(() => setEdit('done'), 3400)
+    later(() => {
+      setEdit('idle')
+      setEditText('')
+    }, 3400 + 2200)
+  }
+  /* clique fora com o input vazio: volta a ser o botão */
+  useEffect(() => {
+    if (edit !== 'open') return
+    const onDown = (e: PointerEvent) => {
+      if (!editRef.current?.contains(e.target as Node) && !editText.trim() && !listening) closeEdit()
+    }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [edit, editText, listening])
   /* o modal abre à direita da sidebar, deixando-a aparente */
   const [leftOffset, setLeftOffset] = useState(0)
 
@@ -54,7 +112,14 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key !== 'Escape') return
+      /* com o input de edição aberto, o Esc fecha só ele */
+      if (document.querySelector('.imm-edit.is-open')) {
+        setListening(false)
+        setEdit('idle')
+        return
+      }
+      onClose()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
@@ -144,11 +209,91 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
             <X size={18} strokeWidth={2.2} />
           </button>
           <div className="imm-stage-inner">
-            <img className="imm-img" src={img.src} alt={img.prompt} />
-            <button type="button" className="imm-edit">
-              <Pencil size={15} strokeWidth={2} />
-              Editar
-            </button>
+            {/* imagem + gradiente de geração por cima enquanto a edição roda */}
+            <div className={`imm-img-wrap${edit === 'running' ? ' is-running' : ''}${edit === 'done' ? ' is-done' : ''}`}>
+              <img className="imm-img" src={img.src} alt={img.prompt} />
+              <span className="imm-gen" aria-hidden="true">
+                <span className="imm-gen-label">Editando imagem</span>
+              </span>
+              {edit === 'done' && (
+                <span className="imm-done" role="status">
+                  <Check size={14} strokeWidth={2.6} />
+                  Edição pronta
+                </span>
+              )}
+            </div>
+
+            {/* "Editar" → input: o mesmo elemento muda de tamanho e troca o conteúdo */}
+            <div
+              ref={editRef}
+              className={`imm-edit${edit === 'open' ? ' is-open' : ''}${edit === 'running' ? ' is-busy' : ''}`}
+              style={{ '--edit-w': `${editW}px` } as CSSProperties}
+            >
+              <button
+                type="button"
+                className="imm-edit-btn"
+                onClick={openEdit}
+                disabled={edit !== 'idle' && edit !== 'done'}
+                tabIndex={edit === 'open' ? -1 : 0}
+                aria-hidden={edit === 'open'}
+              >
+                {edit === 'running' ? (
+                  <>
+                    <span className="imm-edit-spin" aria-hidden="true" />
+                    Editando...
+                  </>
+                ) : (
+                  <>
+                    <Pencil size={15} strokeWidth={2} />
+                    Editar
+                  </>
+                )}
+              </button>
+              <form
+                className="imm-edit-field"
+                aria-hidden={edit !== 'open'}
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  sendEdit()
+                }}
+              >
+                <input
+                  ref={editInputRef}
+                  className="imm-edit-input"
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  placeholder={listening ? 'Ouvindo...' : 'Descreva a edição que você quer'}
+                  tabIndex={edit === 'open' ? 0 : -1}
+                  spellCheck={false}
+                  aria-label="Comando de edição"
+                />
+                {listening && (
+                  <span className="imm-wave" aria-hidden="true">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <span key={i} style={{ '--i': i } as CSSProperties} />
+                    ))}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  className={`imm-edit-mic${listening ? ' is-on' : ''}`}
+                  aria-label={listening ? 'Parar de ouvir' : 'Falar o comando'}
+                  aria-pressed={listening}
+                  tabIndex={edit === 'open' ? 0 : -1}
+                  onClick={toggleMic}
+                >
+                  {listening ? <Square size={12} strokeWidth={0} fill="currentColor" /> : <Mic size={17} strokeWidth={1.9} />}
+                </button>
+                <button
+                  type="submit"
+                  className={`imm-edit-send${editText.trim() && !listening ? ' is-on' : ''}`}
+                  aria-label="Editar imagem"
+                  tabIndex={editText.trim() && edit === 'open' ? 0 : -1}
+                >
+                  <ArrowUp size={17} strokeWidth={2.4} />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>

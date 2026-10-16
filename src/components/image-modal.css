@@ -203,7 +203,7 @@
   gap: 8px;
   height: 44px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 999px;
   background: var(--voice-bg);
   color: var(--voice-fg);
   font-family: inherit;
@@ -234,7 +234,7 @@
   gap: 7px;
   height: 42px;
   border: 1px solid var(--sb-border);
-  border-radius: 12px;
+  border-radius: 999px;
   background: var(--pop-surface);
   font-family: inherit;
   font-size: 14px;
@@ -279,7 +279,7 @@
   width: 34px;
   height: 34px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.68);
   color: #1c1c1c;
   cursor: pointer;
@@ -320,33 +320,384 @@
   box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.3);
 }
 
+/* ---------- "Editar" → input de edição (mesmo elemento, morph fluido) ---------- */
 .imm-edit {
+  position: relative;
   flex-shrink: 0;
-  display: inline-flex;
+  width: 112px;
+  height: 42px;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--sb-border);
+  border-radius: 999px;
+  background: var(--pop-surface);
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.12);
+  transition:
+    width 460ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 460ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 200ms ease,
+    box-shadow 300ms ease;
+}
+
+.imm-edit:hover:not(.is-open):not(.is-busy) {
+  border-color: var(--card-border-hover);
+}
+
+.imm-edit.is-busy {
+  width: 148px;
+}
+
+.imm-edit.is-open {
+  width: var(--edit-w, 560px);
+  height: 54px;
+  border-color: var(--card-border-hover);
+  box-shadow:
+    0 0 0 4px var(--hover-04),
+    0 18px 40px -16px rgba(0, 0, 0, 0.25);
+}
+
+/* rótulo "Editar" (estado botão) */
+.imm-edit-btn {
+  position: absolute;
+  inset: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  height: 42px;
-  padding: 0 22px;
-  border: 1px solid var(--sb-border);
-  border-radius: 12px;
-  background: var(--pop-surface);
+  padding: 0;
+  border: 0;
+  background: transparent;
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-strong);
+  white-space: nowrap;
   cursor: pointer;
-  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.12);
-  transition: background-color 150ms ease, border-color 150ms ease;
+  transition:
+    opacity 180ms ease,
+    background-color 150ms ease;
 }
 
-.imm-edit:hover {
+.imm-edit-btn:hover:not(:disabled) {
   background: var(--hover-04);
-  border-color: var(--card-border-hover);
 }
 
-.imm-edit svg {
+.imm-edit-btn:disabled {
+  cursor: default;
+}
+
+.imm-edit-btn svg {
   display: block;
+}
+
+.imm-edit.is-open .imm-edit-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.imm-edit-spin {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--hover-07);
+  border-top-color: var(--text-strong);
+  border-radius: 50%;
+  animation: imm-spin 800ms linear infinite;
+}
+
+@keyframes imm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* campo (estado input): aparece quando o morph já começou */
+.imm-edit-field {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 22px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.imm-edit.is-open .imm-edit-field {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 260ms ease 160ms;
+}
+
+.imm-edit-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-strong);
+}
+
+.imm-edit-input::placeholder {
+  color: var(--text-faint);
+}
+
+/* microfone: vira um "parar" vermelho enquanto ouve */
+.imm-edit-mic {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 140ms ease;
+}
+
+.imm-edit-mic:hover {
+  background: var(--hover-05);
+  color: var(--text-strong);
+}
+
+.imm-edit-mic.is-on {
+  background: #e5484d;
+  color: #fff;
+  animation: imm-mic-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes imm-mic-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(229, 72, 77, 0);
+  }
+}
+
+/* ondas enquanto ouve */
+.imm-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  margin-right: 4px;
+}
+
+.imm-wave span {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: #e5484d;
+  transform-origin: center;
+  animation: imm-wave 900ms ease-in-out infinite;
+  animation-delay: calc(var(--i) * 110ms);
+}
+
+@keyframes imm-wave {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* enviar: só aparece com texto (cresce no lugar) */
+.imm-edit-send {
+  display: grid;
+  place-items: center;
+  width: 0;
+  height: 38px;
+  flex-shrink: 0;
+  margin-left: -4px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--voice-bg);
+  color: var(--voice-fg);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    width 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    margin 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease,
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.imm-edit-send.is-on {
+  width: 38px;
+  margin-left: 2px;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.imm-edit-send:active {
+  transform: scale(0.92);
+}
+
+/* ---------- imagem + gradiente de geração enquanto edita ---------- */
+.imm-img-wrap {
+  position: relative;
+  display: flex;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+.imm-img-wrap .imm-img {
+  max-height: 100%;
+  transition: filter 600ms ease;
+}
+
+/* editando: a imagem fica levemente desfocada por baixo do gradiente */
+.imm-img-wrap.is-running .imm-img {
+  filter: blur(6px) saturate(1.1);
+  /* o desfoque não vaza para fora dos cantos */
+  clip-path: inset(0 round 12px);
+}
+
+.imm-gen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 18px;
+  overflow: hidden;
+  border-radius: 12px;
+  isolation: isolate;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms ease;
+}
+
+.imm-img-wrap.is-running .imm-gen {
+  opacity: 1;
+}
+
+.imm-gen::before {
+  content: '';
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+  background:
+    radial-gradient(38% 42% at 30% 36%, rgba(154, 107, 255, 0.75), transparent 70%),
+    radial-gradient(36% 40% at 70% 64%, rgba(91, 140, 255, 0.7), transparent 70%),
+    radial-gradient(30% 34% at 64% 28%, rgba(255, 121, 192, 0.6), transparent 70%);
+  filter: blur(30px);
+  opacity: 0.85;
+  animation: imm-aurora 6s ease-in-out infinite;
+}
+
+.imm-gen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.28) 50%, transparent 62%);
+  transform: translateX(-100%);
+  animation: imm-sheen 2.6s ease-in-out infinite;
+}
+
+@keyframes imm-aurora {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes imm-sheen {
+  0% {
+    transform: translateX(-100%);
+  }
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.imm-gen-label {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 30px;
+  color: #fff;
+}
+
+/* fim da edição: imagem "revela" e um selo confirma */
+.imm-img-wrap.is-done .imm-img {
+  animation: imm-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes imm-reveal {
+  from {
+    filter: blur(10px) saturate(1.4);
+    transform: scale(0.985);
+  }
+}
+
+.imm-done {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  animation: imm-done-in 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes imm-done-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-edit,
+  .imm-edit-send {
+    transition: none;
+  }
+
+  .imm-gen::before,
+  .imm-gen::after,
+  .imm-wave span,
+  .imm-edit-mic.is-on {
+    animation: none;
+  }
 }
 
 /* responsivo: empilha em telas estreitas */

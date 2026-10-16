@@ -1,4 +1,10 @@
 import TutorialEmpty, { ProjectsArt } from './TutorialEmpty'
+import SearchToggle, { SearchEmpty, normSearch } from './SearchToggle'
+import NewProjectModal from './NewProjectModal'
+import { ProjectGlyph } from './projectIcons'
+import type { ChatEdit } from './HistoryPanel'
+import { addProject, patchProject, projectStore } from './projectStore'
+import type { ProjectPatch } from './projectStore'
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import './images-page.css'
@@ -14,8 +20,14 @@ type Collection = {
   description: string
   createdAt: string
   emoji?: string
+  /* ícone escolhido no "Novo projeto" (no lugar do emoji) */
+  icon?: string
   color: string
+  /* só nos projetos criados pelo usuário: começam vazios */
+  custom?: { instructions: string; files: string[] }
 }
+
+/* projetos criados e edições ficam no projectStore (compartilhado com o histórico da Home) */
 
 /* Os dois projetos reais do protótipo (antes ficavam na Biblioteca) */
 const COLLECTIONS: Collection[] = [
@@ -42,6 +54,15 @@ export default function ProjectsPage({
   togglePin,
   agent = null,
   empty = false,
+  initialOpenId = null,
+  chatEdits,
+  movedChats = [],
+  onOpenChat,
+  onStartProjectChat,
+  onChatMenu,
+  menuKey = null,
+  renamingKey = null,
+  onRenameDone,
 }: {
   isPinned: (kind: 'chat' | 'project', id: string) => boolean
   togglePin: (kind: 'chat' | 'project', id: string) => void
@@ -49,28 +70,99 @@ export default function ProjectsPage({
   agent?: ChosenAgent | null
   /* protótipo: alterna para o estado vazio (sem projetos) */
   empty?: boolean
+  /* abre direto num projeto (ex.: trilha de um chat do projeto) */
+  initialOpenId?: string | null
+  /* chats do histórico: edições e os movidos para cada projeto */
+  chatEdits?: Record<string, ChatEdit>
+  movedChats?: { key: string; title: string; projectId: string }[]
+  onOpenChat?: (key: string, title: string, projectId: string) => void
+  /* primeira mensagem enviada dentro do projeto */
+  onStartProjectChat?: (projectId: string, text: string) => void
+  /* "..." dos chats do projeto */
+  onChatMenu?: (key: string, title: string, rect: DOMRect, projectId: string) => void
+  menuKey?: string | null
+  renamingKey?: string | null
+  onRenameDone?: (key: string, title: string | null) => void
 }) {
-  const [openCollection, setOpenCollection] = useState<string | null>(null)
+  /* projeto aberto (por id: o nome pode mudar nas Configurações) */
+  const [openCollection, setOpenCollection] = useState<string | null>(initialOpenId ?? null)
+  const [patches, setPatches] = useState<Record<string, ProjectPatch>>(projectStore.patches)
+  const applyPatch = (c: Collection): Collection => {
+    const p = patches[c.id]
+    if (!p) return c
+    return {
+      ...c,
+      name: p.name ?? c.name,
+      description: p.description ?? c.description,
+      icon: p.icon ?? c.icon,
+      color: p.color ?? c.color,
+      custom: c.custom && p.instructions !== undefined ? { ...c.custom, instructions: p.instructions } : c.custom,
+    }
+  }
+  const updateProject = (id: string, patch: ProjectPatch) => {
+    patchProject(id, patch)
+    setPatches(projectStore.patches)
+  }
   const [view] = useState<'grid' | 'list'>('grid')
+  const [created, setCreated] = useState<Collection[]>(projectStore.created)
+  const [newOpen, setNewOpen] = useState(false)
+  const [query, setQuery] = useState('')
 
   if (openCollection) {
-    const coll = COLLECTIONS.find((c) => c.name === openCollection)
+    const coll0 = [...created, ...COLLECTIONS].find((c) => c.id === openCollection)
+    const coll = coll0 ? applyPatch(coll0) : undefined
     const projectId = coll?.id ?? openCollection
     return (
       <ProjectHome
-        name={openCollection}
+        key={projectId}
+        name={coll?.name ?? openCollection}
+        custom={coll?.custom ?? null}
+        description={coll?.description ?? ''}
+        onUpdateProject={(patch) => updateProject(projectId, patch)}
         emoji={coll?.emoji}
+        icon={coll?.icon}
         color={coll?.color}
         projectId={projectId}
         pinned={isPinned('project', projectId)}
         onTogglePin={() => togglePin('project', projectId)}
         onBack={() => setOpenCollection(null)}
         agent={agent}
+        chatEdits={chatEdits}
+        movedChats={movedChats.filter((c) => c.projectId === projectId)}
+        onOpenChat={(key, title) => onOpenChat?.(key, title, projectId)}
+        onStartChat={(text) => onStartProjectChat?.(projectId, text)}
+        onChatMenu={(key, title, rect) => onChatMenu?.(key, title, rect, projectId)}
+        isChatPinned={(key) => isPinned('chat', key)}
+        renamingKey={renamingKey}
+        onRenameDone={onRenameDone}
+        menuKey={menuKey}
       />
     )
   }
 
-  const list = COLLECTIONS
+  const nq = normSearch(query)
+  const list = [...created, ...COLLECTIONS].map(applyPatch).filter(
+    (c) => !nq || normSearch(`${c.name} ${c.description}`).includes(nq),
+  )
+  const newProjectModal = newOpen && (
+    <NewProjectModal
+      onClose={() => setNewOpen(false)}
+      onCreate={(p) => {
+        const c: Collection = {
+          id: `proj-${Date.now()}`,
+          name: p.name,
+          description: p.description,
+          createdAt: 'Criado agora',
+          icon: p.icon,
+          color: p.color,
+          custom: { instructions: p.instructions, files: p.files },
+        }
+        addProject(c)
+        setCreated(projectStore.created)
+        setOpenCollection(c.id)
+      }}
+    />
+  )
 
   const open = (name: string) => setOpenCollection(name)
 
@@ -88,11 +180,11 @@ export default function ProjectsPage({
             background: `linear-gradient(165deg, color-mix(in srgb, ${c.color} 16%, var(--pop-surface)) 0%, var(--pop-surface) 46%)`,
           } as CSSProperties
         }
-        onClick={() => open(c.name)}
+        onClick={() => open(c.id)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
-            open(c.name)
+            open(c.id)
           }
         }}
       >
@@ -113,7 +205,11 @@ export default function ProjectsPage({
         </button>
         <span className="proj-head">
           <span className="proj-ico" style={{ background: c.color }}>
-            <span className="coll-emoji">{c.emoji}</span>
+            {c.icon ? (
+              <ProjectGlyph icon={c.icon} size={22} />
+            ) : (
+              <span className="coll-emoji">{c.emoji}</span>
+            )}
           </span>
           <span className="coll-name">{c.name}</span>
         </span>
@@ -137,7 +233,7 @@ export default function ProjectsPage({
               { strong: 'Converse dentro do projeto', rest: 'e o agente já responde com tudo isso em mente.' },
             ]}
             cta={
-              <button type="button" className="lib-new-cta te-tutorial-cta">
+              <button type="button" className="lib-new-cta te-tutorial-cta" onClick={() => setNewOpen(true)}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
@@ -149,6 +245,7 @@ export default function ProjectsPage({
             art={<ProjectsArt />}
           />
         </div>
+        {newProjectModal}
       </main>
     )
   }
@@ -165,30 +262,8 @@ export default function ProjectsPage({
               <h2>Meus Projetos</h2>
             </div>
             <div className="lib-files-actions">
-              <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <path
-                    d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
-                    stroke="#3D3D3D"
-                    strokeWidth="1.125"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                  Filtrar
-                </span>
-              </button>
-              <button className="lib-new is-ghost" type="button" aria-label="Buscar">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <circle cx="8.2" cy="8.2" r="5" stroke="#3D3D3D" strokeWidth="1.2" />
-                  <path d="M12 12l3.4 3.4" stroke="#3D3D3D" strokeWidth="1.2" strokeLinecap="round" />
-                </svg>
-                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                  Buscar
-                </span>
-              </button>
-              <button className="lib-new-cta" type="button">
+              <SearchToggle value={query} onChange={setQuery} placeholder="Buscar projetos" />
+              <button className="lib-new-cta" type="button" onClick={() => setNewOpen(true)}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M8 3.1v9.8M3.1 8h9.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
@@ -197,7 +272,9 @@ export default function ProjectsPage({
             </div>
           </div>
 
-          {view === 'grid' ? (
+          {nq && list.length === 0 ? (
+            <SearchEmpty query={query} />
+          ) : view === 'grid' ? (
             <div className="lib-collections pjp-grid">
               {list.map((c, i) => renderCard(c, i))}
             </div>
@@ -211,11 +288,11 @@ export default function ProjectsPage({
                     role="button"
                     tabIndex={0}
                     key={c.name}
-                    onClick={() => open(c.name)}
+                    onClick={() => open(c.id)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()
-                        open(c.name)
+                        open(c.id)
                       }
                     }}
                   >
@@ -223,7 +300,11 @@ export default function ProjectsPage({
                       className="pjp-row-icon"
                       style={{ background: `color-mix(in srgb, ${c.color} 16%, var(--card-surface))` }}
                     >
-                      <span className="pjp-row-emoji">{c.emoji}</span>
+                      {c.icon ? (
+                        <ProjectGlyph icon={c.icon} size={18} />
+                      ) : (
+                        <span className="pjp-row-emoji">{c.emoji}</span>
+                      )}
                     </span>
                     <span className="pjp-row-main">
                       <span className="pjp-row-name">{c.name}</span>
@@ -251,24 +332,8 @@ export default function ProjectsPage({
             </div>
           )}
         </section>
-
-        {/* Compartilhados com você */}
-        <section className="lib-section">
-          <div className="lib-section-head">
-            <div className="lib-section-title">
-              <h2>Compartilhados com você</h2>
-            </div>
-          </div>
-
-          <div className="lib-coll-empty">
-            <span className="lib-coll-empty-emoji" aria-hidden="true">🤝</span>
-            <p className="lib-coll-empty-title">Nada compartilhado ainda</p>
-            <p className="lib-coll-empty-sub">
-              Projetos que colegas compartilharem com você aparecem aqui.
-            </p>
-          </div>
-        </section>
       </div>
+      {newProjectModal}
     </main>
   )
 }

@@ -1,29 +1,24 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import {
   ArrowLeft,
   ArrowUpRight,
   Bell,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   Clock,
   Loader2,
+  Pause,
   Play,
   Settings2,
   Zap,
 } from 'lucide-react'
 import { AgendadoIcon } from './SidebarIcons'
 import CreateTaskModal from './CreateTaskModal'
+import Dropdown from './Dropdown'
+import type { Run } from './runSummaries'
 import type { Task } from './tasks'
 import './task-page.css'
-
-type Run = {
-  id: string
-  when: string
-  status: 'done' | 'running'
-  origin: 'scheduled' | 'manual'
-}
 
 const TZ_LABEL: Record<string, string> = {
   'America/Sao_Paulo': 'São Paulo',
@@ -33,50 +28,35 @@ const TZ_LABEL: Record<string, string> = {
   UTC: 'UTC',
 }
 
-/* histórico de exemplo: tarefas que já rodaram têm 3 execuções concluídas */
-function seedRuns(task: Task): Run[] {
-  if (!task.last) return []
-  const time = task.schedule.match(/\d{1,2}:\d{2}/)?.[0] ?? '09:00'
-  return ['12 de out.', '05 de out.', '28 de set.'].map((d, i) => ({
-    id: `${task.id}-run-${i}`,
-    when: `${d}, ${time}`,
-    status: 'done',
-    origin: 'scheduled',
-  }))
-}
-
 /* Página da tarefa (Agendado > clicar numa tarefa). Pelo chat, a tarefa
    continua abrindo no drawer. */
 export default function TaskPage({
   task,
   onBack,
   onSave,
+  onTogglePause,
+  onOpenRun,
+  runs,
+  onRunNow,
 }: {
+  /* histórico de execuções (fica na página de Loops: o "Executar agora" do card também entra aqui) */
+  runs: Run[]
+  /* "Executar agora": entra no topo como "Executando" e conclui em seguida */
+  onRunNow: () => void
   task: Task
   onBack: () => void
   onSave: (task: Task) => void
+  /* Pausar/Retomar: a tarefa muda de seção na lista de Loops */
+  onTogglePause?: () => void
+  /* clicar numa execução: abre o drawer da tarefa com o resumo dela */
+  onOpenRun?: (run: Run) => void
 }) {
   const [editOpen, setEditOpen] = useState(false)
-  const [runs, setRuns] = useState<Run[]>(() => seedRuns(task))
   const [filter, setFilter] = useState('all')
-  const timers = useRef<number[]>([])
-  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), [])
 
   const inactive = !!task.status
   const tz = TZ_LABEL[task.timezone ?? 'America/Sao_Paulo'] ?? 'São Paulo'
   const whatsapp = task.notify === 'whatsapp'
-
-  /* "Executar agora": entra no topo como "Executando" e conclui em seguida */
-  const runNow = () => {
-    const id = `run-${Date.now()}`
-    setRuns((r) => [{ id, when: 'Agora', status: 'running', origin: 'manual' }, ...r])
-    timers.current.push(
-      window.setTimeout(
-        () => setRuns((r) => r.map((x) => (x.id === id ? { ...x, status: 'done' } : x))),
-        2600,
-      ),
-    )
-  }
 
   const shown = runs.filter((r) =>
     filter === 'all' ? true : filter === 'manual' ? r.origin === 'manual' : r.origin === 'scheduled',
@@ -105,7 +85,7 @@ export default function TaskPage({
           <div className="tp-meta">
             <span className={`tp-status${inactive ? ' is-off' : ''}`}>
               <span className="tp-status-dot" aria-hidden="true" />
-              {inactive ? task.status : 'Ativa'}
+              {inactive ? task.status : 'Ativo'}
             </span>
 
           </div>
@@ -116,7 +96,15 @@ export default function TaskPage({
             <Settings2 size={16} strokeWidth={1.9} />
             Configurações
           </button>
-          <button type="button" className="tp-btn is-primary" onClick={runNow}>
+          <button type="button" className="tp-btn" onClick={onTogglePause}>
+            {inactive ? (
+              <Play size={14} strokeWidth={1.9} />
+            ) : (
+              <Pause size={15} strokeWidth={1.9} />
+            )}
+            {inactive ? 'Retomar' : 'Pausar'}
+          </button>
+          <button type="button" className="tp-btn is-primary" onClick={onRunNow}>
             <Play size={14} strokeWidth={0} fill="currentColor" />
             Executar agora
           </button>
@@ -177,12 +165,18 @@ export default function TaskPage({
             </p>
           </div>
           <div className="tp-filter">
-            <select value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filtrar execuções">
-              <option value="all">Todas as execuções</option>
-              <option value="scheduled">Agendadas</option>
-              <option value="manual">Manuais</option>
-            </select>
-            <ChevronDown size={15} strokeWidth={2} aria-hidden="true" />
+            <Dropdown
+              size="sm"
+              value={filter}
+              onChange={setFilter}
+              ariaLabel="Filtrar execuções"
+              menuWidth={200}
+              options={[
+                { value: 'all', label: 'Todas as execuções' },
+                { value: 'scheduled', label: 'Agendadas', icon: <AgendadoIcon size={15} /> },
+                { value: 'manual', label: 'Manuais', icon: <Play size={13} strokeWidth={1.9} /> },
+              ]}
+            />
           </div>
         </div>
 
@@ -200,6 +194,7 @@ export default function TaskPage({
                 className={`tp-tr tp-row${r.status === 'running' ? ' is-running' : ''}`}
                 role="row"
                 key={r.id}
+                onClick={() => onOpenRun?.(r)}
                 style={{ '--i': i } as CSSProperties}
               >
                 <span className="tp-run" role="cell">

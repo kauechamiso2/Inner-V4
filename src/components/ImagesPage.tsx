@@ -4,6 +4,10 @@ import type { CSSProperties } from 'react'
 import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react'
 import './images-page.css'
 import ImagePromptBar from './ImagePromptBar'
+import GenFilters, { EMPTY_GEN_FILTERS, TODAY, daysAgo, inRange, rangeLabel } from './GenFilters'
+import type { GenFilterState } from './GenFilters'
+import { IMAGE_MODELS, IMAGE_MODEL_BY_ID, getImageSettings } from './imageModels'
+import { ImageModelLogo } from './ImageModelPicker'
 import type { BaseAttachment } from './ImagePromptBar'
 import ToolDrawer from './ToolDrawer'
 import ImageModal from './ImageModal'
@@ -170,6 +174,8 @@ type MasonryImg = {
   cat?: string
   /* imagens usadas como base nesta geração */
   bases?: string[]
+  /* dia da geração (filtro de período das Minhas gerações) */
+  date?: Date
 }
 
 /* categorias do Explorar: filtram o grid orgânico */
@@ -386,6 +392,8 @@ export default function ImagesPage() {
   const [generating, setGenerating] = useState(false)
   /* geração em andamento: linha de skeletons no topo das Gerações */
   const [running, setRunning] = useState(false)
+  /* quantas imagens a geração em andamento vai trazer (skeletons) */
+  const [runCount, setRunCount] = useState(4)
   const [genPrompt, setGenPrompt] = useState('')
   const genTimerRef = useRef<number | null>(null)
   const genCountRef = useRef(0)
@@ -399,9 +407,30 @@ export default function ImagesPage() {
         ar: 16 / 9,
         prompt: batch.prompt,
         model: batch.model,
+        /* gerações de exemplo espalhadas no tempo: hoje, ontem, 4, 12 e 40 dias */
+        date: daysAgo([0, 1, 4, 12, 40][b] ?? 0),
       })),
     ),
   )
+  /* filtros das Minhas gerações: período e modelos */
+  const [genFilters, setGenFilters] = useState<GenFilterState>(EMPTY_GEN_FILTERS)
+  const [filterAnchor, setFilterAnchor] = useState<HTMLElement | null>(null)
+  const usedModels = [...new Set(generated.map((m) => m.model))]
+  const shownGens = generated.filter(
+    (m) =>
+      inRange(m.date ?? TODAY, genFilters.range) &&
+      (genFilters.models.length === 0 || genFilters.models.includes(m.model)),
+  )
+  const filterCount = (genFilters.range.kind !== 'all' ? 1 : 0) + genFilters.models.length
+  const toggleFilter = (e: React.MouseEvent<HTMLElement>) => {
+    const el = e.currentTarget
+    setFilterAnchor((a) => (a === el ? null : el))
+  }
+
+  /* "Usar de base" com uma ferramenta aberta: a imagem vai para o campo de
+     imagem do drawer (key muda a cada pedido) */
+  const [toolBase, setToolBase] = useState<{ src: string; key: number } | null>(null)
+
   /* ferramenta aberta (Remove Background, etc.): abre um drawer à esquerda */
   const [tool, setTool] = useState<Tool | null>(null)
   /* mantém o conteúdo do drawer durante a animação de fechar */
@@ -438,6 +467,16 @@ export default function ImagesPage() {
     wantFocusRef.current = true
     setBarFocusKey((k) => k + 1)
   }
+  /* "Usar de base": com o drawer de uma ferramenta aberto, preenche o campo de
+     imagem dele; no Image Generation, entra como base na barra */
+  const applyBase = (src: string) => {
+    if (tool) {
+      setToolBase({ src, key: Date.now() })
+      return
+    }
+    addBase(src)
+    focusBar()
+  }
   /* cabeçalho das Minhas gerações saiu de vista: voltar + filtro viram overlay fixo */
   const gensHeadRef = useRef<HTMLDivElement>(null)
   const [headOut, setHeadOut] = useState(false)
@@ -445,16 +484,20 @@ export default function ImagesPage() {
      Mantido até a troca de tela terminar, para o chevron não "piscar" ao fechar */
   const [fromTool, setFromTool] = useState(false)
   const openTool = (t: Tool) => {
+    /* ferramenta nova começa sem a base pedida para a anterior */
+    setToolBase(null)
     setFromTool(t.id !== 'image-generation')
     if (t.id !== 'image-generation') setTool(t)
     openGenerations()
     /* Image Generation: a barra já chega ativa e com o cursor no campo */
     if (t.id === 'image-generation') focusBar()
   }
-  const startGenerate = (prompt?: string) => {
+  /* opts: quantidade e modelo vindos do drawer de uma ferramenta */
+  const startGenerate = (prompt?: string, opts?: { count: number; model: string }) => {
     if (genTimerRef.current) window.clearTimeout(genTimerRef.current)
     const text = (prompt ?? promptValue).trim() || 'Geração de imagem'
     setGenPrompt(text)
+    setRunCount(opts?.count ?? promptCount)
     setRunning(true)
     /* as bases anexadas ficam registradas na geração (aparecem no detalhe) */
     const bases = attachments.map((a) => a.src)
@@ -465,13 +508,14 @@ export default function ImagesPage() {
     genTimerRef.current = window.setTimeout(() => {
       const n = genCountRef.current++
       setGenerated((prev) => [
-        ...GEN_RESULTS.map((src, i) => ({
+        ...GEN_RESULTS.slice(0, opts?.count ?? promptCount).map((src, i) => ({
           uid: `gen-${n}-${i}`,
           src,
           ar: 16 / 9,
           prompt: text,
-          model: 'Nano Banana 2',
+          model: opts?.model ?? IMAGE_MODEL_BY_ID[getImageSettings().model]?.name ?? 'Nano Banana 2',
           bases: bases.length ? bases : undefined,
+          date: TODAY,
         })),
         ...prev,
       ])
@@ -601,7 +645,8 @@ export default function ImagesPage() {
               tool={lastToolRef.current}
               /* gera com o drawer do template aberto: o resultado entra nas
                  Minhas gerações por trás, sem trocar para o Image Generation */
-              onGenerate={() => startGenerate(lastToolRef.current?.title)}
+              onGenerate={(opts) => startGenerate(lastToolRef.current?.title, opts)}
+              incomingBase={toolBase}
             />
           )}
         </div>
@@ -701,7 +746,13 @@ export default function ImagesPage() {
                     <h2 className="ip-section-title">Minhas gerações</h2>
                   </button>
                 )}
-                <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
+                <button
+                  className={`lib-new is-ghost ip-gens-filter${filterAnchor || filterCount ? ' is-on' : ''}`}
+                  type="button"
+                  aria-label="Filtrar"
+                  aria-expanded={!!filterAnchor}
+                  onClick={toggleFilter}
+                >
                   <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                     <path
                       d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
@@ -711,9 +762,12 @@ export default function ImagesPage() {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                    Filtrar
-                  </span>
+                  {filterCount > 0 && <span className="cd-filter-badge">{filterCount}</span>}
+                  {!filterAnchor && (
+                    <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                      Filtrar
+                    </span>
+                  )}
                 </button>
               </div>
               {/* ao rolar: voltar + filtro fixos, como overlay escuro sobre as fotos */}
@@ -731,9 +785,10 @@ export default function ImagesPage() {
                 )}
                 <button
                   type="button"
-                  className="ip-gen-float is-filter"
+                  className={`ip-gen-float is-filter${filterCount ? ' is-on' : ''}`}
                   aria-label="Filtrar"
                   tabIndex={headOut ? 0 : -1}
+                  onClick={toggleFilter}
                 >
                   <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                     <path
@@ -746,9 +801,64 @@ export default function ImagesPage() {
                   </svg>
                 </button>
               </div>
+              {/* filtros ativos: um selo por filtro, com "x" */}
+              {filterCount > 0 && (
+                <div className="gf-chips">
+                  {genFilters.range.kind !== 'all' && (
+                    <span className="gf-chip">
+                      {rangeLabel(genFilters.range)}
+                      <button
+                        type="button"
+                        className="gf-chip-x"
+                        aria-label="Tirar filtro de período"
+                        onClick={() => setGenFilters((f) => ({ ...f, range: { kind: 'all' } }))}
+                      >
+                        <X size={13} strokeWidth={2.4} />
+                      </button>
+                    </span>
+                  )}
+                  {genFilters.models.map((name) => {
+                    const m = IMAGE_MODELS.find((x) => x.name === name)
+                    return (
+                      <span className="gf-chip" key={name}>
+                        {m && <ImageModelLogo model={m} size={20} />}
+                        {name}
+                        <button
+                          type="button"
+                          className="gf-chip-x"
+                          aria-label={`Tirar filtro ${name}`}
+                          onClick={() => setGenFilters((f) => ({ ...f, models: f.models.filter((x) => x !== name) }))}
+                        >
+                          <X size={13} strokeWidth={2.4} />
+                        </button>
+                      </span>
+                    )
+                  })}
+                  <button type="button" className="gf-chips-clear" onClick={() => setGenFilters(EMPTY_GEN_FILTERS)}>
+                    Limpar
+                  </button>
+                </div>
+              )}
+              {filterAnchor && (
+                <GenFilters
+                  anchor={filterAnchor}
+                  value={genFilters}
+                  onChange={setGenFilters}
+                  onClose={() => setFilterAnchor(null)}
+                  usedModels={usedModels}
+                />
+              )}
+              {filterCount > 0 && shownGens.length === 0 && !running && (
+                <div className="gf-empty">
+                  <p>Nenhuma geração com esses filtros.</p>
+                  <button type="button" className="gf-chips-clear" onClick={() => setGenFilters(EMPTY_GEN_FILTERS)}>
+                    Limpar filtros
+                  </button>
+                </div>
+              )}
               {running && (
                 <div className="ip-gen-row" aria-label={`Gerando: ${genPrompt}`}>
-                  {[0, 1, 2, 3].map((i) => (
+                  {Array.from({ length: runCount }, (_, i) => i).map((i) => (
                     <div
                       className="ip-gen-skel"
                       key={i}
@@ -758,7 +868,7 @@ export default function ImagesPage() {
                   ))}
                 </div>
               )}
-              <div className="ip-gen-row">{generated.map((m: MasonryImg, i: number) => (
+              <div className="ip-gen-row">{shownGens.map((m: MasonryImg, i: number) => (
                 <figure
                   className="ip-gen-tile"
                   key={m.uid}
@@ -792,8 +902,7 @@ export default function ImagesPage() {
                           className="ip-mtile-use"
                           onClick={(e) => {
                             e.stopPropagation()
-                            addBase(m.src)
-                            focusBar()
+                            applyBase(m.src)
                           }}
                         >
                           Usar de base
@@ -903,6 +1012,7 @@ export default function ImagesPage() {
               onCountChange={setPromptCount}
               attachments={attachments}
               onRemoveAttachment={removeBase}
+              onAddBase={addBase}
               onGenerate={startGenerate}
             />
           </div>
@@ -916,6 +1026,11 @@ export default function ImagesPage() {
           closing={imgModal.closing}
           onClose={closeImg}
           onUseAsBase={() => {
+            if (tool) {
+              setToolBase({ src: imgModal.img.src, key: Date.now() })
+              closeImg()
+              return
+            }
             addBase(imgModal.img.src)
             if (!generating) {
               setFromTool(false)

@@ -1,0 +1,401 @@
+/* ============ Image Generation: modelo, "+", proporção e resolução ============ */
+
+/* botão do modelo: logo pequeno antes do nome */
+.ip-pc-model {
+  gap: 7px;
+  padding-left: 6px;
+}
+
+.ip-pc.is-open {
+  border-color: var(--card-border-hover);
+  background: var(--hover-05);
+  color: var(--text-strong);
+}
+
+.igm-logo {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.ip-pc .igm-logo {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* "Automático": estrela de IA num círculo em gradiente */
+.igm-logo.is-auto {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 45%, #ec4899 100%);
+  color: #fff;
+  box-shadow: none;
+}
+
+/* ---------- Popover da barra ---------- */
+.igp-pop {
+  position: fixed;
+  z-index: 300;
+  max-height: min(420px, calc(100dvh - 32px));
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--pop-border);
+  border-radius: 14px;
+  background: var(--pop-surface);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    0 18px 44px -8px rgba(0, 0, 0, 0.18);
+  scrollbar-width: thin;
+  transform-origin: top left;
+  animation: igp-in 170ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+.igp-pop.is-up {
+  transform-origin: bottom left;
+  animation-name: igp-in-up;
+}
+
+@keyframes igp-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+@keyframes igp-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+}
+
+.igp-label {
+  padding: 8px 10px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.igp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-mid);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.igp-item:hover {
+  background: var(--hover-05);
+  color: var(--text-strong);
+}
+
+.igp-item.is-on {
+  background: var(--hover-05);
+  color: var(--text-strong);
+}
+
+.igp-item svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.igp-check,
+.igp-chev {
+  margin-left: auto;
+}
+
+.igp-chev {
+  color: var(--text-faint);
+}
+
+/* resolução: 1K / 2K / 4K com os pixels embaixo */
+.igp-res {
+  min-height: 48px;
+}
+
+.igp-res-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.igp-res-px {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .igp-pop,
+  .igp-sub {
+    animation: none;
+  }
+}
+
+/* ---------- créditos ---------- */
+.igp-credits {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-strong);
+}
+
+.igp-credits img {
+  width: 14px;
+  height: 14px;
+}
+
+
+/* ---------- busca dentro dos menus ---------- */
+.igp-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  margin: 2px 2px 6px;
+  padding: 0 10px;
+  border: 1px solid var(--sb-border);
+  border-radius: 10px;
+  color: var(--text-faint);
+  cursor: text;
+}
+
+.igp-search:focus-within {
+  border-color: var(--card-border-hover);
+}
+
+.igp-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--text-strong);
+}
+
+.igp-search input::placeholder {
+  color: var(--text-faint);
+}
+
+.igp-empty {
+  margin: 14px 8px;
+  font-size: 13px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+/* ---------- Modelo: menu contextual grande ---------- */
+.igp-pop.igp-models {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: min(480px, calc(100dvh - 120px));
+}
+
+.igp-search.is-top {
+  flex-shrink: 0;
+}
+
+.igp-models-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.igp-model {
+  gap: 12px;
+  min-height: 44px;
+}
+
+.igp-model .igm-logo {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.07);
+}
+
+.igp-model-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-strong);
+}
+
+/* ---------- "+": Imagens da Biblioteca em cascata, ao lado ---------- */
+.igp-pop.igp-cascade {
+  overflow: visible;
+}
+
+.igp-sub {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: -1px;
+  width: 280px;
+  padding: 6px;
+  border: 1px solid var(--pop-border);
+  border-radius: 14px;
+  background: var(--pop-surface);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    0 18px 44px -8px rgba(0, 0, 0, 0.18);
+  animation: igp-sub-in 160ms cubic-bezier(0.26, 1.04, 0.54, 1);
+}
+
+/* menu aberto para cima (barra no rodapé): a cascata alinha pela base */
+.igp-cascade.is-up .igp-sub {
+  top: auto;
+  bottom: -1px;
+}
+
+@keyframes igp-sub-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px) scale(0.98);
+  }
+}
+
+.igp-sub-list {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.igp-img {
+  gap: 10px;
+  min-height: 44px;
+}
+
+.igp-img:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.igp-img-thumb {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--hover-05);
+}
+
+.igp-img-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.igp-img-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-strong);
+  font-weight: 400;
+}
+
+/* Automático: nome do modelo em uso ao lado, mais leve */
+.igp-model-auto,
+.ip-pc-auto {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+.ip-pc-auto {
+  margin-left: 0;
+}
+
+/* ---------- Drawer das ferramentas: modelo e quantidade ---------- */
+.ip-tf-model.is-open {
+  background: var(--hover-06);
+}
+
+.ip-tf-model .ip-tf-model-name {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.ip-tf-model-caret {
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ip-tf-model.is-open .ip-tf-model-caret {
+  transform: rotate(180deg);
+}
+
+/* "Imagens por vez": rótulo à esquerda, stepper 1/4 à direita */
+.ip-tf.ip-tf-count {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 6px 0 14px;
+  border-radius: 12px;
+  background: var(--card-surface);
+}
+
+.ip-tf-count .ip-tf-label {
+  font-weight: 500;
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.ip-tf-stepper {
+  background: var(--pop-surface);
+}
+
+/* ============ Botões "Gerar": 100% arredondados, sempre com os créditos ============ */
+.ip-prompt-go.is-ready {
+  width: var(--go-w, 112px);
+}
+
+.ip-go-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  opacity: 0.82;
+}
+
+.ip-go-cost img,
+.ip-tool-gen-cost img {
+  display: block;
+  width: 13px;
+  height: 15px;
+}
+
+/* campo de imagem do drawer recebendo "Usar de base": destaque rápido */
+.ip-tf.is-flash .ip-tf-file {
+  animation: ip-tf-flash 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes ip-tf-flash {
+  0% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(150, 110, 255, 0.6);
+  }
+  40% {
+    transform: scale(1);
+    box-shadow: 0 0 0 4px rgba(150, 110, 255, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(150, 110, 255, 0);
+  }
+}

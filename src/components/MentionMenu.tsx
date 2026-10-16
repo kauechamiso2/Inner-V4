@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import './mention-menu.css'
@@ -11,7 +11,7 @@ import {
   FolderSimpleIcon,
   GlobeIcon,
   ImageIcon,
-  LightningIcon,
+  AgendadoIcon,
   PresentationChartIcon,
   PromptsPillarIcon,
   SlidesIcon,
@@ -48,6 +48,10 @@ export type MentionItem = {
   feature?: boolean
   /* placeholder que o input assume enquanto a feature está ativa */
   placeholder?: string
+  /* prompt salvo: texto inserido no input, com variáveis {{nome}} para preencher */
+  prompt?: string
+  /* integração ainda não conectada: pede conexão antes de usar */
+  notConnected?: boolean
   /* só funciona no modo Agente: em Chat, mostra badge e troca de modo ao clicar */
   agentOnly?: boolean
   /* abre um submenu em cascata (busca + lista) */
@@ -124,6 +128,7 @@ const INTEGRATIONS: MentionItem[] = [
   },
   {
     id: 'salesforce',
+    notConnected: true,
     label: 'Salesforce',
     img: salesforce,
     feature: true,
@@ -141,6 +146,7 @@ const INTEGRATIONS: MentionItem[] = [
   },
   {
     id: 'notion',
+    notConnected: true,
     label: 'Notion',
     img: notion,
     mono: true,
@@ -150,7 +156,7 @@ const INTEGRATIONS: MentionItem[] = [
   },
 ]
 
-/* Ferramentas (cascata) — busca, tarefa agendada e os pilares de geração */
+/* Ferramentas (cascata) — busca, loop e os pilares de geração */
 export const TOOLS: MentionItem[] = [
   {
     id: 'web-search',
@@ -161,10 +167,10 @@ export const TOOLS: MentionItem[] = [
   },
   {
     id: 'tarefa',
-    label: 'Tarefa agendada',
-    icon: <LightningIcon />,
+    label: 'Loop',
+    icon: <AgendadoIcon size={18} />,
     feature: true,
-    placeholder: 'Descreva a tarefa que você quer adicionar',
+    placeholder: 'Descreva o que o loop deve fazer e quando',
   },
   {
     id: 'imagem',
@@ -217,11 +223,18 @@ export const TOOLS: MentionItem[] = [
   },
 ]
 
-/* Prompts (cascata) — sem ação por enquanto */
+const LOOP_TOOL = TOOLS.find((t) => t.id === 'tarefa')!
+
+/* Prompts (cascata): ao escolher, o texto entra no input com variáveis
+   ({{empresa}}, {{objetivo}}...) que o usuário preenche antes de enviar */
 const PROMPT_ITEMS: MentionItem[] = PROMPTS.map((p) => ({
   id: `prompt-${p.id}`,
   label: p.name,
   icon: <PromptsPillarIcon size={18} />,
+  prompt:
+    `Você é um especialista em ${p.category.toLowerCase()} com ampla experiência, atuando na empresa {{empresa}}.\n\n` +
+    `${p.desc}\n\n` +
+    `Seu objetivo é {{objetivo}}. Considere que o público é {{público}} e use um tom {{tom de voz}}.`,
 }))
 
 /* lookup para renderizar o submenu certo por tipo */
@@ -230,8 +243,12 @@ const FEATURE_LISTS: Record<
   { items: MentionItem[]; placeholder: string; label: string; noAction?: boolean }
 > = {
   integracoes: { items: INTEGRATIONS, placeholder: 'Buscar integração', label: 'Integrações' },
-  ferramentas: { items: TOOLS, placeholder: 'Buscar ferramenta', label: 'Ferramentas' },
-  prompts: { items: PROMPT_ITEMS, placeholder: 'Buscar prompt', label: 'Prompts', noAction: true },
+  ferramentas: {
+    items: TOOLS.filter((t) => t.id !== 'tarefa'),
+    placeholder: 'Buscar ferramenta',
+    label: 'Ferramentas',
+  },
+  prompts: { items: PROMPT_ITEMS, placeholder: 'Buscar prompt', label: 'Prompts' },
 }
 
 /* Menu principal: upload + biblioteca/base (grupo 1); integrações, prompts e
@@ -260,6 +277,8 @@ const SECTIONS: Section[] = [
         submenu: 'integracoes',
       },
       { id: 'prompts', label: 'Prompts', icon: <PromptsPillarIcon size={18} />, submenu: 'prompts' },
+      /* Loop direto no menu (ativa a feature, como em Ferramentas) */
+      LOOP_TOOL,
       {
         id: 'ferramentas',
         label: 'Ferramentas',
@@ -377,6 +396,28 @@ export default function MentionMenu({
   const [active, setActive] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
   const [submenuPos, setSubmenuPos] = useState<{ left: number; top: number } | null>(null)
+  /* abre pra cima por padrão; sem espaço acima (input no topo, ex.: página do
+     projeto), vira pra baixo do input */
+  const [below, setBelow] = useState(false)
+  useLayoutEffect(() => {
+    const el = menuRef.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    let clipTop = 0
+    let clipBottom = window.innerHeight
+    for (let n = el.parentElement; n; n = n.parentElement) {
+      const o = getComputedStyle(n).overflowY
+      if (o === 'auto' || o === 'scroll' || o === 'hidden') {
+        const pr = n.getBoundingClientRect()
+        clipTop = Math.max(clipTop, pr.top)
+        clipBottom = Math.min(clipBottom, pr.bottom)
+      }
+    }
+    if (r.top >= clipTop + 8) return
+    const anchor = el.parentElement?.getBoundingClientRect()
+    const spaceBelow = anchor ? clipBottom - anchor.bottom : 0
+    if (spaceBelow > r.top - clipTop) setBelow(true)
+  }, [])
   const [submenuKind, setSubmenuKind] = useState<
     'arquivos' | 'colecoes' | 'projetos' | 'projeto-files' | 'integracoes' | 'prompts' | 'ferramentas'
   >('arquivos')
@@ -470,7 +511,7 @@ export default function MentionMenu({
   return (
     <div
       ref={menuRef}
-      className={`mention-menu${variant === 'plus' ? ' is-plus' : ''}`}
+      className={`mention-menu${variant === 'plus' ? ' is-plus' : ''}${below ? ' is-below' : ''}`}
       role="listbox"
       aria-label="Invocar ação"
     >

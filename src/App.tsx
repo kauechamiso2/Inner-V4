@@ -13,15 +13,27 @@ import TaskDrawer from './components/TaskDrawer'
 import SiteDrawer from './components/SiteDrawer'
 import type { SiteDraft } from './components/sites'
 import type { ChatMsg, HomeIntent } from './components/ChatHome'
+import type { ChatEdit } from './components/HistoryPanel'
+import ChatMenu from './components/ChatMenu'
+import { DeleteChatModal, RenameChatModal, ShareChatModal } from './components/ChatModals'
+import { placeholderThread } from './components/chatThreads'
+import { allProjectEntries } from './components/projectStore'
+import { PROJECT_CONTENT } from './components/projectContent'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import Onboarding from './components/Onboarding'
 import { AGENT_BY_ID, ORB_ACCENT, ORB_NAME } from './components/agents'
 import type { AgentId, ChosenAgent } from './components/agents'
 import type { AppView, PanelView, SidebarLayout } from './components/pillars'
 import type { Task } from './components/tasks'
+import type { Run } from './components/runSummaries'
+import type { Attachment } from './components/MentionMenu'
+import { resultBlocks } from './components/runSummaries'
+import { openLoop, useLoopStore } from './components/loopStore'
+import LoopToast from './components/LoopToast'
+import { modelPrefs } from './components/chatModels'
 
 type Drawer =
-  | { kind: 'task'; task: Task; closing?: boolean }
+  | { kind: 'task'; task: Task; run?: Run; fromLoop?: string; closing?: boolean }
   | { kind: 'site'; site: SiteDraft; closing?: boolean; fromPillar?: boolean }
   | null
 
@@ -35,7 +47,14 @@ export type PinRef = { kind: PinKind; id: string }
 export type ActiveProject = { id: string; name: string; emoji?: string; color?: string }
 
 /* chat iniciado na Home: vira uma linha no histórico (título = 1ª mensagem) */
-export type StartedChat = { id: string; title: string; source: 'agent' | 'blue' }
+export type StartedChat = {
+  id: string
+  title: string
+  source: 'agent' | 'blue'
+  /* Chat com modelos: modelo (ou assistente) escolhido no seletor quando a conversa começou */
+  model?: string
+  asst?: { name: string; avatar?: string }
+}
 
 /* versões do protótipo (selecionáveis no menu "···"):
    v1 = Padrão (input enxuto + Mais Apps reduzido)
@@ -123,6 +142,9 @@ export default function App() {
   const [pins, setPins] = useState<PinRef[]>([
     { kind: 'chat', id: 'Análise do churn de setembro' },
     { kind: 'project', id: 'col-hr' },
+    /* chats fixados dentro dos projetos (seção "Fixados" da página do projeto) */
+    { kind: 'chat', id: 'col-hr:hp1' },
+    { kind: 'chat', id: 'col-mkt:mp1' },
   ])
   const isPinned = (kind: PinKind, id: string) =>
     pins.some((p) => p.kind === kind && p.id === id)
@@ -142,10 +164,24 @@ export default function App() {
   activeChatIdRef.current = activeChatId
   /* remonta a Home (volta ao estado inicial) ao clicar em "Nova tarefa" */
   const [homeKey, setHomeKey] = useState(0)
+  /* chat iniciado dentro de um projeto: ao nascer, já entra no projeto */
+  const pendingProjectRef = useRef<string | null>(null)
   const startThread = (title: string) => {
     const id = `started-${Date.now()}`
-    setStartedChats((c) => [{ id, title, source: chatMode === 'agente' ? 'agent' : 'blue' }, ...c])
+    const withModel =
+      chatMode === 'agente'
+        ? {}
+        : modelPrefs.assistant
+          ? { asst: { name: modelPrefs.assistant.name, avatar: modelPrefs.assistant.avatar } }
+          : { model: modelPrefs.selected }
+    setStartedChats((c) => [{ id, title, source: chatMode === 'agente' ? 'agent' : 'blue', ...withModel }, ...c])
     setActiveChatId(id)
+    const pid = pendingProjectRef.current
+    if (pid) {
+      pendingProjectRef.current = null
+      setChatEdits((m) => ({ ...m, [id]: { ...m[id], projectId: pid } }))
+      setChatCrumb((c) => (c ? { ...c, label: title } : c))
+    }
   }
   /* mensagem vinda de fora da Home (ex.: modal de Nova tarefa em Agendado):
      a Home remonta e a envia sozinha ao montar */
@@ -153,7 +189,40 @@ export default function App() {
   /* variação da Home vinda de "Nova tarefa"/"Novo site" (@Tarefa / @Site) */
   const [homeIntent, setHomeIntent] = useState<HomeIntent | null>(null)
   /* trilha no topo da conversa reaberta por "Editar" no pilar de Sites */
-  const [chatCrumb, setChatCrumb] = useState<{ parent: string; label: string; back: AppView } | null>(null)
+  const [chatCrumb, setChatCrumb] = useState<{
+    parent: string
+    label: string
+    back: AppView
+    /* chat de projeto: a trilha leva ao projeto */
+    projectId?: string
+  } | null>(null)
+  /* abrir Projetos já dentro de um projeto (pela trilha de um chat do projeto) */
+  const [projectsOpenId, setProjectsOpenId] = useState<string | null>(null)
+  const [projectsKey, setProjectsKey] = useState(0)
+  /* o "abrir já no projeto" vale só para essa ida a Projetos */
+  useEffect(() => {
+    if (view !== 'projetos') setProjectsOpenId(null)
+  }, [view])
+  /* "Iniciar chat" na Biblioteca: Home nova com os arquivos já no input.
+     Os anexos valem só para a Home montada com essa key (não voltam depois). */
+  const [homeAttachments, setHomeAttachments] = useState<{ items: Attachment[]; forKey: number } | null>(null)
+  const startChatWithFiles = (items: Attachment[]) => {
+    const next = homeKey + 1
+    setChatMode('agente')
+    setActiveProject(null)
+    setActiveChatId(null)
+    if (view !== 'chat') reopenHistory()
+    setPendingMessage(null)
+    setRestoreThread(null)
+    setChatCrumb(null)
+    setHomeIntent(null)
+    setHomeAttachments({ items, forKey: next })
+    setHomeKey(next)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
+  }
+
   const startIntent = (intent: HomeIntent) => {
     setChatMode('agente')
     setActiveProject(null)
@@ -168,6 +237,103 @@ export default function App() {
     setPanelView('chat')
     setDrawer(null)
   }
+  /* ---------- Chats do histórico: abrir, renomear, fixar, compartilhar, mover, excluir ---------- */
+  const [chatEdits, setChatEdits] = useState<Record<string, ChatEdit>>({})
+  /* conversas já vistas/escritas nesta sessão (reabrem iguais pelo histórico) */
+  const threadsRef = useRef<Record<string, ChatMsg[]>>({})
+  const [chatMenu, setChatMenu] = useState<{
+    key: string
+    title: string
+    rect: DOMRect
+    projectId: string | null
+    from: 'history' | 'header' | 'project'
+  } | null>(null)
+  /* renomear na linha: guarda onde foi pedido (o mesmo chat pode aparecer no
+     histórico e na página do projeto; só aquele lugar vira campo) */
+  const [renaming, setRenaming] = useState<{ key: string; from: 'history' | 'project' } | null>(null)
+  const [renameModal, setRenameModal] = useState<{ key: string; title: string } | null>(null)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{ key: string; title: string } | null>(null)
+  const projectById = (id: string | null | undefined) => allProjectEntries().find((p) => p.id === id) ?? null
+  const projectCrumb = (projectId: string, label: string) => {
+    const pr = projectById(projectId)
+    return { parent: `${pr?.emoji ?? '📁'} ${pr?.name ?? 'Projeto'}`, label, back: 'projetos' as AppView, projectId }
+  }
+
+  /* título atual de um chat pela chave (renomeado, da sessão, de projeto ou o original) */
+  const titleOfKey = (key: string) => {
+    if (chatEdits[key]?.title) return chatEdits[key].title as string
+    const started = startedChats.find((c) => c.id === key)
+    if (started) return started.title
+    const [pid, cid] = key.split(':')
+    if (cid) return PROJECT_CONTENT[pid]?.recents.find((c) => c.id === cid)?.title ?? key
+    return key
+  }
+  /* chats movidos para algum projeto (Recentes do projeto) */
+  const movedChats = Object.entries(chatEdits)
+    .filter(([key, ed]) => ed.projectId && !ed.deleted && !key.startsWith(`${ed.projectId}:`))
+    .map(([key, ed]) => ({ key, title: titleOfKey(key), projectId: ed.projectId as string }))
+
+  /* enviar no input de um projeto: a conversa abre na Home, com a trilha do projeto */
+  const startProjectChat = (projectId: string, text: string) => {
+    pendingProjectRef.current = projectId
+    reopenHistory()
+    setChatMode('agente')
+    setActiveProject(null)
+    setActiveChatId(null)
+    setHomeIntent(null)
+    setRestoreThread(null)
+    setChatCrumb(projectCrumb(projectId, text))
+    setPendingMessage(text)
+    setHomeKey((k) => k + 1)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
+  }
+
+  /* mode: o histórico de "Chat com modelos" reabre a conversa no próprio pilar
+     (input de modelos); Home e projetos abrem com o agente */
+  const openHistoryChat = (
+    key: string,
+    title: string,
+    projectId?: string | null,
+    mode: 'agente' | 'chat' = 'agente',
+  ) => {
+    const proj = chatEdits[key]?.projectId ?? projectId ?? null
+    const nextMode = proj ? 'agente' : mode
+    if (view === 'chat' && key === activeChatId && chatMode === nextMode) return
+    setChatMode(nextMode)
+    setActiveProject(null)
+    setActiveChatId(key)
+    setPendingMessage(null)
+    setHomeIntent(null)
+    setChatCrumb(proj ? projectCrumb(proj, title) : null)
+    setRestoreThread(threadsRef.current[key] ?? placeholderThread(title, projectById(proj)?.name))
+    setHomeKey((k) => k + 1)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
+  }
+
+  const renameChat = (key: string, title: string) => {
+    setChatEdits((m) => ({ ...m, [key]: { ...m[key], title } }))
+    if (key === activeChatIdRef.current) setChatCrumb((c) => (c ? { ...c, label: title } : c))
+  }
+  const deleteChat = (key: string) => {
+    setChatEdits((m) => ({ ...m, [key]: { ...m[key], deleted: true } }))
+    setPins((ps) => ps.filter((p) => !(p.kind === 'chat' && p.id === key)))
+    if (key === activeChatIdRef.current) resetHome()
+  }
+  const moveChat = (key: string, projectId: string | null) => {
+    setChatEdits((m) => ({ ...m, [key]: { ...m[key], projectId } }))
+    if (key === activeChatIdRef.current) {
+      setChatCrumb((c) => {
+        const label = c?.label ?? chatMenu?.title ?? ''
+        return projectId ? projectCrumb(projectId, label) : null
+      })
+    }
+  }
+
   const resetHome = () => {
     setRestoreThread(null)
     setHomeIntent(null)
@@ -218,6 +384,8 @@ export default function App() {
 
   const navigate = (next: AppView) => {
     if (next !== view) reopenHistory()
+    /* voltar a Loops pela sidebar mostra a lista (fecha o loop aberto) */
+    openLoop(null)
     setView(next)
     /* mantém o histórico no último contexto válido (Chat/Imagens) */
     if (showsHistory(next)) setPanelView(next)
@@ -245,8 +413,9 @@ export default function App() {
   }
 
   /* Regra global: drawer e sidebar expandida não coexistem. */
-  const openTaskDrawer = (task: Task) => {
-    setDrawer({ kind: 'task', task })
+  const openTaskDrawer = (task: Task, run?: Run) => {
+    /* aberto por uma execução: o drawer pertence àquele loop (fecha ao sair dele) */
+    setDrawer({ kind: 'task', task, run, fromLoop: run ? task.id : undefined })
     setCollapsed(true)
   }
 
@@ -331,6 +500,33 @@ export default function App() {
     setCollapsed(true)
   }
 
+  /* sair do loop (voltar à lista ou abrir outro) fecha o drawer da execução */
+  const loopState = useLoopStore()
+  useEffect(() => {
+    if (drawer?.kind === 'task' && drawer.fromLoop && !drawer.closing && loopState.pageId !== drawer.fromLoop)
+      closeDrawer()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loopState.pageId])
+
+  /* "Abrir chat" no drawer: conversa com o resultado da execução */
+  const openLoopChat = (task: Task, when: string) => {
+    reopenHistory()
+    setChatMode('agente')
+    setActiveProject(null)
+    setActiveChatId(null)
+    setPendingMessage(null)
+    setHomeIntent(null)
+    setChatCrumb({ parent: 'Loops', label: task.name, back: 'tarefas' })
+    setRestoreThread([
+      { id: 1, role: 'user', text: task.description, tool: { label: 'Loop' } },
+      { id: 2, role: 'agent', restored: true, blocks: resultBlocks(task, when) },
+    ] as ChatMsg[])
+    setHomeKey((k) => k + 1)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
+  }
+
   const closeDrawer = () => {
     setDrawer((d) => (d ? { ...d, closing: true } : d))
     window.setTimeout(() => setDrawer(null), 230)
@@ -402,9 +598,19 @@ export default function App() {
         pins={pins}
         isPinned={isPinned}
         togglePin={togglePin}
-        activeProject={activeProject}
-        onOpenProject={openProjectChat}
         onNewTask={resetHome}
+        chatEdits={chatEdits}
+        pinnedProjectIds={pins.filter((p) => p.kind === 'project').map((p) => p.id)}
+        onOpenChat={(key, title, projectId) => openHistoryChat(key, title, projectId, chatMode)}
+        onChatMenu={(key, title, rect, projectId) =>
+          setChatMenu({ key, title, rect, projectId: chatEdits[key]?.projectId ?? projectId ?? null, from: 'history' })
+        }
+        menuKey={chatMenu?.from === 'history' ? chatMenu.key : null}
+        renamingKey={renaming?.from === 'history' ? renaming.key : null}
+        onRenameDone={(key, title) => {
+          setRenaming(null)
+          if (title) renameChat(key, title)
+        }}
         startedChats={startedChats}
         activeChatId={activeChatId}
         agent={chosenAgent}
@@ -413,6 +619,7 @@ export default function App() {
       {view === 'chat' ? (
         <ChatHome
           key={homeKey}
+          initialAttachments={homeAttachments?.forKey === homeKey ? homeAttachments.items : undefined}
           onThreadStart={startThread}
           onTaskCreated={addTask}
           onOpenTask={openTaskFromChat}
@@ -423,9 +630,35 @@ export default function App() {
           onInitialMessageSent={() => setPendingMessage(null)}
           initialThread={restoreThread}
           intent={homeIntent}
+          onShareChat={() => setShareOpen(true)}
+          onChatMenu={(rect) => {
+            const key = activeChatIdRef.current
+            if (!key) return
+            setChatMenu({
+              key,
+              title: chatCrumb?.label ?? chatEdits[key]?.title ?? startedChats.find((c) => c.id === key)?.title ?? key,
+              rect,
+              projectId: chatCrumb?.projectId ?? chatEdits[key]?.projectId ?? null,
+              from: 'header',
+            })
+          }}
+          onMessagesChange={(msgs) => {
+            const key = activeChatIdRef.current
+            if (key) threadsRef.current[key] = msgs
+          }}
           breadcrumb={
             chatCrumb
-              ? { parent: chatCrumb.parent, label: chatCrumb.label, onBack: () => navigate(chatCrumb.back) }
+              ? {
+                  parent: chatCrumb.parent,
+                  label: chatCrumb.label,
+                  onBack: () => {
+                    if (chatCrumb.projectId) {
+                      setProjectsOpenId(chatCrumb.projectId)
+                      setProjectsKey((k) => k + 1)
+                    }
+                    navigate(chatCrumb.back)
+                  },
+                }
               : null
           }
           mode={chatMode}
@@ -442,9 +675,25 @@ export default function App() {
       ) : view === 'videos' ? (
         <VideosPage key="videos" panelOpen={!historyCollapsed} />
       ) : view === 'library' ? (
-        <LibraryPage key="library" empty={emptyStates} />
+        <LibraryPage key="library" empty={emptyStates} onStartChat={startChatWithFiles} />
       ) : view === 'projetos' ? (
-        <ProjectsPage key="projetos" isPinned={isPinned} togglePin={togglePin} agent={chosenAgent} empty={emptyStates} />
+        <ProjectsPage
+          key={`projetos-${projectsKey}`}
+          initialOpenId={projectsOpenId}
+          chatEdits={chatEdits}
+          movedChats={movedChats}
+          onOpenChat={openHistoryChat}
+          onStartProjectChat={startProjectChat}
+          onChatMenu={(key, title, rect, projectId) =>
+            setChatMenu({ key, title, rect, projectId: chatEdits[key]?.projectId ?? projectId, from: 'project' })
+          }
+          menuKey={chatMenu?.from === 'project' ? chatMenu.key : null}
+          renamingKey={renaming?.from === 'project' ? renaming.key : null}
+          onRenameDone={(key, title) => {
+            setRenaming(null)
+            if (title) renameChat(key, title)
+          }}
+          isPinned={isPinned} togglePin={togglePin} agent={chosenAgent} empty={emptyStates} />
       ) : view === 'tarefas' ? (
         <TarefasPage
           key="tarefas"
@@ -455,6 +704,7 @@ export default function App() {
           onCreateWithAgent={() => startIntent('task')}
           onCreateTask={addTask}
           onSaveTask={saveTask}
+          onOpenRun={(t, r) => openTaskDrawer(t, r)}
         />
       ) : view === 'sites' ? (
         <SitesPage
@@ -471,6 +721,8 @@ export default function App() {
       {drawer?.kind === 'task' && (
         <TaskDrawer
           task={drawer.task}
+          run={drawer.run}
+          onOpenChat={openLoopChat}
           closing={!!drawer.closing}
           onClose={closeDrawer}
           onSave={saveTask}
@@ -482,6 +734,45 @@ export default function App() {
           closing={!!drawer.closing}
           onClose={closeDrawer}
           onEdit={drawer.fromPillar ? () => editSite(drawer.site, true) : undefined}
+        />
+      )}
+      <LoopToast
+        onViewLoop={(id) => {
+          navigate('tarefas')
+          openLoop(id)
+        }}
+      />
+      {chatMenu && (
+        <ChatMenu
+          anchor={chatMenu.rect}
+          pinned={isPinned('chat', chatMenu.key)}
+          projects={allProjectEntries().map((p) => ({ id: p.id, name: p.name, emoji: p.emoji }))}
+          currentProjectId={chatMenu.projectId}
+          onClose={() => setChatMenu(null)}
+          onRename={() =>
+            chatMenu.from !== 'header'
+              ? setRenaming({ key: chatMenu.key, from: chatMenu.from })
+              : setRenameModal({ key: chatMenu.key, title: chatMenu.title })
+          }
+          onTogglePin={() => togglePin('chat', chatMenu.key)}
+          onShare={() => setShareOpen(true)}
+          onMove={(pid) => moveChat(chatMenu.key, pid)}
+          onDelete={() => setDeleteTarget({ key: chatMenu.key, title: chatMenu.title })}
+        />
+      )}
+      {shareOpen && <ShareChatModal onClose={() => setShareOpen(false)} />}
+      {deleteTarget && (
+        <DeleteChatModal
+          title={deleteTarget.title}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={() => deleteChat(deleteTarget.key)}
+        />
+      )}
+      {renameModal && (
+        <RenameChatModal
+          title={renameModal.title}
+          onClose={() => setRenameModal(null)}
+          onSave={(t) => renameChat(renameModal.key, t)}
         />
       )}
       <ThemeSwitcher

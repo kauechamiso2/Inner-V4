@@ -7,7 +7,6 @@ import {
   Globe,
   Lock,
   MoreHorizontal,
-  RefreshCw,
   Share,
   ThumbsDown,
   ThumbsUp,
@@ -23,8 +22,9 @@ import type { Task } from './tasks'
 import { PORTFOLIO_SITE, SITE_SUGGESTIONS, polishSiteRequest } from './sites'
 import { TASK_SUGGESTIONS } from './taskSuggestions'
 import { TOOLS } from './MentionMenu'
-import type { MentionItem } from './MentionMenu'
-import { ArrowLeft, Plus } from 'lucide-react'
+import type { Attachment, MentionItem } from './MentionMenu'
+import { ArrowLeft, Plus, Square, Volume2 } from 'lucide-react'
+import { FeedbackModal } from './ChatModals'
 import './nova-tarefa.css'
 import './sites-page.css'
 import { SiteMiniPreview } from './SiteDrawer'
@@ -35,7 +35,7 @@ import type { ChosenAgent } from './agents'
 type InputMode = 'agente' | 'chat'
 
 /* variação da Home vinda de "Nova tarefa" / "Novo site": o input já chega
-   com a feature (@Tarefa / @Site), greeting próprio e sugestões embaixo */
+   com a feature (@Loop / @Site), greeting próprio e sugestões embaixo */
 export type HomeIntent = 'task' | 'site'
 const INTENTS: Record<
   HomeIntent,
@@ -43,8 +43,8 @@ const INTENTS: Record<
 > = {
   task: {
     feature: 'tarefa',
-    label: 'Tarefa',
-    greeting: 'O que você quer agendar?',
+    label: 'Loop',
+    greeting: 'Que loop vamos criar hoje?',
     placeholder: 'Resuma meus e-mails importantes todas as manhãs',
   },
   site: {
@@ -66,7 +66,7 @@ const intentFeature = (intent: HomeIntent): MentionItem | null => {
 type Block = { kind: 'p'; text: string } | { kind: 'ul'; items: string[] }
 
 type Msg =
-  | { id: number; role: 'user'; text: string }
+  | { id: number; role: 'user'; text: string; tool?: { label: string; img?: string; mono?: boolean } }
   | { id: number; role: 'agent'; blocks: Block[]; task?: Task; site?: SiteDraft; restored?: boolean }
 /* conversa salva (ex.: chat onde o site foi criado) para reabrir em "Editar" */
 export type ChatMsg = Msg
@@ -281,6 +281,30 @@ function AgentMessage({
   taskEdits?: Record<string, Task>
 }) {
   const task = msg.task ? (taskEdits?.[msg.task.id] ?? msg.task) : null
+  const [vote, setVote] = useState<'up' | 'down' | null>(null)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
+  /* ler em voz alta: usa a voz do navegador (pt-BR); clicar de novo para */
+  const toggleSpeak = () => {
+    const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined
+    if (!synth) return
+    if (speaking) {
+      synth.cancel()
+      setSpeaking(false)
+      return
+    }
+    synth.cancel()
+    const text = msg.blocks
+      .map((b) => (b.kind === 'p' ? plain(b.text) : b.items.map(plain).join('. ')))
+      .join(' ')
+    const u = new SpeechSynthesisUtterance(text)
+    u.lang = 'pt-BR'
+    u.onend = () => setSpeaking(false)
+    u.onerror = () => setSpeaking(false)
+    setSpeaking(true)
+    synth.speak(u)
+  }
+  useEffect(() => () => window.speechSynthesis?.cancel(), [])
   return (
     <article
       className={`msg-agent${msg.restored ? '' : ' is-stream'}`}
@@ -334,29 +358,63 @@ function AgentMessage({
         </button>
       )}
       {/* ações: copiar, avaliar, gerar de novo; compartilhar só no hover */}
+      {/* ações: copiar, gostei / não gostei (o voto esconde o outro) e ler em voz alta */}
       <div className="msg-actions">
-        <button
-          type="button"
-          className="msg-act"
-          aria-label={copied ? 'Copiado' : 'Copiar'}
-          onClick={onCopy}
-        >
+        <MsgAct label={copied ? 'Copiado' : 'Copiar'} onClick={onCopy}>
           {copied ? <Check size={16} strokeWidth={2.2} /> : <Copy size={16} strokeWidth={2} />}
-        </button>
-        <button type="button" className="msg-act" aria-label="Boa resposta">
-          <ThumbsUp size={16} strokeWidth={2} />
-        </button>
-        <button type="button" className="msg-act" aria-label="Resposta ruim">
-          <ThumbsDown size={16} strokeWidth={2} />
-        </button>
-        <button type="button" className="msg-act" aria-label="Gerar de novo">
-          <RefreshCw size={16} strokeWidth={2} />
-        </button>
-        <button type="button" className="msg-act is-hover" aria-label="Compartilhar">
-          <Share size={16} strokeWidth={2} />
-        </button>
+        </MsgAct>
+        {vote !== 'down' && (
+          <MsgAct
+            label={vote === 'up' ? 'Você gostou' : 'Boa resposta'}
+            active={vote === 'up'}
+            onClick={() => setVote((v) => (v === 'up' ? null : 'up'))}
+          >
+            <ThumbsUp size={16} strokeWidth={2} fill={vote === 'up' ? 'currentColor' : 'none'} />
+          </MsgAct>
+        )}
+        {vote !== 'up' && (
+          <MsgAct
+            label={vote === 'down' ? 'Feedback enviado' : 'Resposta ruim'}
+            active={vote === 'down'}
+            onClick={() => (vote === 'down' ? setVote(null) : setFeedbackOpen(true))}
+          >
+            <ThumbsDown size={16} strokeWidth={2} fill={vote === 'down' ? 'currentColor' : 'none'} />
+          </MsgAct>
+        )}
+        <MsgAct label={speaking ? 'Parar leitura' : 'Ler em voz alta'} active={speaking} onClick={toggleSpeak}>
+          {speaking ? <Square size={14} strokeWidth={2.2} fill="currentColor" /> : <Volume2 size={16} strokeWidth={2} />}
+        </MsgAct>
       </div>
+      {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} onSent={() => setVote('down')} />}
     </article>
+  )
+}
+
+/* botão de ação da resposta, com tooltip */
+function MsgAct({
+  label,
+  active = false,
+  onClick,
+  children,
+}: {
+  label: string
+  active?: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      className={`msg-act${active ? ' is-active' : ''}`}
+      aria-label={label}
+      aria-pressed={active}
+      onClick={onClick}
+    >
+      {children}
+      <span className="pill-tooltip msg-act-tip" role="tooltip" aria-hidden="true">
+        {label}
+      </span>
+    </button>
   )
 }
 
@@ -377,8 +435,12 @@ export default function ChatHome({
   onOpenSite,
   onSiteCreated,
   initialThread = null,
+  initialAttachments,
   intent = null,
   breadcrumb = null,
+  onShareChat,
+  onChatMenu,
+  onMessagesChange,
   taskEdits,
 }: {
   mode: InputMode
@@ -411,10 +473,17 @@ export default function ChatHome({
   onSiteCreated?: (site: SiteDraft, messages: ChatMsg[]) => void
   /* reabre uma conversa salva já em modo conversa, sem animar as respostas */
   initialThread?: ChatMsg[] | null
+  /* arquivos que já chegam no input (ex.: "Iniciar chat" na Biblioteca) */
+  initialAttachments?: Attachment[]
   /* Home vinda de "Nova tarefa" / "Novo site" */
   intent?: HomeIntent | null
   /* trilha no topo da conversa (ex.: Sites / nome do site), com voltar */
   breadcrumb?: { parent: string; label: string; onBack: () => void } | null
+  /* cabeçalho da conversa: Compartilhar e "..." (menu do chat) */
+  onShareChat?: () => void
+  onChatMenu?: (rect: DOMRect) => void
+  /* a conversa muda: o App guarda para reabrir pelo histórico */
+  onMessagesChange?: (messages: ChatMsg[]) => void
 }) {
   /* conversa: abre ao enviar a primeira mensagem */
   const [messages, setMessages] = useState<Msg[]>(() =>
@@ -423,6 +492,11 @@ export default function ChatHome({
   const [thread, setThread] = useState(!!initialThread?.length)
   const messagesRef = useRef(messages)
   messagesRef.current = messages
+  const msgCb = useRef(onMessagesChange)
+  msgCb.current = onMessagesChange
+  useEffect(() => {
+    if (messages.length) msgCb.current?.(messages)
+  }, [messages])
   const [leaving, setLeaving] = useState(false)
   const [thinking, setThinking] = useState(false)
   const [prefill, setPrefill] = useState<{ text: string; key: number } | null>(null)
@@ -538,10 +612,10 @@ export default function ChatHome({
     }, 240)
   }
 
-  const send = (raw: string) => {
+  const send = (raw: string, meta?: { tool?: { label: string; img?: string; mono?: boolean } }) => {
     /* com @Site, o pedido curto chega polido ("Quero criar um site de ...") */
     const text = activeIntent === 'site' && !thread ? polishSiteRequest(raw) : raw
-    const userMsg: Msg = { id: ++idRef.current, role: 'user', text }
+    const userMsg: Msg = { id: ++idRef.current, role: 'user', text, tool: meta?.tool }
     if (thread) {
       setMessages((m) => [...m, userMsg])
       reply(text)
@@ -716,7 +790,7 @@ export default function ChatHome({
       )}
       {/* cabeçalho da conversa: Compartilhar e mais opções, canto superior direito */}
       <header className="chat-thread-head" aria-hidden={!thread}>
-        <button type="button" className="cth-btn" tabIndex={thread ? 0 : -1}>
+        <button type="button" className="cth-btn" tabIndex={thread ? 0 : -1} onClick={() => onShareChat?.()}>
           <Share size={16} strokeWidth={2} />
           Compartilhar
         </button>
@@ -724,7 +798,9 @@ export default function ChatHome({
           type="button"
           className="cth-btn is-icon"
           aria-label="Mais opções"
+          aria-haspopup="menu"
           tabIndex={thread ? 0 : -1}
+          onClick={(e) => onChatMenu?.(e.currentTarget.getBoundingClientRect())}
         >
           <MoreHorizontal size={18} strokeWidth={2} />
         </button>
@@ -739,6 +815,13 @@ export default function ChatHome({
                 m.role === 'user' ? (
                   <div className="msg-user" key={m.id}>
                     <p>{m.text}</p>
+                    {/* integração usada nesta mensagem (abaixo do texto) */}
+                    {m.tool && (
+                      <span className="msg-tool">
+                        {m.tool.img && <img className={m.tool.mono ? 'is-mono' : ''} src={m.tool.img} alt="" />}
+                        {m.tool.label}
+                      </span>
+                    )}
                   </div>
                 ) : (
                   <AgentMessage
@@ -781,6 +864,7 @@ export default function ChatHome({
         <div className="composer-slot" hidden={!!questions}>
           <ChatComposer
             mode={mode}
+            initialAttachments={initialAttachments}
             onModeChange={onModeChange}
             placeholder={composerPlaceholder}
             excludeProjects={!!project}
