@@ -229,3 +229,82 @@
     transition: none;
   }
 }
+
+/* ---------- submenus (Idioma e Tema), abrem no hover ---------- */
+.pf-row.is-sub-open {
+  background: var(--hover-05);
+}
+
+.pf-sub {
+  position: fixed;
+  z-index: 330;
+  display: flex;
+  flex-direction: column;
+  min-width: 168px;
+  padding: 6px;
+  background: var(--pop-surface);
+  border: 1px solid var(--pop-border);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.22);
+  transform-origin: top left;
+  animation: pf-sub-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ponte invisível no vão entre o menu e o submenu */
+.pf-sub::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -10px;
+  width: 10px;
+}
+
+.pf-sub.is-closing {
+  animation: pf-sub-in 140ms ease reverse both;
+}
+
+@keyframes pf-sub-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px) scale(0.98);
+  }
+}
+
+.pf-sub-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-mid);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.pf-sub-item:hover {
+  background: var(--hover-05);
+}
+
+.pf-sub-item.is-on {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.pf-sub-item svg {
+  flex-shrink: 0;
+  color: var(--text-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-sub {
+    animation: none;
+  }
+}

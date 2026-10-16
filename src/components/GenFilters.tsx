@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { BarPopover, ImageModelLogo } from './ImageModelPicker'
 import { IMAGE_MODELS } from './imageModels'
+import type { ImageModel } from './imageModels'
 import './collection-detail.css'
 import './gen-filters.css'
 
@@ -135,6 +136,7 @@ export default function GenFilters({
   onChange,
   onClose,
   usedModels,
+  models: allModels = IMAGE_MODELS,
 }: {
   anchor: HTMLElement
   value: GenFilterState
@@ -142,9 +144,11 @@ export default function GenFilters({
   onClose: () => void
   /* modelos que aparecem no histórico (nomes) */
   usedModels: string[]
+  /* lista de modelos do pilar (imagem ou vídeo), para os logos */
+  models?: ImageModel[]
 }) {
   const [custom, setCustom] = useState(value.range.kind === 'custom')
-  const models = IMAGE_MODELS.filter((m) => usedModels.includes(m.name))
+  const models = allModels.filter((m) => usedModels.includes(m.name))
   const active = value.range.kind !== 'all' || value.models.length > 0
   return (
     <BarPopover anchor={anchor} label="Período" width={304} onClose={onClose}>

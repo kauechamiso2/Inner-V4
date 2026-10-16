@@ -33,6 +33,7 @@ export type AppView =
   | 'prompts'
   | 'assistentes'
   | 'projetos'
+  | 'educacao'
   | GenPillarId
 
 /* Views que abrem o painel de histórico (chat + pilares de geração) */

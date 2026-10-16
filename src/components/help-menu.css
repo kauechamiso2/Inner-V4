@@ -1,0 +1,25 @@
+/* submenu "Ajuda" do rail (posição fixa vinda do botão) */
+.task-menu.help-menu {
+  position: fixed;
+  right: auto;
+  bottom: auto;
+  z-index: 80;
+  min-width: 230px;
+  transform-origin: bottom left;
+}
+
+.help-menu .task-menu-item {
+  gap: 12px;
+  height: 42px;
+  font-size: 14.5px;
+}
+
+/* ponte invisível no vão entre o botão e o menu (o hover não "cai") */
+.task-menu.help-menu::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -14px;
+  width: 14px;
+}

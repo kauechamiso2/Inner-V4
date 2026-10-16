@@ -1,12 +1,13 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { ArrowUp, Check, ChevronDown, ChevronRight, Images, Minus, Plus, Search, Upload } from 'lucide-react'
+import { ArrowUp, Check, ChevronDown, ChevronRight, Clock3, Images, Minus, Plus, Search, Upload } from 'lucide-react'
 import creditsCoin from '../assets/credits.svg'
 import { BarPopover, ImageModelLogo, ImageModelMenu } from './ImageModelPicker'
 import { normSearch } from './SearchToggle'
 import {
   ASPECT_RATIOS,
   AUTO_MODEL,
+  IMAGE_MODELS,
   IMAGE_MODEL_BY_ID,
   LIBRARY_IMAGES,
   RESOLUTIONS,
@@ -14,6 +15,18 @@ import {
   useImageSettings,
 } from './imageModels'
 import type { AspectRatio } from './imageModels'
+import {
+  VIDEO_AUTO_MODEL,
+  VIDEO_DURATIONS,
+  VIDEO_MODELS,
+  VIDEO_MODEL_BY_ID,
+  VIDEO_QUALITIES,
+  VIDEO_RATIOS,
+  setVideoSettings,
+  useVideoSettings,
+} from './videoGen'
+
+type PopKind = 'add' | 'ratio' | 'res' | 'model' | 'dur' | 'qual'
 
 /* forma da proporção (retângulo com a razão certa) para o botão e a lista */
 function RatioIcon({ ratio, size = 15 }: { ratio: AspectRatio; size?: number }) {
@@ -92,6 +105,8 @@ type Props = {
   alwaysOpen?: boolean
   /* foca o campo ao montar / quando muda */
   autoFocusKey?: number
+  /* "video": modelos de vídeo, proporção, duração e qualidade */
+  variant?: 'image' | 'video'
 }
 
 /* Input de prompt do pilar de Imagens: começa como uma barra compacta e,
@@ -112,12 +127,14 @@ export default function ImagePromptBar({
   docked = false,
   alwaysOpen = false,
   autoFocusKey,
+  variant = 'image',
 }: Props) {
+  const isVideo = variant === 'video'
   const [focused, setFocused] = useState(false)
   const hasAtt = attachments.length > 0
   /* menus da barra ("+", proporção, resolução) e o modal de modelos; com algum
      aberto, a barra continua expandida mesmo sem foco no texto */
-  const [pop, setPop] = useState<{ kind: 'add' | 'ratio' | 'res' | 'model'; el: HTMLElement } | null>(null)
+  const [pop, setPop] = useState<{ kind: PopKind; el: HTMLElement } | null>(null)
   const [libOpen, setLibOpen] = useState(false)
   const [libQuery, setLibQuery] = useState('')
   const open = alwaysOpen || focused || value.trim().length > 0 || hasAtt || !!pop
@@ -128,9 +145,20 @@ export default function ImagePromptBar({
   const canGenerate = value.trim().length > 0 || hasAtt
   /* modelo, proporção e resolução (compartilhados com a outra barra) */
   const cfg = useImageSettings()
-  const model = IMAGE_MODEL_BY_ID[cfg.model] ?? IMAGE_MODEL_BY_ID['nano-banana-2']
+  const vcfg = useVideoSettings()
+  /* imagem x vídeo: mesma barra, listas e configurações diferentes */
+  const models = isVideo ? VIDEO_MODELS : IMAGE_MODELS
+  const selectedModel = isVideo ? vcfg.model : cfg.model
+  const model = isVideo
+    ? (VIDEO_MODEL_BY_ID[vcfg.model] ?? VIDEO_MODEL_BY_ID['kling-30'])
+    : (IMAGE_MODEL_BY_ID[cfg.model] ?? IMAGE_MODEL_BY_ID['nano-banana-2'])
+  const autoName = isVideo ? VIDEO_AUTO_MODEL : AUTO_MODEL
+  const ratio = isVideo ? vcfg.ratio : cfg.ratio
+  const ratios: readonly string[] = isVideo ? VIDEO_RATIOS : ASPECT_RATIOS
+  const setModel = (id: string) => (isVideo ? setVideoSettings({ model: id }) : setImageSettings({ model: id }))
+  const setRatio = (r: string) => (isVideo ? setVideoSettings({ ratio: r }) : setImageSettings({ ratio: r as AspectRatio }))
   const fileRef = useRef<HTMLInputElement>(null)
-  const toggle = (kind: 'add' | 'ratio' | 'res' | 'model') => (e: React.MouseEvent<HTMLElement>) => {
+  const toggle = (kind: PopKind) => (e: React.MouseEvent<HTMLElement>) => {
     const el = e.currentTarget
     setLibOpen(false)
     setLibQuery('')
@@ -188,7 +216,7 @@ export default function ImagePromptBar({
         <textarea
           ref={inputRef}
           className="ip-prompt-input"
-          placeholder="Digite o que você quer gerar..."
+          placeholder={isVideo ? 'Descreva o vídeo que você quer gerar...' : 'Digite o que você quer gerar...'}
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           onFocus={() => setFocused(true)}
@@ -229,35 +257,66 @@ export default function ImagePromptBar({
           >
             <ImageModelLogo model={model} size={18} />
             {model.name}
-            {model.id === 'auto' && <span className="ip-pc-auto">{AUTO_MODEL}</span>}
+            {model.name === 'Automático' && <span className="ip-pc-auto">{autoName}</span>}
             <ChevronDown size={14} strokeWidth={2} />
           </button>
           <button
             type="button"
             className={`ip-pc ip-pc-drop${pop?.kind === 'ratio' ? ' is-open' : ''}`}
             tabIndex={open ? 0 : -1}
-            aria-label={`Proporção: ${cfg.ratio}`}
+            aria-label={`Proporção: ${ratio}`}
             aria-haspopup="menu"
             aria-expanded={pop?.kind === 'ratio'}
             onMouseDown={(e) => e.preventDefault()}
             onClick={toggle('ratio')}
           >
-            <RatioIcon ratio={cfg.ratio} size={14} />
-            {cfg.ratio}
+            <RatioIcon ratio={ratio as AspectRatio} size={14} />
+            {ratio}
           </button>
+          {isVideo ? (
+            <>
+              <button
+                type="button"
+                className={`ip-pc ip-pc-drop${pop?.kind === 'dur' ? ' is-open' : ''}`}
+                tabIndex={open ? 0 : -1}
+                aria-label={`Duração: ${vcfg.duration}`}
+                aria-haspopup="menu"
+                aria-expanded={pop?.kind === 'dur'}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={toggle('dur')}
+              >
+                <Clock3 size={13} strokeWidth={2.2} />
+                {vcfg.duration}
+              </button>
+              <button
+                type="button"
+                className={`ip-pc ip-pc-drop${pop?.kind === 'qual' ? ' is-open' : ''}`}
+                tabIndex={open ? 0 : -1}
+                aria-label={`Qualidade: ${vcfg.quality}`}
+                aria-haspopup="menu"
+                aria-expanded={pop?.kind === 'qual'}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={toggle('qual')}
+              >
+                {vcfg.quality}
+                <ChevronDown size={14} strokeWidth={2} />
+              </button>
+            </>
+          ) : (
           <button
-            type="button"
-            className={`ip-pc ip-pc-drop${pop?.kind === 'res' ? ' is-open' : ''}`}
-            tabIndex={open ? 0 : -1}
-            aria-label={`Resolução: ${cfg.res}`}
-            aria-haspopup="menu"
-            aria-expanded={pop?.kind === 'res'}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={toggle('res')}
-          >
-            {cfg.res}
-            <ChevronDown size={14} strokeWidth={2} />
-          </button>
+              type="button"
+              className={`ip-pc ip-pc-drop${pop?.kind === 'res' ? ' is-open' : ''}`}
+              tabIndex={open ? 0 : -1}
+              aria-label={`Resolução: ${cfg.res}`}
+              aria-haspopup="menu"
+              aria-expanded={pop?.kind === 'res'}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={toggle('res')}
+            >
+              {cfg.res}
+              <ChevronDown size={14} strokeWidth={2} />
+            </button>
+          )}
           <div className="ip-stepper">
             <button
               type="button"
@@ -393,29 +452,31 @@ export default function ImagePromptBar({
       {pop?.kind === 'model' && (
         <ImageModelMenu
           anchor={pop.el}
-          selected={cfg.model}
-          onSelect={(id) => setImageSettings({ model: id })}
+          selected={selectedModel}
+          models={models}
+          autoName={autoName}
+          onSelect={setModel}
           onClose={() => setPop(null)}
         />
       )}
 
       {pop?.kind === 'ratio' && (
         <BarPopover anchor={pop.el} label="Proporção" width={180} onClose={() => setPop(null)}>
-          {ASPECT_RATIOS.map((r) => (
+          {ratios.map((r) => (
             <button
               key={r}
               type="button"
-              className={`igp-item${cfg.ratio === r ? ' is-on' : ''}`}
+              className={`igp-item${ratio === r ? ' is-on' : ''}`}
               role="menuitemradio"
-              aria-checked={cfg.ratio === r}
+              aria-checked={ratio === r}
               onClick={() => {
-                setImageSettings({ ratio: r })
+                setRatio(r)
                 setPop(null)
               }}
             >
-              <RatioIcon ratio={r} />
+              <RatioIcon ratio={r as AspectRatio} />
               {r}
-              {cfg.ratio === r && <Check className="igp-check" size={15} strokeWidth={2.4} />}
+              {ratio === r && <Check className="igp-check" size={15} strokeWidth={2.4} />}
             </button>
           ))}
         </BarPopover>
@@ -445,6 +506,51 @@ export default function ImagePromptBar({
         </BarPopover>
       )}
 
+      {pop?.kind === 'dur' && (
+        <BarPopover anchor={pop.el} label="Duração" width={170} onClose={() => setPop(null)}>
+          {VIDEO_DURATIONS.map((d) => (
+            <button
+              key={d}
+              type="button"
+              className={`igp-item${vcfg.duration === d ? ' is-on' : ''}`}
+              role="menuitemradio"
+              aria-checked={vcfg.duration === d}
+              onClick={() => {
+                setVideoSettings({ duration: d })
+                setPop(null)
+              }}
+            >
+              <Clock3 size={15} strokeWidth={1.9} />
+              {d.replace('s', ' segundos')}
+              {vcfg.duration === d && <Check className="igp-check" size={15} strokeWidth={2.4} />}
+            </button>
+          ))}
+        </BarPopover>
+      )}
+
+      {pop?.kind === 'qual' && (
+        <BarPopover anchor={pop.el} label="Qualidade" width={190} onClose={() => setPop(null)}>
+          {VIDEO_QUALITIES.map((q) => (
+            <button
+              key={q.id}
+              type="button"
+              className={`igp-item igp-res${vcfg.quality === q.id ? ' is-on' : ''}`}
+              role="menuitemradio"
+              aria-checked={vcfg.quality === q.id}
+              onClick={() => {
+                setVideoSettings({ quality: q.id })
+                setPop(null)
+              }}
+            >
+              <span className="igp-res-text">
+                <span>{q.id}</span>
+                <span className="igp-res-px">{q.hint}</span>
+              </span>
+              {vcfg.quality === q.id && <Check className="igp-check" size={15} strokeWidth={2.4} />}
+            </button>
+          ))}
+        </BarPopover>
+      )}
     </div>
   )
 }

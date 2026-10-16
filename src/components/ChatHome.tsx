@@ -436,6 +436,7 @@ export default function ChatHome({
   onSiteCreated,
   initialThread = null,
   initialAttachments,
+  initialDraft,
   intent = null,
   breadcrumb = null,
   onShareChat,
@@ -459,6 +460,8 @@ export default function ChatHome({
   /* primeira mensagem enviada: o App registra o chat no histórico */
   onThreadStart?: (title: string) => void
   /* mensagem vinda de outra tela (ex.: Nova tarefa em Agendado): enviada ao montar */
+  /* texto já no input ao abrir (ex.: "Usar" um prompt da galeria) */
+  initialDraft?: string
   initialMessage?: string | null
   onInitialMessageSent?: () => void
   /* tarefa agendada criada pelo agente (entra em Agendado > Ativas) */
@@ -499,7 +502,7 @@ export default function ChatHome({
   }, [messages])
   const [leaving, setLeaving] = useState(false)
   const [thinking, setThinking] = useState(false)
-  const [prefill, setPrefill] = useState<{ text: string; key: number } | null>(null)
+  const [prefill, setPrefill] = useState<{ text: string; key: number } | null>(initialDraft ? { text: initialDraft, key: 1 } : null)
   /* variação ativa segue o pill do input: tirar @Tarefa/@Site volta à Home normal,
      colocar pelo menu ativa a variação (frase, placeholder e sugestões) */
   const [activeIntent, setActiveIntent] = useState<HomeIntent | null>(intent)

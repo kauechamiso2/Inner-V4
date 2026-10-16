@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown, Copy, Globe, Link2, Lock, X } from 'lucide-react'
 import './context-modal.css'
@@ -7,15 +8,25 @@ import './site-modals.css'
 
 export type SiteAccess = 'private' | 'link' | 'public'
 
-const ACCESS: { id: SiteAccess; label: string; help: string; icon: typeof Lock }[] = [
-  { id: 'private', label: 'Apenas eu', help: 'Somente você pode acessar este site.', icon: Lock },
-  {
-    id: 'link',
-    label: 'Qualquer pessoa com o link',
-    help: 'Quem tiver o link consegue ver o site, mas ele não aparece em buscas.',
-    icon: Link2,
+/* textos por tipo de item compartilhado (site ou reunião) */
+const COPY = {
+  site: {
+    title: 'Compartilhar site',
+    private: 'Somente você pode acessar este site.',
+    link: 'Quem tiver o link consegue ver o site, mas ele não aparece em buscas.',
+    public: 'O site fica no ar para qualquer pessoa na internet.',
   },
-  { id: 'public', label: 'Público', help: 'O site fica no ar para qualquer pessoa na internet.', icon: Globe },
+  meeting: {
+    title: 'Compartilhar reunião',
+    private: 'Somente você pode ver o resumo, a transcrição e a gravação.',
+    link: 'Quem tiver o link vê o resumo, a transcrição e a gravação.',
+    public: 'Qualquer pessoa na internet pode ver esta reunião.',
+  },
+}
+const accessFor = (kind: keyof typeof COPY): { id: SiteAccess; label: string; help: string; icon: typeof Lock }[] => [
+  { id: 'private', label: 'Apenas eu', help: COPY[kind].private, icon: Lock },
+  { id: 'link', label: 'Qualquer pessoa com o link', help: COPY[kind].link, icon: Link2 },
+  { id: 'public', label: 'Público', help: COPY[kind].public, icon: Globe },
 ]
 
 export default function ShareSiteModal({
@@ -24,7 +35,12 @@ export default function ShareSiteModal({
   access: initial,
   onClose,
   onSave,
+  kind = 'site',
+  icon,
 }: {
+  /* o que está sendo compartilhado (muda os textos) e o ícone do item */
+  kind?: 'site' | 'meeting'
+  icon?: ReactNode
   name: string
   url: string
   access: SiteAccess
@@ -32,6 +48,7 @@ export default function ShareSiteModal({
   onSave: (access: SiteAccess) => void
 }) {
   const [closing, setClosing] = useState(false)
+  const ACCESS = accessFor(kind)
   const [access, setAccess] = useState<SiteAccess>(initial)
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -77,12 +94,12 @@ export default function ShareSiteModal({
         className="ctx-modal sm-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Compartilhar site"
+        aria-label={COPY[kind].title}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="ctx-modal-head sm-head">
           <div className="ctx-modal-head-text">
-            <h2 className="ctx-modal-title">Compartilhar site</h2>
+            <h2 className="ctx-modal-title">{COPY[kind].title}</h2>
             <p className="ctx-modal-sub">{name}</p>
           </div>
           <button className="ctx-modal-close" type="button" aria-label="Fechar" onClick={close}>
@@ -92,7 +109,7 @@ export default function ShareSiteModal({
 
         <div className="ctx-modal-body sm-body">
           <div className="sm-site">
-            <Globe size={20} strokeWidth={1.7} aria-hidden="true" />
+            {icon ?? <Globe size={20} strokeWidth={1.7} aria-hidden="true" />}
             <span className="sm-site-text">
               <span className="sm-site-name">{name}</span>
               <span className="sm-site-url">{url}</span>

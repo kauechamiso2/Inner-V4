@@ -1,0 +1,258 @@
+/* ============ Pilar de Vídeos (v2): selo de vídeo nas miniaturas ============ */
+.ip-vid-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px 0 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  pointer-events: none;
+}
+
+.ip-vid-badge svg {
+  display: block;
+}
+
+/* ============ Galeria de Ferramentas de Vídeo (v2) ============ */
+.vg-page .ip-container {
+  max-width: 1000px;
+}
+
+.vg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.vg-grid .tool-card {
+  height: 300px;
+}
+
+.vg-grid .tool-card-art {
+  height: 156px;
+}
+
+.vg-grid .tool-card-art img {
+  width: 290px;
+  height: 156px;
+}
+
+/* área do template (ex.: Arquitetos), embaixo do título */
+.vg-tag {
+  display: inline-flex;
+  align-items: center;
+  margin: 2px 0 6px;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--text-soft);
+}
+
+/* arte em foto: moldura inclinada com play, como um player */
+.vg-grid .tool-card-art.vg-photo {
+  align-items: flex-end;
+}
+
+.vg-grid .tool-card-art.vg-photo img {
+  width: 168px;
+  height: 108px;
+  margin-bottom: 18px;
+  object-fit: cover;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.4);
+}
+
+.vg-photo-play {
+  position: absolute;
+  bottom: 58px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tool-card:hover .vg-photo-play {
+  transform: translateY(-7px) scale(1.05);
+}
+
+.vg-empty {
+  margin: 40px 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-faint);
+}
+
+/* filtros da galeria: uma fileira horizontal centralizada (rola se não couber) */
+.vg-page .ip-categories {
+  display: flex;
+  align-items: center;
+  justify-content: safe center;
+  gap: 4px;
+  width: 100%;
+  margin: 4px 0 22px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.vg-page .ip-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.vg-page .ip-search {
+  margin-bottom: 18px;
+}
+
+/* ---------- card com ícone (Áudio): ícone em círculo, título e descrição ---------- */
+.vg-grid .tool-card.vg-icon-card {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 210px;
+  padding: 24px 24px 26px;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms ease;
+}
+
+.vg-grid .tool-card.vg-icon-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -14px rgba(0, 0, 0, 0.2);
+}
+
+.vg-icon-card .tool-card-header {
+  position: static;
+  gap: 6px;
+}
+
+.vg-icon-card .tool-card-header h3 {
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.vg-icon-card .tool-card-header p {
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.vg-card-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--vg-icon, #8b5cf6) 12%, var(--pop-surface));
+  color: var(--vg-icon, #8b5cf6);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vg-icon-card:hover .vg-card-icon {
+  transform: scale(1.06) rotate(-4deg);
+}
+
+.vg-card-icon svg {
+  display: block;
+}
+
+/* fileira de categorias com setas (quando não cabe) */
+.vg-cats-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.vg-cats-wrap .ip-categories {
+  scroll-behavior: smooth;
+}
+
+.vg-cats-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-top: -27px;
+  padding: 0;
+  border: 1px solid var(--sb-border);
+  border-radius: 50%;
+  background: var(--pop-surface);
+  color: var(--text-mid);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 120ms ease;
+}
+
+.vg-cats-nav.is-prev {
+  left: 0;
+}
+
+.vg-cats-nav.is-next {
+  right: 0;
+}
+
+.vg-cats-wrap.has-prev .vg-cats-nav.is-prev,
+.vg-cats-wrap.has-next .vg-cats-nav.is-next {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vg-cats-nav:active {
+  transform: scale(0.94);
+}
+
+/* esmaece as pontas quando há mais categorias escondidas */
+.vg-cats-wrap.has-prev .ip-categories {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px);
+  mask-image: linear-gradient(90deg, transparent 0, #000 56px);
+}
+
+.vg-cats-wrap.has-next .ip-categories {
+  -webkit-mask-image: linear-gradient(270deg, transparent 0, #000 56px);
+  mask-image: linear-gradient(270deg, transparent 0, #000 56px);
+}
+
+.vg-cats-wrap.has-prev.has-next .ip-categories {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+}
+
+/* filtros em largura total da página (o grid continua com 1000px):
+   assim as categorias cabem e as setas só aparecem em telas estreitas */
+.vg-page {
+  container-type: inline-size;
+}
+
+.vg-page .vg-cats-wrap {
+  flex-shrink: 0;
+  width: 100cqw;
+  max-width: 100cqw;
+  padding: 0 var(--ip-gutter, 40px);
+}
+
+.vg-page .vg-cats-wrap .vg-cats-nav.is-prev {
+  margin-left: var(--ip-gutter, 40px);
+}
+
+.vg-page .vg-cats-wrap .vg-cats-nav.is-next {
+  margin-right: var(--ip-gutter, 40px);
+}

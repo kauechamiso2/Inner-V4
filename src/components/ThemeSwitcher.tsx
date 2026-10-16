@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import './theme-switcher.css'
+import './themeStore'
 import type { SidebarLayout } from './pillars'
-import type { ProtoVersion } from '../App'
+import type { ProtoVersion, VideosVersion } from '../App'
 
 /* Versões do protótipo (selecionáveis no topo do menu). */
 const VERSIONS: { id: ProtoVersion; badge: string; name: string; hint: string }[] = [
   { id: 'v1', badge: '1', name: 'Padrão', hint: 'Input enxuto · Mais Apps reduzido' },
   { id: 'v2', badge: '2', name: 'Mais Apps', hint: 'Input enxuto · todos os apps' },
   { id: 'v3', badge: '3', name: 'Input chat/agent', hint: 'Input com abas · todos os apps' },
+]
+
+/* Pilar de Vídeos: a estrutura anterior (painel lateral) fica guardada aqui */
+const VIDEO_VERSIONS: { id: VideosVersion; badge: string; name: string; hint: string }[] = [
+  { id: 'v2', badge: '1', name: 'Galeria e histórico', hint: 'Ferramentas + Minhas gerações (atual)' },
+  { id: 'v1', badge: '2', name: 'Painel lateral', hint: 'Estrutura anterior, para retomar depois' },
 ]
 
 /* O rail (antiga "E") agora é a diagramação A/padrão; as demais seguem após. */
@@ -43,13 +50,9 @@ type Props = {
   /* empty state de Tarefas, Projetos e Biblioteca (um toggle só) */
   emptyStates: boolean
   onEmptyStatesToggle: (empty: boolean) => void
-}
-
-const DARK_KEY = 'inner-v4-dark'
-
-function applyDark(on: boolean) {
-  if (on) document.documentElement.dataset.dark = '1'
-  else delete document.documentElement.dataset.dark
+  /* versão do pilar de Vídeos */
+  videosVersion: VideosVersion
+  onVideosVersionChange: (v: VideosVersion) => void
 }
 
 export default function ThemeSwitcher({
@@ -61,9 +64,10 @@ export default function ThemeSwitcher({
   onVersionChange,
   emptyStates,
   onEmptyStatesToggle,
+  videosVersion,
+  onVideosVersionChange,
 }: Props) {
   const [open, setOpen] = useState(false)
-  const [dark, setDark] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -74,26 +78,7 @@ export default function ThemeSwitcher({
     } catch {
       /* storage indisponível */
     }
-    try {
-      if (localStorage.getItem(DARK_KEY) === '1') {
-        setDark(true)
-        applyDark(true)
-      }
-    } catch {
-      /* storage indisponível */
-    }
   }, [])
-
-  const toggleDark = () => {
-    const next = !dark
-    setDark(next)
-    applyDark(next)
-    try {
-      localStorage.setItem(DARK_KEY, next ? '1' : '0')
-    } catch {
-      /* storage indisponível */
-    }
-  }
 
   useEffect(() => {
     if (!open) return
@@ -131,6 +116,25 @@ export default function ThemeSwitcher({
                 <span className="theme-hint">{v.hint}</span>
               </span>
               {version === v.id && <Check />}
+            </button>
+          ))}
+
+          <div className="theme-pop-header is-section">Vídeos</div>
+          {VIDEO_VERSIONS.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={videosVersion === v.id}
+              className={`theme-option${videosVersion === v.id ? ' is-active' : ''}`}
+              onClick={() => onVideosVersionChange(v.id)}
+            >
+              <span className="layout-badge">{v.badge}</span>
+              <span className="theme-name">
+                {v.name}
+                <span className="theme-hint">{v.hint}</span>
+              </span>
+              {videosVersion === v.id && <Check />}
             </button>
           ))}
 
@@ -191,34 +195,7 @@ export default function ThemeSwitcher({
       )}
 
       <div className="theme-fabs">
-        <button
-          type="button"
-          className={`theme-fab theme-fab-dark${dark ? ' is-dark-on' : ''}`}
-          aria-label={dark ? 'Desativar modo escuro' : 'Ativar modo escuro'}
-          aria-pressed={dark}
-          onClick={toggleDark}
-        >
-          {dark ? (
-            <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <circle cx="8" cy="8" r="3.4" stroke="currentColor" strokeWidth="1.3" />
-              <path
-                d="M8 1.4v1.5M8 13.1v1.5M1.4 8h1.5M13.1 8h1.5M3.3 3.3l1.1 1.1M11.6 11.6l1.1 1.1M12.7 3.3l-1.1 1.1M4.4 11.6l-1.1 1.1"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-              />
-            </svg>
-          ) : (
-            <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M13.6 9.6a5.9 5.9 0 0 1-7.2-7.2 6.2 6.2 0 1 0 7.2 7.2Z"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-        </button>
+        {/* modo escuro: agora fica no menu da conta (Tema) */}
         <button
           type="button"
           className={`theme-fab${open ? ' is-open' : ''}`}

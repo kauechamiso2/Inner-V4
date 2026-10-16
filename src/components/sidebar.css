@@ -1255,6 +1255,12 @@
   background: var(--hover-05);
 }
 
+/* página aberta (ex.: Educação) */
+.rl-util.is-active {
+  background: var(--hover-07);
+  color: var(--text-strong);
+}
+
 .rl-util svg {
   display: block;
   width: 18px;

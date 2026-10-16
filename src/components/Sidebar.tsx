@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type React from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import './sidebar.css'
 import logo from '../assets/logo.svg'
@@ -35,6 +36,7 @@ import PillarsMenu from './PillarsMenu'
 import ProjectsMenu from './ProjectsMenu'
 import AppsGallery from './AppsGallery'
 import ProfileMenu from './ProfileMenu'
+import HelpMenu from './HelpMenu'
 import { APP_BY_ID, APP_FILL_ICON, REDUCED_APPS, FULL_APPS } from './apps'
 import type { AppAnim } from './apps'
 import LibraryCoachmark from './LibraryCoachmark'
@@ -152,6 +154,20 @@ export default function Sidebar({
   }
   /* menu de conta (clique no avatar) */
   const [profileAnchor, setProfileAnchor] = useState<DOMRect | null>(null)
+  /* submenu de Ajuda (rail): abre no hover; fecha com um respiro ao sair do
+     botão e do menu (dá tempo de atravessar o vão entre os dois) */
+  const [helpAnchor, setHelpAnchor] = useState<DOMRect | null>(null)
+  const helpTimer = useRef<number>()
+  const openHelp = (el: HTMLElement) => {
+    window.clearTimeout(helpTimer.current)
+    setHelpAnchor((cur) => cur ?? el.getBoundingClientRect())
+  }
+  const closeHelpSoon = () => {
+    window.clearTimeout(helpTimer.current)
+    helpTimer.current = window.setTimeout(() => setHelpAnchor(null), 180)
+  }
+  const keepHelp = () => window.clearTimeout(helpTimer.current)
+  useEffect(() => () => window.clearTimeout(helpTimer.current), [])
   const toggleProfile = (rect: DOMRect) =>
     setProfileAnchor((cur) => (cur ? null : rect))
   /* apps fixados pelo usuário no rail (abaixo do divisor). Vazio por padrão. */
@@ -159,7 +175,10 @@ export default function Sidebar({
   const toggleRailPin = (id: string) =>
     setRailPinned((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   /* "Mais Apps" fica ativo quando a view atual é um app com ação */
-  const activeApp = FULL_APPS.find((a) => a.view === activeView)
+  const activeApp = FULL_APPS.find((a) =>
+    /* Chat com Modelos não é uma view: é o chat no modo "chat" */
+    a.action === 'chat' ? activeView === 'chat' && chatMode === 'chat' : a.view === activeView,
+  )
 
   /* Projetos é um pilar do pool, mas o clique abre o popover de projetos
      (ancorado no item), em vez de navegar */
@@ -168,6 +187,8 @@ export default function Sidebar({
     setProjectsAnchor(rect)
   }
   const maisRef = useRef<HTMLButtonElement>(null)
+  /* a ferramenta aberta mora no "Mais Apps" (não está fixada no rail) */
+  const appInMore = !!activeApp && !railPinned.includes(activeApp.id)
   const pilaresRef = useRef<HTMLElement>(null)
   const capturePilares = useFlip(pilaresRef)
 
@@ -447,12 +468,12 @@ export default function Sidebar({
             <button
               ref={maisRef}
               type="button"
-              className={`rl-item rl-more${appsAnchor ? ' is-active' : ''}`}
+              className={`rl-item rl-more${appsAnchor || appInMore ? ' is-active' : ''}`}
               aria-haspopup="menu"
               aria-expanded={!!appsAnchor}
               onClick={toggleApps}
             >
-              <span className="rl-target">{appsAnchor ? <AppsFillIcon /> : <AppsIcon />}</span>
+              <span className="rl-target">{appsAnchor || appInMore ? <AppsFillIcon /> : <AppsIcon />}</span>
               <span className="rl-label">Mais Apps</span>
             </button>
           </nav>
@@ -461,11 +482,42 @@ export default function Sidebar({
 
           <div className="rl-util-group">
             {RAIL_UTILS.map((u) => (
-              <a key={u.id} className="rl-util" href={u.href} aria-label={u.label}>
+              <a
+                key={u.id}
+                className={`rl-util${u.id === activeView || (u.id === 'ajuda' && helpAnchor) ? ' is-active' : ''}`}
+                href={u.href}
+                aria-label={u.label}
+                aria-current={u.id === activeView ? 'page' : undefined}
+                {...(u.id === 'ajuda'
+                  ? {
+                      'data-help-trigger': '',
+                      'aria-haspopup': 'menu' as const,
+                      'aria-expanded': !!helpAnchor,
+                      onPointerEnter: (e: React.PointerEvent<HTMLAnchorElement>) => e.pointerType === 'mouse' && openHelp(e.currentTarget),
+                      onPointerLeave: (e: React.PointerEvent<HTMLAnchorElement>) => e.pointerType === 'mouse' && closeHelpSoon(),
+                    }
+                  : {})}
+                onClick={
+                  u.id === 'educacao'
+                    ? (e) => {
+                        e.preventDefault()
+                        onNavigate('educacao')
+                      }
+                    : u.id === 'ajuda'
+                      ? (e) => {
+                          e.preventDefault()
+                          const r = e.currentTarget.getBoundingClientRect()
+                          setHelpAnchor((cur) => (cur ? null : r))
+                        }
+                      : undefined
+                }
+              >
                 {u.icon}
-                <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
-                  {u.label}
-                </span>
+                {!(u.id === 'ajuda' && helpAnchor) && (
+                  <span className="pill-tooltip toggle-tooltip" role="tooltip" aria-hidden="true">
+                    {u.label}
+                  </span>
+                )}
               </a>
             ))}
           </div>
@@ -614,6 +666,9 @@ export default function Sidebar({
         />
       )}
 
+      {helpAnchor && (
+        <HelpMenu anchor={helpAnchor} onClose={() => setHelpAnchor(null)} onPointerEnter={keepHelp} onPointerLeave={closeHelpSoon} />
+      )}
       {profileAnchor && (
         <ProfileMenu anchor={profileAnchor} onClose={() => setProfileAnchor(null)} />
       )}

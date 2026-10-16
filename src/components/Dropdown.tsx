@@ -4,7 +4,8 @@ import { createPortal } from 'react-dom'
 import { Check, ChevronDown } from 'lucide-react'
 import './dropdown.css'
 
-export type DropdownOption = { value: string; label: string; icon?: ReactNode }
+/* hint: texto auxiliar em cinza ao lado do rótulo (ex.: "70 membros") */
+export type DropdownOption = { value: string; label: string; icon?: ReactNode; hint?: string }
 
 /* Dropdown da plataforma (substitui o <select> nativo): gatilho no estilo do
    campo e lista em popover. A lista vai para o body (posição fixa) para não ser
@@ -189,7 +190,10 @@ export default function Dropdown({
               >
                 {/* com ícones na lista, quem não tem ganha o espaço vazio para alinhar */}
                 {(o.icon || withIcons) && <span className="dd-item-ic">{o.icon}</span>}
-                <span className="dd-item-label">{o.label}</span>
+                <span className="dd-item-label">
+                  {o.label}
+                  {o.hint && <span className="dd-item-hint">{o.hint}</span>}
+                </span>
                 {o.value === value && <Check className="dd-check" size={15} strokeWidth={2.4} aria-hidden="true" />}
               </button>
             ))}

@@ -1576,6 +1576,8 @@
   height: 126px;
   max-width: none;
   object-fit: contain;
+  /* artes mais baixas (ex.: Edição, Restauração) assentam na base do card */
+  object-position: center bottom;
   transform: translateY(0) scale(1) rotate(0deg);
   transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;

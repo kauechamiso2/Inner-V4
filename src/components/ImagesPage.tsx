@@ -1,13 +1,25 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { CSSProperties } from 'react'
-import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Play, X } from 'lucide-react'
 import './images-page.css'
 import ImagePromptBar from './ImagePromptBar'
 import GenFilters, { EMPTY_GEN_FILTERS, TODAY, daysAgo, inRange, rangeLabel } from './GenFilters'
 import type { GenFilterState } from './GenFilters'
 import { IMAGE_MODELS, IMAGE_MODEL_BY_ID, getImageSettings } from './imageModels'
 import { ImageModelLogo } from './ImageModelPicker'
+import {
+  VIDEO_CATEGORIES,
+  VIDEO_GEN_TOOL,
+  VIDEO_HISTORY_SEED,
+  VIDEO_MASONRY,
+  VIDEO_MODELS,
+  VIDEO_MODEL_BY_ID,
+  VIDEO_RESULTS,
+  VIDEO_TOOLS,
+  getVideoSettings,
+} from './videoGen'
+import './video-gen.css'
 import type { BaseAttachment } from './ImagePromptBar'
 import ToolDrawer from './ToolDrawer'
 import ImageModal from './ImageModal'
@@ -176,6 +188,8 @@ type MasonryImg = {
   bases?: string[]
   /* dia da geração (filtro de período das Minhas gerações) */
   date?: Date
+  /* vídeo: duração mostrada no selo */
+  dur?: string
 }
 
 /* categorias do Explorar: filtram o grid orgânico */
@@ -362,7 +376,39 @@ const MASONRY: MasonryImg[] = [
 
 const SKELETON_MS = 950
 
-export default function ImagesPage() {
+/* selo de vídeo nas miniaturas: play + duração */
+function VideoBadge({ dur }: { dur?: string }) {
+  return (
+    <span className="ip-vid-badge" aria-hidden="true">
+      <Play size={10} strokeWidth={0} fill="currentColor" />
+      {dur ?? '0:05'}
+    </span>
+  )
+}
+
+/* variant "video": o pilar de Vídeos (v2) usa esta mesma tela, com ferramentas,
+   modelos e exemplos de vídeo */
+export default function ImagesPage({
+  variant = 'image',
+  initialTool,
+  onExit,
+}: {
+  variant?: 'image' | 'video'
+  /* abre direto numa ferramenta (ex.: card da galeria de Vídeos) */
+  initialTool?: string
+  /* voltar/fechar sai desta tela (a galeria de Vídeos volta a aparecer) */
+  onExit?: () => void
+}) {
+  const isVideo = variant === 'video'
+  const tools: Tool[] = isVideo ? VIDEO_TOOLS : TOOLS
+  const masonry: MasonryImg[] = isVideo ? VIDEO_MASONRY : MASONRY
+  const categories = isVideo ? VIDEO_CATEGORIES : CATEGORIES
+  const genToolId = isVideo ? VIDEO_GEN_TOOL : 'image-generation'
+  const genResults = isVideo ? VIDEO_RESULTS : GEN_RESULTS
+  const currentModelName = () =>
+    isVideo
+      ? (VIDEO_MODEL_BY_ID[getVideoSettings().model]?.name ?? 'Kling 3.0')
+      : (IMAGE_MODEL_BY_ID[getImageSettings().model]?.name ?? 'Nano Banana 2')
   const [loading, setLoading] = useState(true)
   const railRef = useRef<HTMLDivElement>(null)
   const [railEdge, setRailEdge] = useState<{ start: boolean; end: boolean }>({
@@ -400,7 +446,7 @@ export default function ImagesPage() {
   /* histórico de gerações (mais recentes primeiro). Começa com gerações
      anteriores do usuário; os filhotes só entram quando ele pedir pra gerar */
   const [generated, setGenerated] = useState<MasonryImg[]>(() =>
-    HISTORY_SEED.flatMap((batch, b) =>
+    (isVideo ? VIDEO_HISTORY_SEED : HISTORY_SEED).flatMap((batch, b) =>
       batch.srcs.map((src, i) => ({
         uid: `seed-${b}-${i}`,
         src,
@@ -409,6 +455,7 @@ export default function ImagesPage() {
         model: batch.model,
         /* gerações de exemplo espalhadas no tempo: hoje, ontem, 4, 12 e 40 dias */
         date: daysAgo([0, 1, 4, 12, 40][b] ?? 0),
+        dur: isVideo ? ['0:05', '0:08', '0:05', '0:10'][i] : undefined,
       })),
     ),
   )
@@ -486,13 +533,19 @@ export default function ImagesPage() {
   const openTool = (t: Tool) => {
     /* ferramenta nova começa sem a base pedida para a anterior */
     setToolBase(null)
-    setFromTool(t.id !== 'image-generation')
-    if (t.id !== 'image-generation') setTool(t)
+    setFromTool(t.id !== genToolId)
+    if (t.id !== genToolId) setTool(t)
     openGenerations()
     /* Image Generation: a barra já chega ativa e com o cursor no campo */
-    if (t.id === 'image-generation') focusBar()
+    if (t.id === genToolId) focusBar()
   }
   /* opts: quantidade e modelo vindos do drawer de uma ferramenta */
+  /* galeria de Vídeos: já abre na ferramenta escolhida */
+  useEffect(() => {
+    const t = initialTool ? tools.find((x) => x.id === initialTool) : null
+    if (t) openTool(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTool])
   const startGenerate = (prompt?: string, opts?: { count: number; model: string }) => {
     if (genTimerRef.current) window.clearTimeout(genTimerRef.current)
     const text = (prompt ?? promptValue).trim() || 'Geração de imagem'
@@ -508,12 +561,13 @@ export default function ImagesPage() {
     genTimerRef.current = window.setTimeout(() => {
       const n = genCountRef.current++
       setGenerated((prev) => [
-        ...GEN_RESULTS.slice(0, opts?.count ?? promptCount).map((src, i) => ({
+        ...genResults.slice(0, opts?.count ?? promptCount).map((src, i) => ({
           uid: `gen-${n}-${i}`,
           src,
           ar: 16 / 9,
           prompt: text,
-          model: opts?.model ?? IMAGE_MODEL_BY_ID[getImageSettings().model]?.name ?? 'Nano Banana 2',
+          model: opts?.model ?? currentModelName(),
+          dur: isVideo ? `0:${getVideoSettings().duration.replace('s', '').padStart(2, '0')}` : undefined,
           bases: bases.length ? bases : undefined,
           date: TODAY,
         })),
@@ -523,7 +577,13 @@ export default function ImagesPage() {
     }, GEN_MS)
   }
   /* voltar: sai das Gerações (uma geração em andamento continua e entra no histórico) */
-  const exitGenerate = () => swapTo(false)
+  const exitGenerate = () => {
+    if (onExit) {
+      onExit()
+      return
+    }
+    swapTo(false)
+  }
   /* fechar o drawer de um template volta pra home de Imagens (Explorar) */
   const closeTool = () => {
     setTool(null)
@@ -641,6 +701,7 @@ export default function ImagesPage() {
           </header>
           {lastToolRef.current && (
             <ToolDrawer
+              variant={variant}
               key={lastToolRef.current.id}
               tool={lastToolRef.current}
               /* gera com o drawer do template aberto: o resultado entra nas
@@ -660,7 +721,7 @@ export default function ImagesPage() {
             e volta com fluidez ao clicar em voltar, empurrando a grade pra baixo */}
         <div className="ip-head">
           <div className="ip-head-inner">
-        <h1 className="ip-title">Geração e edição de Imagens</h1>
+        <h1 className="ip-title">{isVideo ? 'Geração e edição de Vídeos' : 'Geração e edição de Imagens'}</h1>
 
         {/* ---------- Ferramentas de Imagem (carrossel, sem título) ---------- */}
         <section className="ip-section ip-tools">
@@ -676,7 +737,7 @@ export default function ImagesPage() {
 
             <div className="ip-rail" ref={railRef} onScroll={updateRailEdge}>
               {loading
-                ? TOOLS.map((tool, i) => (
+                ? tools.map((tool, i) => (
                     <div
                       className="tool-card is-skeleton"
                       key={tool.id}
@@ -688,7 +749,7 @@ export default function ImagesPage() {
                       <div className="sk-art" />
                     </div>
                   ))
-                : TOOLS.map((t, i) => (
+                : tools.map((t, i) => (
                     <article
                       className="tool-card"
                       key={t.id}
@@ -818,7 +879,7 @@ export default function ImagesPage() {
                     </span>
                   )}
                   {genFilters.models.map((name) => {
-                    const m = IMAGE_MODELS.find((x) => x.name === name)
+                    const m = (isVideo ? VIDEO_MODELS : IMAGE_MODELS).find((x) => x.name === name)
                     return (
                       <span className="gf-chip" key={name}>
                         {m && <ImageModelLogo model={m} size={20} />}
@@ -841,6 +902,7 @@ export default function ImagesPage() {
               )}
               {filterAnchor && (
                 <GenFilters
+                  models={isVideo ? VIDEO_MODELS : IMAGE_MODELS}
                   anchor={filterAnchor}
                   value={genFilters}
                   onChange={setGenFilters}
@@ -884,6 +946,7 @@ export default function ImagesPage() {
                   }}
                 >
                   <img src={m.src} alt="" />
+                  {isVideo && <VideoBadge dur={m.dur} />}
                   <figcaption className="ip-mtile-ov">
                     <p className="ip-mtile-prompt">{m.prompt}</p>
                     <div className="ip-mtile-foot">
@@ -922,7 +985,7 @@ export default function ImagesPage() {
                 <h2 className="ip-section-title">Explorar</h2>
               </div>
               <div className="ip-models ip-cats" role="tablist" aria-label="Categorias">
-                {CATEGORIES.map((c) => (
+                {categories.map((c) => (
                   <button
                     key={c.id}
                     type="button"
@@ -938,7 +1001,7 @@ export default function ImagesPage() {
 
               {/* grid orgânico (Pinterest) — imagens geradas; overlay com prompt no hover */}
               <div className="ip-masonry" key={category}>
-                {(category === 'todos' ? MASONRY : MASONRY.filter((m) => m.cat === category)).map((m, i) => (
+                {(category === 'todos' ? masonry : masonry.filter((m) => m.cat === category)).map((m, i) => (
                   <figure
                     className="ip-mtile"
                     key={m.src}
@@ -954,6 +1017,7 @@ export default function ImagesPage() {
                     }}
                   >
                     <img src={m.src} alt="" loading="lazy" />
+                    {isVideo && <VideoBadge dur={m.dur} />}
                     <figcaption className="ip-mtile-ov">
                       <p className="ip-mtile-prompt">{m.prompt}</p>
                       <div className="ip-mtile-foot">
@@ -1003,6 +1067,7 @@ export default function ImagesPage() {
         >
           <div className="ip-prompt-frame">
             <ImagePromptBar
+              variant={variant}
               docked
               alwaysOpen
               autoFocusKey={barFocusKey}

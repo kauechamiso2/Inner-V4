@@ -180,12 +180,21 @@ export default function ChatComposer({
   useEffect(() => {
     if (!prefill) return
     setValue(prefill.text)
+    /* prompt com {{variáveis}} (ex.: "Usar" na galeria): viram chips e a 1ª
+       fica selecionada, igual a escolher o prompt pelo menu @ */
+    const names = [...prefill.text.matchAll(VAR_RE)].map((m) => m[1])
+    if (names.length) {
+      setPromptVars((v) => [...new Set([...v, ...names])])
+      requestAnimationFrame(() => selectVar(prefill.text, 0))
+      return
+    }
     requestAnimationFrame(() => {
       const el = fieldRef.current
       if (!el) return
       el.focus()
       el.setSelectionRange(prefill.text.length, prefill.text.length)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefill])
 
   const featureCb = useRef(onFeatureChange)

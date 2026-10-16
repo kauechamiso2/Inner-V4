@@ -19,7 +19,7 @@ import {
   UploadSimpleIcon,
   VideoCameraIcon,
 } from './SidebarIcons'
-import { PROMPTS } from './PromptsPage'
+import { PROMPTS, promptBody } from './PromptsPage'
 import { FILES, entryAttachment } from './libraryEntries'
 import type { Project } from './projects'
 import { fileAttachment } from './ContextFileList'
@@ -231,10 +231,7 @@ const PROMPT_ITEMS: MentionItem[] = PROMPTS.map((p) => ({
   id: `prompt-${p.id}`,
   label: p.name,
   icon: <PromptsPillarIcon size={18} />,
-  prompt:
-    `Você é um especialista em ${p.category.toLowerCase()} com ampla experiência, atuando na empresa {{empresa}}.\n\n` +
-    `${p.desc}\n\n` +
-    `Seu objetivo é {{objetivo}}. Considere que o público é {{público}} e use um tom {{tom de voz}}.`,
+  prompt: promptBody(p),
 }))
 
 /* lookup para renderizar o submenu certo por tipo */

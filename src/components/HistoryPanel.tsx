@@ -130,10 +130,10 @@ const PILLAR_GROUPS: Record<GenPillarId, GenGroup[]> = {
     {
       label: 'Esta semana',
       items: [
-        { title: 'Reels de depoimento — Acme', thumb: photo('reels-acme') },
+        { title: 'Reels de depoimento: Acme', thumb: photo('reels-acme') },
         { title: 'Intro animada do canal', thumb: photo('intro-canal') },
         { title: 'Vinheta do podcast', thumb: photo('vinheta') },
-        { title: 'Corte pra TikTok — bastidores', thumb: photo('tiktok-cut') },
+        { title: 'Corte pra TikTok: bastidores', thumb: photo('tiktok-cut') },
       ],
     },
   ],
@@ -146,7 +146,7 @@ const PILLAR_GROUPS: Record<GenPillarId, GenGroup[]> = {
       label: 'Esta semana',
       items: [
         { title: 'Voz do IVR de suporte' },
-        { title: 'Podcast ep. 12 — cortes' },
+        { title: 'Podcast ep. 12: cortes' },
         { title: 'Trilha do vídeo institucional' },
         { title: 'Spot de rádio 30s' },
       ],
@@ -163,14 +163,14 @@ const PILLAR_GROUPS: Record<GenPillarId, GenGroup[]> = {
         { title: 'Call com investidores' },
         { title: 'Kickoff do projeto Atlas' },
         { title: 'Review do Q3 com o board' },
-        { title: 'Entrevista — designer sênior' },
+        { title: 'Entrevista: designer sênior' },
       ],
     },
   ],
   documentos: [
     {
       label: 'Hoje',
-      items: [{ title: 'Proposta comercial — Acme' }, { title: 'One-pager do V4' }],
+      items: [{ title: 'Proposta comercial: Acme' }, { title: 'One-pager do V4' }],
     },
     {
       label: 'Esta semana',
@@ -645,10 +645,18 @@ function PinPicker({
   )
 }
 
-function GenRow({ view, gen }: { view: GenPillarId; gen: Gen }) {
+function GenRow({ view, gen, onOpen }: { view: GenPillarId; gen: Gen; onOpen?: () => void }) {
   const color = PILLAR_COLORS[view]
   return (
-    <a className="chat-row" href="#geracao">
+    <a
+      className="chat-row"
+      href="#geracao"
+      onClick={(e) => {
+        if (!onOpen) return
+        e.preventDefault()
+        onOpen()
+      }}
+    >
       <span className="chat-row-main">
         {gen.thumb ? (
           <span className="gen-thumb" aria-hidden="true">
@@ -689,6 +697,8 @@ type Props = {
      projetos não fixados continuam no Histórico */
   pinnedProjectIds?: string[]
   /* abre a conversa do chat (projectId quando é um chat de projeto) */
+  /* item do histórico de um pilar de geração (ex.: vídeo): abre o detalhe */
+  onOpenGen?: (gen: { title: string; thumb?: string }) => void
   onOpenChat?: (key: string, title: string, projectId?: string | null) => void
   /* abre o menu "..." do chat, ancorado no botão */
   onChatMenu?: (key: string, title: string, rect: DOMRect, projectId?: string | null) => void
@@ -713,6 +723,7 @@ export default function HistoryPanel({
   chatEdits = {},
   pinnedProjectIds = [],
   onOpenChat,
+  onOpenGen,
   onChatMenu,
   menuKey = null,
   renamingKey = null,
@@ -1039,7 +1050,7 @@ export default function HistoryPanel({
                       <div className="history-group-label">{group.label}</div>
                       <div className="history-group-list">
                         {group.items.map((gen) => (
-                          <GenRow view={view} gen={gen} key={gen.title} />
+                          <GenRow view={view} gen={gen} key={gen.title} onOpen={onOpenGen ? () => onOpenGen(gen) : undefined} />
                         ))}
                       </div>
                     </div>

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
-import { ChevronDown, ImagePlus, Minus, Plus, X } from 'lucide-react'
+import { ChevronDown, Film, ImagePlus, Minus, Plus, X } from 'lucide-react'
 import creditsCoin from '../assets/credits.svg'
 import type { Tool } from './ImagesPage'
 import { ImageModelLogo, ImageModelMenu } from './ImageModelPicker'
 import { AUTO_MODEL, IMAGE_MODEL_BY_ID } from './imageModels'
+import { VIDEO_AUTO_MODEL, VIDEO_MODELS, VIDEO_MODEL_BY_ID } from './videoGen'
 
 /* ---------- Campos dinâmicos por template ---------- */
 type Field =
-  | { type: 'file'; label: string; required: boolean; sub: string }
+  | { type: 'file'; label: string; required: boolean; sub: string; accept?: 'image' | 'video' }
   | { type: 'textarea'; label: string; required: boolean; sub: string; placeholder: string }
   | { type: 'pills'; label: string; required: boolean; sub: string; options: string[] }
 
@@ -74,12 +75,52 @@ const TOOL_FIELDS: Record<string, Field[]> = {
   ],
 }
 
+/* ferramentas do pilar de Vídeos (v2) */
+const VIDEO_TOOL_FIELDS: Record<string, Field[]> = {
+  'video-from-image': [
+    { type: 'file', label: 'Imagem inicial', required: true, sub: 'O primeiro quadro do vídeo. Apenas imagens.' },
+    {
+      type: 'textarea',
+      label: 'O que acontece no vídeo?',
+      required: true,
+      sub: 'Descreva o movimento e a câmera.',
+      placeholder: 'Ex.: a câmera se aproxima devagar enquanto o vento move o cabelo...',
+    },
+  ],
+  avatar: [
+    {
+      type: 'pills',
+      label: 'Avatar',
+      required: true,
+      sub: 'Quem apresenta o vídeo.',
+      options: ['Ana', 'Bruno', 'Camila', 'Diego'],
+    },
+    {
+      type: 'textarea',
+      label: 'Roteiro',
+      required: true,
+      sub: 'O que o avatar vai falar.',
+      placeholder: 'Olá! Hoje vou te mostrar...',
+    },
+    { type: 'pills', label: 'Idioma', required: true, sub: 'Idioma da fala.', options: ['Português', 'Inglês', 'Espanhol'] },
+  ],
+  transcribe: [
+    { type: 'file', label: 'Vídeo', required: true, sub: 'Envie o vídeo para transcrever. Apenas vídeos.', accept: 'video' },
+    { type: 'pills', label: 'Formato', required: true, sub: 'Como receber o texto.', options: ['Legenda (SRT)', 'Texto corrido'] },
+  ],
+  'viral-cuts': [
+    { type: 'file', label: 'Vídeo longo', required: true, sub: 'Podcast, live ou aula. Apenas vídeos.', accept: 'video' },
+    { type: 'pills', label: 'Duração dos cortes', required: true, sub: 'Tamanho de cada clipe.', options: ['15s', '30s', '60s'] },
+  ],
+}
+
 const DEFAULT_FIELDS: Field[] = [
   { type: 'file', label: 'Imagem', required: true, sub: 'Envie uma imagem. Apenas imagens.' },
 ]
 
 /* modelo pré-populado aleatoriamente (mesma lista do input do Image Generation) */
 const START_MODELS = ['nano-banana-2', 'nano-banana-pro', 'flux-schnell', 'gpt-image-2', 'playground']
+const VIDEO_START_MODELS = ['kling-30', 'veo-31', 'seedance-25', 'hailuo-2']
 
 type UploadedFile = { name: string; url: string }
 
@@ -87,19 +128,27 @@ export default function ToolDrawer({
   tool,
   onGenerate,
   incomingBase = null,
+  variant = 'image',
 }: {
   tool: Tool
   /* gera com a quantidade e o modelo escolhidos no drawer */
   onGenerate: (opts: { count: number; model: string }) => void
   /* "Usar de base" numa geração: vai para o campo de imagem (o primeiro vazio) */
   incomingBase?: { src: string; key: number } | null
+  /* "video": campos e modelos das ferramentas de vídeo */
+  variant?: 'image' | 'video'
 }) {
-  const fields = TOOL_FIELDS[tool.id] ?? DEFAULT_FIELDS
+  const isVideo = variant === 'video'
+  const fields = (isVideo ? VIDEO_TOOL_FIELDS[tool.id] : TOOL_FIELDS[tool.id]) ?? DEFAULT_FIELDS
   const [files, setFiles] = useState<Record<number, UploadedFile>>({})
   const [texts, setTexts] = useState<Record<number, string>>({})
   const [pills, setPills] = useState<Record<number, string>>({})
-  const [modelId, setModelId] = useState(() => START_MODELS[Math.floor(Math.random() * START_MODELS.length)])
-  const model = IMAGE_MODEL_BY_ID[modelId]
+  const [modelId, setModelId] = useState(() => {
+    const start = isVideo ? VIDEO_START_MODELS : START_MODELS
+    return start[Math.floor(Math.random() * start.length)]
+  })
+  const model = (isVideo ? VIDEO_MODEL_BY_ID : IMAGE_MODEL_BY_ID)[modelId]
+  const autoName = isVideo ? VIDEO_AUTO_MODEL : AUTO_MODEL
   const [modelAnchor, setModelAnchor] = useState<HTMLElement | null>(null)
   /* quantas imagens por vez (como o 1/4 do input) */
   const [count, setCount] = useState(1)
@@ -159,7 +208,7 @@ export default function ToolDrawer({
           {f.type === 'file' &&
             (files[i] ? (
               <div className="ip-tf-file">
-                <img src={files[i].url} alt="" />
+                {f.accept === 'video' ? <video src={files[i].url} muted playsInline /> : <img src={files[i].url} alt="" />}
                 <span className="ip-tf-file-name">{files[i].name}</span>
                 <button
                   type="button"
@@ -174,15 +223,15 @@ export default function ToolDrawer({
               <label className="ip-tf-upload">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={f.accept === 'video' ? 'video/*' : 'image/*'}
                   hidden
                   onChange={(e) => pickFile(i, e.target.files?.[0])}
                 />
                 <span className="ip-tf-upload-ic" aria-hidden="true">
-                  <ImagePlus size={22} strokeWidth={1.8} />
+                  {f.accept === 'video' ? <Film size={22} strokeWidth={1.8} /> : <ImagePlus size={22} strokeWidth={1.8} />}
                 </span>
                 <span className="ip-tf-upload-label">{f.label}</span>
-                <span className="ip-tf-upload-hint">Apenas imagens</span>
+                <span className="ip-tf-upload-hint">{f.accept === 'video' ? 'Apenas vídeos' : 'Apenas imagens'}</span>
               </label>
             ))}
 
@@ -232,7 +281,7 @@ export default function ToolDrawer({
           <ImageModelLogo model={model} size={24} />
           <span className="ip-tf-model-name">
             {model.name}
-            {model.id === 'auto' && <span className="igp-model-auto">{AUTO_MODEL}</span>}
+            {model.name === 'Automático' && <span className="igp-model-auto">{autoName}</span>}
           </span>
           <ChevronDown className="ip-tf-model-caret" size={16} strokeWidth={2} />
         </button>
@@ -240,6 +289,8 @@ export default function ToolDrawer({
           <ImageModelMenu
             anchor={modelAnchor}
             selected={modelId}
+            models={isVideo ? VIDEO_MODELS : undefined}
+            autoName={autoName}
             onSelect={setModelId}
             onClose={() => setModelAnchor(null)}
           />
@@ -248,7 +299,7 @@ export default function ToolDrawer({
 
       {/* Quantidade de imagens por geração */}
       <div className="ip-tf ip-tf-count">
-        <span className="ip-tf-label">Imagens por vez</span>
+        <span className="ip-tf-label">{isVideo ? 'Vídeos por vez' : 'Imagens por vez'}</span>
         <div className="ip-stepper ip-tf-stepper">
           <button type="button" aria-label="Menos imagens" disabled={count <= 1} onClick={() => setCount((c) => Math.max(1, c - 1))}>
             <Minus size={14} strokeWidth={2.4} />
@@ -266,7 +317,7 @@ export default function ToolDrawer({
           type="button"
           className={`ip-tool-gen${ready ? ' is-ready' : ''}`}
           disabled={!ready}
-          onClick={ready ? () => onGenerate({ count, model: model.id === 'auto' ? AUTO_MODEL : model.name }) : undefined}
+          onClick={ready ? () => onGenerate({ count, model: model.name === 'Automático' ? autoName : model.name }) : undefined}
         >
           Gerar
           <span className="ip-tool-gen-cost">

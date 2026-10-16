@@ -3,7 +3,8 @@ import type { CSSProperties } from 'react'
 import './library-page.css'
 import './tasks-page.css'
 import './sites-page.css'
-import { Eye, Globe, Link2, Lock, MoreHorizontal, Pencil, Settings2, Share2 } from 'lucide-react'
+import './collection-detail.css'
+import { Check, Eye, Globe, Link2, Lock, MoreHorizontal, Pencil, Settings2, Share2 } from 'lucide-react'
 import portfolioThumb from '../assets/sites/portfolio.png'
 import saasThumb from '../assets/sites/saas.png'
 import ShareSiteModal from './ShareSiteModal'
@@ -41,6 +42,41 @@ const SITES: Site[] = [
     date: 'há 3 dias',
     thumb: saasThumb,
   },
+  { id: 's3', title: 'Inner Summit 2026 | Evento', url: 'summit.kaue.innerai.site', visibility: 'public', date: 'há 2 horas' },
+  { id: 's4', title: 'Cardápio Bella Vita', url: 'bella-vita.kaue.innerai.site', visibility: 'link', date: 'há 5 dias' },
+  { id: 's5', title: 'Portal de Pessoas | RH', url: 'portal-rh.kaue.innerai.site', visibility: 'private', date: 'há 3 semanas' },
+  { id: 's6', title: 'Lista de espera do app', url: 'waitlist.kaue.innerai.site', visibility: 'link', date: 'há 2 meses' },
+]
+
+/* idade aproximada a partir da data do card */
+const ageOf = (d: string) => (/agora|hora|minuto|hoje/i.test(d) ? 'day' : /ontem|dias?/i.test(d) ? 'week' : 'older')
+
+/* filtro (menu): grupos se somam (E), opções do mesmo grupo (OU) */
+type SiteRow = Site & { domain: string | null }
+const SITE_FILTER_GROUPS: { label: string; items: { id: string; label: string; test: (s: SiteRow) => boolean }[] }[] = [
+  {
+    label: 'Acesso',
+    items: [
+      { id: 'private', label: 'Só você', test: (s) => s.visibility === 'private' },
+      { id: 'link', label: 'Com o link', test: (s) => s.visibility === 'link' },
+      { id: 'public', label: 'Publicados', test: (s) => s.visibility === 'public' },
+    ],
+  },
+  {
+    label: 'Modificado',
+    items: [
+      { id: 'day', label: 'Últimas 24 horas', test: (s) => ageOf(s.date) === 'day' },
+      { id: 'week', label: 'Últimos 7 dias', test: (s) => ageOf(s.date) !== 'older' },
+      { id: 'older', label: 'Mais antigos', test: (s) => ageOf(s.date) === 'older' },
+    ],
+  },
+  {
+    label: 'Endereço',
+    items: [
+      { id: 'own', label: 'Domínio próprio', test: (s) => !!s.domain },
+      { id: 'inner', label: 'Endereço innerai.site', test: (s) => !s.domain },
+    ],
+  },
 ]
 
 /* acesso alterado em Compartilhar, endereço e domínio das Configurações:
@@ -65,6 +101,29 @@ export default function SitesPage({
   onEditSite?: (site: SiteDraft) => void
 }) {
   const [menuFor, setMenuFor] = useState<string | null>(null)
+  /* filtro (menu) */
+  const [filters, setFilters] = useState<Set<string>>(new Set())
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [domains, setDomains] = useState<Record<string, string | null>>(domainMemo)
+  useEffect(() => {
+    if (!filterOpen) return
+    const onDown = (e: PointerEvent) => {
+      if (!(e.target as HTMLElement).closest('.lib-filter-wrap')) setFilterOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFilterOpen(false)
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [filterOpen])
+  const toggleFilter = (id: string) =>
+    setFilters((cur) => {
+      const nx = new Set(cur)
+      nx.has(id) ? nx.delete(id) : nx.add(id)
+      return nx
+    })
   const [query, setQuery] = useState('')
   const nq = normSearch(query)
   const [share, setShare] = useState<Site | null>(null)
@@ -86,6 +145,14 @@ export default function SitesPage({
     })),
     ...SITES,
   ].map((s) => ({ ...s, visibility: access[s.id] ?? s.visibility, url: urls[s.id] ?? s.url }))
+
+  const passFilters = (s: Site) =>
+    SITE_FILTER_GROUPS.every((g) => {
+      const on = g.items.filter((it) => filters.has(it.id))
+      return on.length === 0 || on.some((it) => it.test({ ...s, domain: domains[s.id] ?? null }))
+    })
+  const visible = sites.filter((x) => (!nq || normSearch(`${x.title} ${x.url}`).includes(nq)) && passFilters(x))
+  const narrowed = !!nq || filters.size > 0
 
   /* todo site vira um rascunho abrível (os de exemplo usam a imagem como prévia) */
   const draftOf = (s: Site): SiteDraft => ({
@@ -126,20 +193,68 @@ export default function SitesPage({
               <h2>Meus sites</h2>
             </div>
             <div className="lib-files-actions">
-              <button className="lib-new is-ghost" type="button" aria-label="Filtrar">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <path
-                    d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
-                    stroke="#3D3D3D"
-                    strokeWidth="1.125"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
-                  Filtrar
-                </span>
-              </button>
+              {/* filtro: acesso, quando foi modificado e endereço */}
+              <span className="cd-filter-wrap lib-filter-wrap">
+                <button
+                  className={`lib-new is-ghost${filterOpen || filters.size ? ' is-on' : ''}`}
+                  type="button"
+                  aria-label="Filtrar"
+                  aria-haspopup="menu"
+                  aria-expanded={filterOpen}
+                  onClick={() => setFilterOpen((o) => !o)}
+                >
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <path
+                      d="M2.6 3.9h12.8l-5 6v4.3l-2.8-1.4V9.9l-5-6Z"
+                      stroke="currentColor"
+                      strokeWidth="1.125"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  {filters.size > 0 && <span className="cd-filter-badge">{filters.size}</span>}
+                  {!filterOpen && (
+                    <span className="pill-tooltip lib-new-tip" role="tooltip" aria-hidden="true">
+                      Filtrar
+                    </span>
+                  )}
+                </button>
+                {filterOpen && (
+                  <div className="task-menu cd-filter-menu" role="menu">
+                    <button
+                      type="button"
+                      className="task-menu-item"
+                      role="menuitemcheckbox"
+                      aria-checked={filters.size === 0}
+                      onClick={() => setFilters(new Set())}
+                    >
+                      Todos os sites
+                      {filters.size === 0 && <Check className="cd-filter-check" size={15} strokeWidth={2.4} />}
+                    </button>
+                    {SITE_FILTER_GROUPS.map((g) => (
+                      <div key={g.label}>
+                        <div className="task-menu-sep" />
+                        <div className="lp-filter-label">{g.label}</div>
+                        {g.items.map((it) => (
+                          <button
+                            key={it.id}
+                            type="button"
+                            className="task-menu-item"
+                            role="menuitemcheckbox"
+                            aria-checked={filters.has(it.id)}
+                            onClick={() => toggleFilter(it.id)}
+                          >
+                            <span className={`cd-filter-box${filters.has(it.id) ? ' is-on' : ''}`} aria-hidden="true">
+                              {filters.has(it.id) && <Check size={11} strokeWidth={3} />}
+                            </span>
+                            {it.label}
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </span>
               <SearchToggle value={query} onChange={setQuery} placeholder="Buscar sites" />
               <button className="lib-new-cta" type="button" onClick={() => onNewSite?.()}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -150,9 +265,9 @@ export default function SitesPage({
             </div>
           </div>
 
-          {nq && !sites.some((x) => normSearch(`${x.title} ${x.url}`).includes(nq)) && <SearchEmpty query={query} />}
-          <div className="sites-grid">
-            {sites.filter((x) => !nq || normSearch(`${x.title} ${x.url}`).includes(nq)).map((s, i) => (
+          {narrowed && visible.length === 0 && <SearchEmpty query={nq ? query : 'esses filtros'} />}
+          <div className="sites-grid" key={[...filters].join('|')}>
+            {visible.map((s, i) => (
               <article
                 className={`site-card is-clickable${menuFor === s.id ? ' is-menu' : ''}`}
                 key={s.id}
@@ -248,6 +363,7 @@ export default function SitesPage({
           }}
           onDomainChange={(d) => {
             domainMemo[settings.id] = d
+            setDomains({ ...domainMemo })
           }}
           onClose={() => setSettings(null)}
         />

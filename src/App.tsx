@@ -4,6 +4,25 @@ import HistoryPanel from './components/HistoryPanel'
 import ChatHome from './components/ChatHome'
 import ImagesPage from './components/ImagesPage'
 import VideosPage from './components/VideosPage'
+import VideosGallery from './components/VideosGallery'
+import AudiosGallery from './components/AudiosGallery'
+import DocsGallery from './components/DocsGallery'
+import MeetingsPage from './components/MeetingsPage'
+import ImageModal from './components/ImageModal'
+import DocModal from './components/DocModal'
+import SlidesModal from './components/SlidesModal'
+import type { SlidesResult } from './components/SlidesModal'
+import SlidesGallery from './components/SlidesGallery'
+import PromptsPage from './components/PromptsPage'
+import EducationPage from './components/EducationPage'
+import { deckForTitle } from './components/slideFlows'
+import AudioModal from './components/AudioModal'
+import type { AudioResultItem } from './components/AudioModal'
+import { audioForTitle } from './components/audioFlows'
+import type { DocResult } from './components/DocModal'
+import { docForTitle } from './components/docFlows'
+import duckVideo from './assets/videos/duck.mp4'
+import duckPoster from './assets/videos/duck-poster.webp'
 import ProjectsPage from './components/ProjectsPage'
 import LibraryPage from './components/LibraryPage'
 import TarefasPage from './components/TarefasPage'
@@ -61,6 +80,10 @@ export type StartedChat = {
    v2 = Mais Apps (input enxuto + todos os apps)
    v3 = Input chat/agent (input com abas + todos os apps) */
 export type ProtoVersion = 'v1' | 'v2' | 'v3'
+/* pilar de Vídeos: v2 = galeria de ferramentas + Minhas gerações (padrão);
+   v1 = estrutura anterior com painel lateral (guardada no menu "···") */
+export type VideosVersion = 'v1' | 'v2'
+const VIDEOS_KEY = 'inner-v4-videos'
 
 const LAYOUT_KEY = 'inner-v4-layout-v3'
 const COACH_KEY = 'inner-v4-coach-library'
@@ -88,7 +111,8 @@ export default function App() {
   /* primeiro acesso: escolher o Agente (etapa obrigatória).
      Por hora sempre aparece ao carregar; vamos travar por localStorage
      quando o fluxo (escolher + batizar) estiver completo. */
-  const [showOnboarding, setShowOnboarding] = useState(true)
+  /* onboarding desligado por enquanto: a plataforma abre direto */
+  const [showOnboarding, setShowOnboarding] = useState(false)
   /* entrada da plataforma: dispara quando o usuário conclui o onboarding */
   const [entering, setEntering] = useState(false)
   /* personagem escolhido (id + nome batizado) — personaliza a plataforma */
@@ -114,6 +138,64 @@ export default function App() {
     }
   }
   /* só a v3 mantém as abas Agente/Chat; só a v1 usa o Mais Apps reduzido */
+  const [videosVersion, setVideosVersion] = useState<VideosVersion>(() => {
+    try {
+      return localStorage.getItem(VIDEOS_KEY) === 'v1' ? 'v1' : 'v2'
+    } catch {
+      return 'v2'
+    }
+  })
+  /* "Novo vídeo" no painel lateral: abre a Geração de Vídeos na galeria */
+  const [videoNewKey, setVideoNewKey] = useState(0)
+  /* flow de uma ferramenta aberto: ele tem a própria coluna, o histórico sai */
+  const [videoFlowOpen, setVideoFlowOpen] = useState(false)
+  /* "Novo áudio" no painel lateral (pilar de Áudio) */
+  const [audioNewKey, setAudioNewKey] = useState(0)
+  /* "Novo documento" no painel lateral (pilar de Documentos) */
+  const [docsNewKey, setDocsNewKey] = useState(0)
+  /* "Nova reunião" no painel lateral (pilar de Reuniões) */
+  const [meetingNewKey, setMeetingNewKey] = useState(0)
+  const [meetingOpen, setMeetingOpen] = useState<{ title: string; key: number } | null>(null)
+  /* vídeo do histórico aberto no detalhe (mesmo modal de Imagens) e o "Regerar" */
+  const [videoModal, setVideoModal] = useState<{ title: string; thumb?: string; closing: boolean } | null>(null)
+  const [videoRegen, setVideoRegen] = useState<{ tool: string; prompt: string; key: number } | null>(null)
+  /* Documentos: documento aberto no modal e "Regerar" (abre o flow preenchido) */
+  const [docModal, setDocModal] = useState<{ doc: DocResult; closing: boolean } | null>(null)
+  const [docRegen, setDocRegen] = useState<{ tool: string; prompt: string; key: number } | null>(null)
+  const closeDocModal = () => {
+    setDocModal((m) => (m ? { ...m, closing: true } : m))
+    window.setTimeout(() => setDocModal(null), 200)
+  }
+  /* Áudio: áudio aberto no modal e "Regerar" */
+  const [audioModal, setAudioModal] = useState<{ audio: AudioResultItem; closing: boolean } | null>(null)
+  const [audioRegen, setAudioRegen] = useState<{ tool: string; prompt: string; key: number } | null>(null)
+  const closeAudioModal = () => {
+    setAudioModal((m) => (m ? { ...m, closing: true } : m))
+    window.setTimeout(() => setAudioModal(null), 200)
+  }
+  /* Apresentações: deck aberto no modal, "Regerar" e "Nova apresentação" */
+  const [slidesModal, setSlidesModal] = useState<{ result: SlidesResult; closing: boolean } | null>(null)
+  const [slidesRegen, setSlidesRegen] = useState<{ tool: string; prompt: string; key: number } | null>(null)
+  const [slidesNewKey, setSlidesNewKey] = useState(0)
+  const closeSlidesModal = () => {
+    setSlidesModal((m) => (m ? { ...m, closing: true } : m))
+    window.setTimeout(() => setSlidesModal(null), 200)
+  }
+  const closeVideoModal = () => {
+    setVideoModal((m) => (m ? { ...m, closing: true } : m))
+    window.setTimeout(() => setVideoModal(null), 200)
+  }
+  /* painel de histórico: Home/Chat e, na versão nova, o pilar de Vídeos */
+  const historyFor = (v: AppView) =>
+    showsHistory(v) || (v === 'videos' && videosVersion === 'v2') || v === 'audio' || v === 'documentos' || v === 'reunioes' || v === 'apresentacoes'
+  const changeVideosVersion = (v: VideosVersion) => {
+    setVideosVersion(v)
+    try {
+      localStorage.setItem(VIDEOS_KEY, v)
+    } catch {
+      /* storage indisponível */
+    }
+  }
   const showTabs = version === 'v3'
   const appsReduced = version === 'v1'
   const [view, setView] = useState<AppView>('chat')
@@ -217,6 +299,25 @@ export default function App() {
     setChatCrumb(null)
     setHomeIntent(null)
     setHomeAttachments({ items, forKey: next })
+    setHomeKey(next)
+    setView('chat')
+    setPanelView('chat')
+    setDrawer(null)
+  }
+
+  /* "Usar" um prompt da galeria: abre um chat novo com o texto no input */
+  const [homeDraft, setHomeDraft] = useState<{ text: string; forKey: number } | null>(null)
+  const startChatWithPrompt = (text: string) => {
+    const next = homeKey + 1
+    setChatMode('agente')
+    setActiveProject(null)
+    setActiveChatId(null)
+    if (view !== 'chat') reopenHistory()
+    setPendingMessage(null)
+    setRestoreThread(null)
+    setChatCrumb(null)
+    setHomeIntent(null)
+    setHomeDraft({ text, forKey: next })
     setHomeKey(next)
     setView('chat')
     setPanelView('chat')
@@ -388,7 +489,7 @@ export default function App() {
     openLoop(null)
     setView(next)
     /* mantém o histórico no último contexto válido (Chat/Imagens) */
-    if (showsHistory(next)) setPanelView(next)
+    if (historyFor(next)) setPanelView(next as PanelView)
     /* sair da Home desmonta a conversa: nada fica selecionado no histórico */
     if (next !== 'chat') setActiveChatId(null)
     setDrawer(null) // trocar de página fecha qualquer drawer aberto
@@ -593,15 +694,46 @@ export default function App() {
       />
       <HistoryPanel
         view={panelView}
-        hidden={!showsHistory(view) || historyCollapsed}
+        hidden={!historyFor(view) || historyCollapsed || ((view === 'videos' || view === 'audio' || view === 'documentos' || view === 'apresentacoes') && videoFlowOpen)}
         chatMode={chatMode}
         pins={pins}
         isPinned={isPinned}
         togglePin={togglePin}
-        onNewTask={resetHome}
+        onNewTask={
+          panelView === 'videos'
+            ? () => setVideoNewKey((k) => k + 1)
+            : panelView === 'audio'
+              ? () => setAudioNewKey((k) => k + 1)
+              : panelView === 'documentos'
+                ? () => setDocsNewKey((k) => k + 1)
+                : panelView === 'reunioes'
+                  ? () => setMeetingNewKey((k) => k + 1)
+                  : panelView === 'apresentacoes'
+                  ? () => setSlidesNewKey((k) => k + 1)
+                  : resetHome
+        }
         chatEdits={chatEdits}
         pinnedProjectIds={pins.filter((p) => p.kind === 'project').map((p) => p.id)}
         onOpenChat={(key, title, projectId) => openHistoryChat(key, title, projectId, chatMode)}
+        onOpenGen={
+          panelView === 'videos'
+            ? (gen) => setVideoModal({ ...gen, closing: false })
+            : panelView === 'apresentacoes'
+              ? (gen) => {
+                  const d = deckForTitle(gen.title)
+                  setSlidesModal({ result: { ...d, title: gen.title, prompt: gen.title, model: 'Claude Sonnet 5.5' }, closing: false })
+                }
+              : panelView === 'reunioes'
+              ? (gen) => setMeetingOpen({ title: gen.title, key: Date.now() })
+              : panelView === 'audio'
+              ? (gen) => setAudioModal({ audio: { ...audioForTitle(gen.title), title: gen.title }, closing: false })
+              : panelView === 'documentos'
+              ? (gen) => {
+                  const d = docForTitle(gen.title)
+                  setDocModal({ doc: { ...d, prompt: gen.title, model: 'Claude Sonnet 5.5' }, closing: false })
+                }
+              : undefined
+        }
         onChatMenu={(key, title, rect, projectId) =>
           setChatMenu({ key, title, rect, projectId: chatEdits[key]?.projectId ?? projectId ?? null, from: 'history' })
         }
@@ -620,6 +752,7 @@ export default function App() {
         <ChatHome
           key={homeKey}
           initialAttachments={homeAttachments?.forKey === homeKey ? homeAttachments.items : undefined}
+          initialDraft={homeDraft?.forKey === homeKey ? homeDraft.text : undefined}
           onThreadStart={startThread}
           onTaskCreated={addTask}
           onOpenTask={openTaskFromChat}
@@ -673,7 +806,11 @@ export default function App() {
       ) : view === 'imagens' ? (
         <ImagesPage key="imagens" />
       ) : view === 'videos' ? (
-        <VideosPage key="videos" panelOpen={!historyCollapsed} />
+        videosVersion === 'v1' ? (
+          <VideosPage key="videos" panelOpen={!historyCollapsed} />
+        ) : (
+          <VideosGallery key="videos-v2" newKey={videoNewKey} onFlowChange={setVideoFlowOpen} regen={videoRegen} />
+        )
       ) : view === 'library' ? (
         <LibraryPage key="library" empty={emptyStates} onStartChat={startChatWithFiles} />
       ) : view === 'projetos' ? (
@@ -706,6 +843,36 @@ export default function App() {
           onSaveTask={saveTask}
           onOpenRun={(t, r) => openTaskDrawer(t, r)}
         />
+      ) : view === 'apresentacoes' ? (
+        <SlidesGallery
+          key="apresentacoes"
+          newKey={slidesNewKey}
+          onFlowChange={setVideoFlowOpen}
+          regen={slidesRegen}
+          onOpenSlides={(result) => setSlidesModal({ result, closing: false })}
+        />
+      ) : view === 'reunioes' ? (
+        <MeetingsPage key="reunioes" newKey={meetingNewKey} openMeeting={meetingOpen} />
+      ) : view === 'documentos' ? (
+        <DocsGallery
+          key="documentos"
+          newKey={docsNewKey}
+          onFlowChange={setVideoFlowOpen}
+          regen={docRegen}
+          onOpenDoc={(doc) => setDocModal({ doc, closing: false })}
+        />
+      ) : view === 'audio' ? (
+        <AudiosGallery
+          key="audio"
+          newKey={audioNewKey}
+          onFlowChange={setVideoFlowOpen}
+          regen={audioRegen}
+          onOpenAudio={(audio) => setAudioModal({ audio, closing: false })}
+        />
+      ) : view === 'educacao' ? (
+        <EducationPage key="educacao" />
+      ) : view === 'prompts' ? (
+        <PromptsPage key="prompts" onUse={startChatWithPrompt} />
       ) : view === 'sites' ? (
         <SitesPage
           key="sites"
@@ -734,6 +901,60 @@ export default function App() {
           closing={!!drawer.closing}
           onClose={closeDrawer}
           onEdit={drawer.fromPillar ? () => editSite(drawer.site, true) : undefined}
+        />
+      )}
+      {videoModal && (
+        <ImageModal
+          img={{
+            src: videoModal.thumb ?? duckPoster,
+            ar: 16 / 9,
+            prompt: videoModal.title,
+            model: 'Kling 3.0',
+            video: duckVideo,
+            dur: '0:08',
+          }}
+          closing={videoModal.closing}
+          onClose={closeVideoModal}
+          onRegenerate={() => {
+            setVideoRegen({ tool: 'video-generation', prompt: videoModal.title, key: Date.now() })
+            closeVideoModal()
+          }}
+        />
+      )}
+      {slidesModal && (
+        <SlidesModal
+          key={slidesModal.result.title}
+          result={slidesModal.result}
+          closing={slidesModal.closing}
+          onClose={closeSlidesModal}
+          onRegenerate={() => {
+            setSlidesRegen({ tool: slidesModal.result.tool, prompt: slidesModal.result.prompt, key: Date.now() })
+            closeSlidesModal()
+          }}
+        />
+      )}
+      {audioModal && (
+        <AudioModal
+          key={audioModal.audio.title}
+          audio={audioModal.audio}
+          closing={audioModal.closing}
+          onClose={closeAudioModal}
+          onRegenerate={() => {
+            const a = audioModal.audio
+            setAudioRegen({ tool: a.tool, prompt: a.kind === 'transcribe' ? '' : a.prompt, key: Date.now() })
+            closeAudioModal()
+          }}
+        />
+      )}
+      {docModal && (
+        <DocModal
+          doc={docModal.doc}
+          closing={docModal.closing}
+          onClose={closeDocModal}
+          onRegenerate={() => {
+            setDocRegen({ tool: docModal.doc.tool, prompt: docModal.doc.prompt, key: Date.now() })
+            closeDocModal()
+          }}
         />
       )}
       <LoopToast
@@ -781,6 +1002,8 @@ export default function App() {
         coachOpen={coachOpen}
         onCoachToggle={changeCoach}
         version={version}
+        videosVersion={videosVersion}
+        onVideosVersionChange={changeVideosVersion}
         onVersionChange={changeVersion}
         emptyStates={emptyStates}
         onEmptyStatesToggle={setEmptyStates}

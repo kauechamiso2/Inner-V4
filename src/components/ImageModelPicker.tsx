@@ -88,15 +88,21 @@ export function ImageModelMenu({
   selected,
   onSelect,
   onClose,
+  models = IMAGE_MODELS,
+  autoName = AUTO_MODEL,
 }: {
   anchor: HTMLElement
   selected: string
   onSelect: (id: string) => void
   onClose: () => void
+  /* lista do pilar (imagens por padrão; vídeos no pilar de Vídeos) */
+  models?: ImageModel[]
+  /* modelo que o "Automático" está usando */
+  autoName?: string
 }) {
   const [query, setQuery] = useState('')
   const nq = normSearch(query)
-  const list = IMAGE_MODELS.filter((m) => !nq || normSearch(m.name).includes(nq))
+  const list = models.filter((m) => !nq || normSearch(m.name).includes(nq))
   return (
     <BarPopover anchor={anchor} label="Modelo" width={340} className="igp-models" showLabel={false} onClose={onClose}>
       <label className="igp-search is-top">
@@ -129,9 +135,9 @@ export function ImageModelMenu({
               <span className="igp-model-name">
                 {m.name}
                 {/* Automático: o modelo que ele está usando, com menos peso */}
-                {m.id === 'auto' && <span className="igp-model-auto">{AUTO_MODEL}</span>}
+                {m.name === 'Automático' && <span className="igp-model-auto">{autoName}</span>}
               </span>
-              {m.id !== 'auto' && m.credits > 0 && (
+              {m.name !== 'Automático' && m.credits > 0 && (
                 <span className="igp-credits">
                   <img src={creditsCoin} alt="" aria-hidden="true" />
                   {m.credits}

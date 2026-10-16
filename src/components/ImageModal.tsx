@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { CSSProperties } from 'react'
-import { ArrowUp, Check, Copy, Download, Images, Mic, Pencil, Square, X } from 'lucide-react'
+import { ArrowUp, Check, Copy, Download, Images, Mic, Pencil, RotateCcw, Square, X } from 'lucide-react'
 import './image-modal.css'
 
 export type ModalImg = {
@@ -11,6 +11,9 @@ export type ModalImg = {
   model: string
   /* imagens usadas como base na geração (aparecem junto do prompt) */
   bases?: string[]
+  /* vídeo: arquivo e duração (o palco vira um player) */
+  video?: string
+  dur?: string
 }
 
 /* formato legível a partir da proporção (largura/altura) */
@@ -34,13 +37,16 @@ type Props = {
   closing: boolean
   onClose: () => void
   /* "Usar de base": anexa a imagem ao input de geração e fecha o modal */
-  onUseAsBase: () => void
+  onUseAsBase?: () => void
+  /* vídeo: sem editar/usar de base; oferece baixar e regerar (abre o flow) */
+  onRegenerate?: () => void
 }
 
 /* ditado simulado (protótipo): o que o "microfone" transcreve */
 const DICTATION = 'Deixe o céu ao entardecer, com tons de laranja e rosa'
 
-export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props) {
+export default function ImageModal({ img, closing, onClose, onUseAsBase, onRegenerate }: Props) {
+  const isVideo = !!img.video
   const [copied, setCopied] = useState(false)
   /* "Editar": o botão vira um input (texto ou voz) no mesmo lugar */
   const [edit, setEdit] = useState<'idle' | 'open' | 'running' | 'done'>('idle')
@@ -141,7 +147,7 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
       style={{ left: leftOffset } as CSSProperties}
       role="dialog"
       aria-modal="true"
-      aria-label="Detalhe da imagem"
+      aria-label={isVideo ? 'Detalhe do vídeo' : 'Detalhe da imagem'}
       onClick={onClose}
     >
       <div className="img-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -179,9 +185,15 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
                   <dt>Formato</dt>
                   <dd>{formatFromAr(img.ar)}</dd>
                 </div>
+                {isVideo && (
+                  <div className="imm-row">
+                    <dt>Duração</dt>
+                    <dd>{img.dur ?? '0:08'}</dd>
+                  </div>
+                )}
                 <div className="imm-row">
                   <dt>Qualidade</dt>
-                  <dd>4K</dd>
+                  <dd>{isVideo ? '1080p' : '4K'}</dd>
                 </div>
                 <div className="imm-row">
                   <dt>Criada em</dt>
@@ -192,14 +204,30 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
           </div>
 
           <footer className="imm-actions">
-            <button type="button" className="imm-cta" onClick={onUseAsBase}>
-              <Images size={16} strokeWidth={2} />
-              Usar de base
-            </button>
-            <button type="button" className="imm-btn">
-              <Download size={15} strokeWidth={2} />
-              Baixar
-            </button>
+            {isVideo ? (
+              /* vídeo: baixar é a ação principal; regerar abre o flow de novo */
+              <>
+                <button type="button" className="imm-cta">
+                  <Download size={15} strokeWidth={2} />
+                  Baixar
+                </button>
+                <button type="button" className="imm-btn" onClick={onRegenerate}>
+                  <RotateCcw size={15} strokeWidth={2} />
+                  Regerar
+                </button>
+              </>
+            ) : (
+              <>
+                <button type="button" className="imm-cta" onClick={onUseAsBase}>
+                  <Images size={16} strokeWidth={2} />
+                  Usar de base
+                </button>
+                <button type="button" className="imm-btn">
+                  <Download size={15} strokeWidth={2} />
+                  Baixar
+                </button>
+              </>
+            )}
           </footer>
         </aside>
 
@@ -211,7 +239,11 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
           <div className="imm-stage-inner">
             {/* imagem + gradiente de geração por cima enquanto a edição roda */}
             <div className={`imm-img-wrap${edit === 'running' ? ' is-running' : ''}${edit === 'done' ? ' is-done' : ''}`}>
-              <img className="imm-img" src={img.src} alt={img.prompt} />
+              {isVideo ? (
+                <video className="imm-img imm-video" src={img.video} poster={img.src} controls playsInline />
+              ) : (
+                <img className="imm-img" src={img.src} alt={img.prompt} />
+              )}
               <span className="imm-gen" aria-hidden="true">
                 <span className="imm-gen-label">Editando imagem</span>
               </span>
@@ -224,6 +256,7 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
             </div>
 
             {/* "Editar" → input: o mesmo elemento muda de tamanho e troca o conteúdo */}
+            {!isVideo && (
             <div
               ref={editRef}
               className={`imm-edit${edit === 'open' ? ' is-open' : ''}${edit === 'running' ? ' is-busy' : ''}`}
@@ -294,6 +327,7 @@ export default function ImageModal({ img, closing, onClose, onUseAsBase }: Props
                 </button>
               </form>
             </div>
+            )}
           </div>
         </div>
       </div>

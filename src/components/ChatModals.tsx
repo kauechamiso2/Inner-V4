@@ -8,7 +8,7 @@ import './site-modals.css'
 import './chat-modals.css'
 
 /* shell enxuto (título + fechar) com saída suave, usado pelos modais do chat */
-function SmallModal({
+export function SmallModal({
   title,
   onClose,
   children,

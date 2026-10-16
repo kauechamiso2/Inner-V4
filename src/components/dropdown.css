@@ -160,3 +160,11 @@
 .dd-item-ic {
   width: 16px;
 }
+
+/* texto auxiliar ao lado do rótulo (ex.: número de membros) */
+.dd-item-hint {
+  margin-left: 6px;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--text-faint);
+}
